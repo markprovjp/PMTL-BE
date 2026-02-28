@@ -1,0 +1,102 @@
+{
+  "kind": "collectionType",
+  "collectionName": "community_posts",
+  "info": {
+    "singularName": "community-post",
+    "pluralName": "community-posts",
+    "displayName": "Chia Sẻ Cộng Đồng"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 300
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["story", "feedback", "video"],
+      "default": "story",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "Sức Khoẻ",
+        "Gia Đình",
+        "Sự Nghiệp",
+        "Hôn Nhân",
+        "Tâm Linh",
+        "Thi Cử",
+        "Kinh Doanh",
+        "Mất Ngủ",
+        "Mối Quan Hệ",
+        "Khác"
+      ],
+      "default": "Tâm Linh"
+    },
+    "cover_image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "video_url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "author_name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "author_country": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "integer",
+      "default": 0
+    },
+    "likes": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "views": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::community-comment.community-comment",
+      "mappedBy": "post"
+    },
+    "tags": {
+      "type": "json"
+    },
+    "rating": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

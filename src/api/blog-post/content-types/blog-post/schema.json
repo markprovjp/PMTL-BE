@@ -1,0 +1,108 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_posts",
+  "info": {
+    "singularName": "blog-post",
+    "pluralName": "blog-posts",
+    "displayName": "Bài Viết (Blog)",
+    "description": "Bài viết Phật pháp (Phiên bản giản lược)"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "maxLength": 200
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "inversedBy": "blog_posts"
+    },
+    "content": {
+      "type": "richtext",
+      "required": true,
+      "minLength": 10
+    },
+    "original_title": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "original_link": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "source": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "tags": {
+      "type": "json",
+      "default": [
+        "phapmontamlinh",
+        "ngoinhanho",
+        "udaitruong",
+        "quantheambotat",
+        "phatphapnhiemmau",
+        "tutam"
+      ]
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "video_url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "audio_url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "views": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "likes": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo",
+      "repeatable": false
+    },
+    "related_posts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-post.blog-post"
+    }
+  }
+}

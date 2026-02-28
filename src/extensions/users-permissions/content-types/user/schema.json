@@ -1,0 +1,68 @@
+{
+  "collectionName": "up_users",
+  "info": {
+    "singularName": "user",
+    "pluralName": "users",
+    "displayName": "User",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false,
+    "timestamps": true
+  },
+  "attributes": {
+    "username": {
+      "type": "string",
+      "unique": true,
+      "minLength": 3,
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true,
+      "unique": true
+    },
+    "provider": {
+      "type": "string",
+      "default": "local"
+    },
+    "password": {
+      "type": "password",
+      "minLength": 6,
+      "required": true,
+      "private": true
+    },
+    "resetPasswordToken": {
+      "type": "string",
+      "private": true
+    },
+    "confirmationToken": {
+      "type": "string",
+      "private": true
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "default": false
+    },
+    "role": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.role",
+      "inversedBy": "users"
+    },
+    "fullName": { "type": "string" },
+    "avatar_url": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "phone": { "type": "string" },
+    "address": { "type": "string" },
+    "bio": { "type": "text" },
+    "dharmaName": { "type": "string" }
+  }
+}

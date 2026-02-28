@@ -1,0 +1,50 @@
+{
+  "kind": "singleType",
+  "collectionName": "settings",
+  "info": {
+    "singularName": "setting",
+    "pluralName": "settings",
+    "displayName": "Cài Đặt Hệ Thống",
+    "description": "Cài đặt chung cho trang web"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "siteTitle": {
+      "type": "string",
+      "required": true,
+      "default": "Pháp Môn Tâm Linh"
+    },
+    "siteDescription": {
+      "type": "text",
+      "required": true,
+      "default": "Trang thông tin Phật pháp và tu tập"
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "socialLinks": {
+      "type": "json",
+      "required": false
+    },
+    "contactEmail": {
+      "type": "email",
+      "required": false
+    },
+    "contactPhone": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "address": {
+      "type": "text"
+    },
+    "footerText": {
+      "type": "richtext"
+    }
+  }
+}

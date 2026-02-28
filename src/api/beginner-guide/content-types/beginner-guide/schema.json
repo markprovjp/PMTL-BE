@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "beginner_guides",
+  "info": {
+    "singularName": "beginner-guide",
+    "pluralName": "beginner-guides",
+    "displayName": "Hướng Dẫn Sơ Học"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "duration": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer",
+      "default": 1
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    }
+  }
+}

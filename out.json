@@ -1,0 +1,82 @@
+{
+  "data": [
+    {
+      "id": 4,
+      "documentId": "g4goheb1xwsmua4ei36fwkks",
+      "content": "rất tuyệt vời",
+      "author_name": "明心",
+      "author_country": "Việt Nam",
+      "user_id": 0,
+      "likes": 0,
+      "parent_id": 0,
+      "createdAt": "2026-02-28T09:15:02.631Z",
+      "updatedAt": "2026-02-28T09:20:57.132Z",
+      "publishedAt": "2026-02-28T09:20:57.142Z",
+      "author_avatar": null
+    },
+    {
+      "id": 6,
+      "documentId": "xy0au31cn90oszo04fkur200",
+      "content": "cảm tạ ơn ngài",
+      "author_name": "明心",
+      "author_country": "Việt Nam",
+      "user_id": 0,
+      "likes": 0,
+      "parent_id": 0,
+      "createdAt": "2026-02-28T09:26:29.500Z",
+      "updatedAt": "2026-02-28T09:26:48.142Z",
+      "publishedAt": "2026-02-28T09:26:48.157Z",
+      "author_avatar": null
+    },
+    {
+      "id": 8,
+      "documentId": "hy0oviuxn4c3tieus3n4x5t2",
+      "content": "cảm ơn ngài",
+      "author_name": "明心",
+      "author_country": "Việt Nam",
+      "user_id": 0,
+      "likes": 0,
+      "parent_id": 0,
+      "createdAt": "2026-02-28T09:28:44.596Z",
+      "updatedAt": "2026-02-28T09:28:54.431Z",
+      "publishedAt": "2026-02-28T09:28:54.437Z",
+      "author_avatar": null
+    },
+    {
+      "id": 11,
+      "documentId": "ldjjgc1u78vcjw1knv8ng9y3",
+      "content": "cảm ân sư phụ",
+      "author_name": "明心",
+      "author_country": "Việt Nam",
+      "user_id": 0,
+      "likes": 0,
+      "parent_id": 0,
+      "createdAt": "2026-02-28T09:44:37.729Z",
+      "updatedAt": "2026-02-28T09:44:52.083Z",
+      "publishedAt": "2026-02-28T09:44:52.097Z",
+      "author_avatar": null
+    },
+    {
+      "id": 13,
+      "documentId": "jvcubu2y5styc58r640n2xlu",
+      "content": "cảm ân sư phụ",
+      "author_name": "明心",
+      "author_country": "Việt Nam",
+      "user_id": 0,
+      "likes": 0,
+      "parent_id": 0,
+      "createdAt": "2026-02-28T09:56:30.567Z",
+      "updatedAt": "2026-02-28T09:56:38.812Z",
+      "publishedAt": "2026-02-28T09:56:38.823Z",
+      "author_avatar": null
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 5
+    }
+  }
+}
