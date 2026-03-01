@@ -18,10 +18,18 @@
       "required": true
     },
     "description": {
-      "type": "text"
+      "type": "customField",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "pmtl-html"
+      }
     },
     "content": {
-      "type": "richtext"
+      "type": "customField",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "pmtl-html"
+      }
     },
     "details": {
       "type": "json",

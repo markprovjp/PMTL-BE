@@ -39,9 +39,11 @@
       "inversedBy": "blog_posts"
     },
     "content": {
-      "type": "richtext",
-      "required": true,
-      "minLength": 10
+      "type": "customField",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "pmtl-html"
+      }
     },
     "original_title": {
       "type": "string",

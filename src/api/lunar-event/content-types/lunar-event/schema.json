@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "lunar_events",
+  "info": {
+    "singularName": "lunar-event",
+    "pluralName": "lunar-events",
+    "displayName": "Lịch Khóa Lễ (Sự Kiện)",
+    "description": "Lịch niệm Lễ Phật Đại Sám Hối Văn, khai thị và các ngày vía"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "isRecurringLunar": {
+      "type": "boolean",
+      "default": true
+    },
+    "lunarMonth": {
+      "type": "integer",
+      "min": 1,
+      "max": 12
+    },
+    "lunarDay": {
+      "type": "integer",
+      "min": 1,
+      "max": 30
+    },
+    "solarDate": {
+      "type": "date"
+    },
+    "eventType": {
+      "type": "enumeration",
+      "enum": ["buddha", "bodhisattva", "teacher", "fast", "holiday", "normal"],
+      "default": "normal"
+    },
+    "reciteCount": {
+      "type": "integer",
+      "default": 21,
+      "required": true
+    },
+    "teachings": {
+      "type": "customField",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "pmtl-html"
+      }
+    },
+    "todoList": {
+      "type": "customField",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "pmtl-html"
+      }
+    }
+  }
+}

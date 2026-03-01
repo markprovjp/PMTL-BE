@@ -30,6 +30,11 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       },
     },
   },
+
+  // ── CKEditor ───────────────────────────────────────────────
+  ckeditor5: {
+    enabled: true,
+  },
 });
 
 export default config;

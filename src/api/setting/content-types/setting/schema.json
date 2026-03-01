@@ -44,7 +44,11 @@
       "type": "text"
     },
     "footerText": {
-      "type": "richtext"
+      "type": "customField",
+      "customField": "plugin::ckeditor5.CKEditor",
+      "options": {
+        "preset": "pmtl-html"
+      }
     },
     "heroSlides": {
       "type": "component",

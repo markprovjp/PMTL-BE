@@ -9,9 +9,11 @@ const config: Core.Config.Middlewares = [
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          'connect-src': ["'self'", 'https:'],
-          'img-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com', 'lh3.googleusercontent.com', 'phapmontamlinh.vn'],
-          'media-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com', 'lh3.googleusercontent.com', 'phapmontamlinh.vn'],
+          'connect-src': ["'self'", 'https:', 'strapi.io'],
+          'img-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com', 'lh3.googleusercontent.com', 'phapmontamlinh.vn', 'strapi.io'],
+          'media-src': ["'self'", 'data:', 'blob:', 'res.cloudinary.com', 'lh3.googleusercontent.com', 'phapmontamlinh.vn', 'strapi.io'],
+          'script-src': ["'self'", 'https:', "'unsafe-inline'", 'strapi.io'],
+          'frame-src': ["'self'", 'https:', 'www.youtube.com', 'youtube.com', 'vimeo.com'],
           upgradeInsecureRequests: null,
         },
       },

@@ -445,7 +445,13 @@ export interface ApiBeginnerGuideBeginnerGuide
     timestamps: true;
   };
   attributes: {
-    content: Schema.Attribute.RichText;
+    content: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'pmtl-html';
+        }
+      >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -504,10 +510,12 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'api::category.category'
     >;
     content: Schema.Attribute.RichText &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        minLength: 10;
-      }>;
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'pmtl-html';
+        }
+      >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -608,7 +616,7 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    description: Schema.Attribute.RichText;
+    description: Schema.Attribute.String;
     is_active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -783,6 +791,75 @@ export interface ApiCommunityPostCommunityPost
         number
       > &
       Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
+  collectionName: 'lunar_events';
+  info: {
+    description: 'L\u1ECBch ni\u1EC7m L\u1EC5 Ph\u1EADt \u0110\u1EA1i S\u00E1m H\u1ED1i V\u0103n, khai th\u1ECB v\u00E0 c\u00E1c ng\u00E0y v\u00EDa';
+    displayName: 'L\u1ECBch Kh\u00F3a L\u1EC5 (S\u1EF1 Ki\u1EC7n)';
+    pluralName: 'lunar-events';
+    singularName: 'lunar-event';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    eventType: Schema.Attribute.Enumeration<
+      ['buddha', 'bodhisattva', 'teacher', 'fast', 'holiday', 'normal']
+    > &
+      Schema.Attribute.DefaultTo<'normal'>;
+    isRecurringLunar: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::lunar-event.lunar-event'
+    > &
+      Schema.Attribute.Private;
+    lunarDay: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 30;
+          min: 1;
+        },
+        number
+      >;
+    lunarMonth: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 12;
+          min: 1;
+        },
+        number
+      >;
+    publishedAt: Schema.Attribute.DateTime;
+    reciteCount: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<21>;
+    solarDate: Schema.Attribute.Date;
+    teachings: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'pmtl-html';
+        }
+      >;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    todoList: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'pmtl-html';
+        }
+      >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1361,6 +1438,7 @@ declare module '@strapi/strapi' {
       'api::category.category': ApiCategoryCategory;
       'api::community-comment.community-comment': ApiCommunityCommentCommunityComment;
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
+      'api::lunar-event.lunar-event': ApiLunarEventLunarEvent;
       'api::setting.setting': ApiSettingSetting;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

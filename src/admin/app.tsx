@@ -38,9 +38,10 @@ export default {
               items: [
                 'heading', '|',
                 'bold', 'italic', 'underline', '|',
-                'link', 'blockQuote', '|',
+                'link', 'blockQuote', 'insertTable', '|',
                 'bulletedList', 'numberedList', '|',
                 'insertImage', 'mediaEmbed', '|',
+                'sourceEditing', '|',
                 'undo', 'redo',
               ],
             },
