@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_homepage_search_categories",
+  "info": { "displayName": "Danh Mục Tra Cứu (Search Category)" },
+  "options": {},
+  "attributes": {
+    "category_id": { "type": "integer" },
+    "title": { "type": "string" },
+    "iconName": {
+      "type": "string",
+      "description": "Tên icon Lucide, VD: BookOpen, Lamp"
+    },
+    "link": { "type": "string" }
+  }
+}

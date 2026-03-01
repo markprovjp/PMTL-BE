@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_homepage_phap_bao_items",
+  "info": { "displayName": "Pháp Bảo (Phap Bao Item)" },
+  "options": {},
+  "attributes": {
+    "item_id": { "type": "string" },
+    "title": { "type": "string" },
+    "chinese": { "type": "string" },
+    "color": { "type": "string" },
+    "borderColor": { "type": "string" },
+    "description": { "type": "text" },
+    "link": { "type": "string" },
+    "iconType": {
+      "type": "string",
+      "description": "Tên icon vd: book, star, leaf, flame, house"
+    }
+  }
+}

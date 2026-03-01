@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_homepage_gallery_slides",
+  "info": { "displayName": "Ảnh Pháp Hội (Gallery Slide)" },
+  "options": {},
+  "attributes": {
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "caption": { "type": "string" },
+    "subcap": { "type": "string" }
+  }
+}

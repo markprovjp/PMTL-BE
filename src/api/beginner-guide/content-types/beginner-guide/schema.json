@@ -4,7 +4,8 @@
   "info": {
     "singularName": "beginner-guide",
     "pluralName": "beginner-guides",
-    "displayName": "Hướng Dẫn Sơ Học"
+    "displayName": "Hướng Dẫn Sơ Học",
+    "description": "Quản lý các bước hướng dẫn sơ học và kinh bài tập hằng ngày"
   },
   "options": {
     "increments": true,
@@ -22,12 +23,38 @@
     "content": {
       "type": "richtext"
     },
+    "details": {
+      "type": "json",
+      "required": false
+    },
     "duration": {
       "type": "string"
     },
     "order": {
       "type": "integer",
       "default": 1
+    },
+    "step_number": {
+      "type": "integer",
+      "default": 1
+    },
+    "guide_type": {
+      "type": "enumeration",
+      "enum": ["so-hoc", "kinh-bai-tap"],
+      "default": "so-hoc",
+      "required": true
+    },
+    "icon": {
+      "type": "string",
+      "default": "BookOpen"
+    },
+    "pdf_url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "video_url": {
+      "type": "string",
+      "maxLength": 500
     },
     "images": {
       "type": "media",

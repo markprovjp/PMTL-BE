@@ -434,6 +434,7 @@ export interface ApiBeginnerGuideBeginnerGuide
   extends Struct.CollectionTypeSchema {
   collectionName: 'beginner_guides';
   info: {
+    description: 'Qu\u1EA3n l\u00FD c\u00E1c b\u01B0\u1EDBc h\u01B0\u1EDBng d\u1EABn s\u01A1 h\u1ECDc v\u00E0 kinh b\u00E0i t\u1EADp h\u1EB1ng ng\u00E0y';
     displayName: 'H\u01B0\u1EDBng D\u1EABn S\u01A1 H\u1ECDc';
     pluralName: 'beginner-guides';
     singularName: 'beginner-guide';
@@ -449,7 +450,12 @@ export interface ApiBeginnerGuideBeginnerGuide
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
+    details: Schema.Attribute.JSON;
     duration: Schema.Attribute.String;
+    guide_type: Schema.Attribute.Enumeration<['so-hoc', 'kinh-bai-tap']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'so-hoc'>;
+    icon: Schema.Attribute.String & Schema.Attribute.DefaultTo<'BookOpen'>;
     images: Schema.Attribute.Media<'images', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -458,11 +464,20 @@ export interface ApiBeginnerGuideBeginnerGuide
     > &
       Schema.Attribute.Private;
     order: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
+    pdf_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
     publishedAt: Schema.Attribute.DateTime;
+    step_number: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    video_url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
   };
 }
 
@@ -774,7 +789,7 @@ export interface ApiCommunityPostCommunityPost
 export interface ApiSettingSetting extends Struct.SingleTypeSchema {
   collectionName: 'settings';
   info: {
-    description: 'C\u00E0i \u0111\u1EB7t chung cho trang web';
+    description: 'C\u00E0i \u0111\u1EB7t chung v\u00E0 n\u1ED9i dung trang ch\u1EE7';
     displayName: 'C\u00E0i \u0110\u1EB7t H\u1EC7 Th\u1ED1ng';
     pluralName: 'settings';
     singularName: 'setting';
@@ -783,7 +798,9 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    actionCards: Schema.Attribute.Component<'homepage.action-card-item', true>;
     address: Schema.Attribute.Text;
+    awards: Schema.Attribute.Component<'homepage.award-item', true>;
     contactEmail: Schema.Attribute.Email;
     contactPhone: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
@@ -792,7 +809,10 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    featuredVideos: Schema.Attribute.Component<'homepage.featured-video', true>;
     footerText: Schema.Attribute.RichText;
+    gallerySlides: Schema.Attribute.Component<'homepage.gallery-slide', true>;
+    heroSlides: Schema.Attribute.Component<'homepage.hero-slide', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -800,7 +820,12 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     logo: Schema.Attribute.Media<'images'>;
+    phapBao: Schema.Attribute.Component<'homepage.phap-bao-item', true>;
     publishedAt: Schema.Attribute.DateTime;
+    searchCategories: Schema.Attribute.Component<
+      'homepage.search-category',
+      true
+    >;
     siteDescription: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'Trang th\u00F4ng tin Ph\u1EADt ph\u00E1p v\u00E0 tu t\u1EADp'>;
@@ -808,6 +833,8 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'Ph\u00E1p M\u00F4n T\u00E2m Linh'>;
     socialLinks: Schema.Attribute.JSON;
+    stats: Schema.Attribute.Component<'homepage.stat-item', true>;
+    stickyBanner: Schema.Attribute.Component<'homepage.sticky-banner', false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

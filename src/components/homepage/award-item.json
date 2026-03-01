@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_homepage_award_items",
+  "info": { "displayName": "Giải Thưởng (Award Item)" },
+  "options": {},
+  "attributes": {
+    "year": { "type": "string" },
+    "title": { "type": "string" },
+    "org": { "type": "string" },
+    "description": { "type": "text" }
+  }
+}

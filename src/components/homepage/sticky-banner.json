@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_homepage_sticky_banners",
+  "info": { "displayName": "Sticky Banner" },
+  "options": {},
+  "attributes": {
+    "enabled": { "type": "boolean", "default": true },
+    "title": { "type": "string" },
+    "subtitle": { "type": "string" },
+    "buttonText": { "type": "string" },
+    "buttonLink": { "type": "string" }
+  }
+}

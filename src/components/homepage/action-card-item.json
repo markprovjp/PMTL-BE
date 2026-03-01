@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_homepage_action_card_items",
+  "info": { "displayName": "Thẻ Hành Động (Action Card Item)" },
+  "options": {},
+  "attributes": {
+    "title": { "type": "string" },
+    "description": { "type": "text" },
+    "link": { "type": "string" },
+    "iconType": { "type": "string" }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_homepage_stat_items",
+  "info": { "displayName": "Thống Kê (Stat Item)" },
+  "options": {},
+  "attributes": {
+    "value": { "type": "string" },
+    "label": { "type": "string" },
+    "detail": { "type": "string" }
+  }
+}

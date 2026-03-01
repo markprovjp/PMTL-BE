@@ -5,7 +5,7 @@
     "singularName": "setting",
     "pluralName": "settings",
     "displayName": "Cài Đặt Hệ Thống",
-    "description": "Cài đặt chung cho trang web"
+    "description": "Cài đặt chung và nội dung trang chủ"
   },
   "options": {
     "draftAndPublish": false
@@ -45,6 +45,51 @@
     },
     "footerText": {
       "type": "richtext"
+    },
+    "heroSlides": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.hero-slide"
+    },
+    "stats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.stat-item"
+    },
+    "phapBao": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.phap-bao-item"
+    },
+    "actionCards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.action-card-item"
+    },
+    "featuredVideos": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.featured-video"
+    },
+    "awards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.award-item"
+    },
+    "gallerySlides": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.gallery-slide"
+    },
+    "searchCategories": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.search-category"
+    },
+    "stickyBanner": {
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.sticky-banner"
     }
   }
 }
