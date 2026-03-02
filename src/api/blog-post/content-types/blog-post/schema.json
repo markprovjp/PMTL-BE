@@ -18,13 +18,15 @@
       "type": "string",
       "minLength": 3,
       "maxLength": 200,
-      "required": true
+      "required": true,
+      "index": true
     },
     "slug": {
       "type": "uid",
       "targetField": "title",
       "required": true,
-      "maxLength": 200
+      "maxLength": 200,
+      "index": true
     },
     "gallery": {
       "type": "media",
@@ -38,12 +40,11 @@
       "target": "api::category.category",
       "inversedBy": "blog_posts"
     },
-    "content": {
-      "type": "customField",
-      "customField": "plugin::ckeditor5.CKEditor",
-      "options": {
-        "preset": "pmtl-html"
-      }
+   "content": {
+      "type": "richtext",
+      "required": true,
+      "minLength": 10,
+      "index": true
     },
     "original_title": {
       "type": "string",
@@ -64,19 +65,14 @@
       "allowedTypes": ["images"]
     },
     "tags": {
-      "type": "json",
-      "default": [
-        "phapmontamlinh",
-        "ngoinhanho",
-        "udaitruong",
-        "quantheambotat",
-        "phatphapnhiemmau",
-        "tutam"
-      ]
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-tag.blog-tag"
     },
     "featured": {
       "type": "boolean",
-      "default": false
+      "default": false,
+      "index": true
     },
     "video_url": {
       "type": "string",
@@ -101,6 +97,11 @@
       "component": "shared.seo",
       "repeatable": false
     },
+    "excerpt": {
+      "type": "string",
+      "maxLength": 300,
+      "description": "Auto-extracted text preview from rich content (for list view optimization)"
+    },
     "related_posts": {
       "type": "relation",
       "relation": "manyToMany",
@@ -108,3 +109,6 @@
     }
   }
 }
+
+
+

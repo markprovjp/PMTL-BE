@@ -445,13 +445,7 @@ export interface ApiBeginnerGuideBeginnerGuide
     timestamps: true;
   };
   attributes: {
-    content: Schema.Attribute.RichText &
-      Schema.Attribute.CustomField<
-        'plugin::ckeditor5.CKEditor',
-        {
-          preset: 'pmtl-html';
-        }
-      >;
+    content: Schema.Attribute.RichText;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -510,15 +504,17 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'api::category.category'
     >;
     content: Schema.Attribute.RichText &
-      Schema.Attribute.CustomField<
-        'plugin::ckeditor5.CKEditor',
-        {
-          preset: 'pmtl-html';
-        }
-      >;
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        minLength: 10;
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    excerpt: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 300;
+      }>;
     featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     gallery: Schema.Attribute.Media<'images', true>;
     likes: Schema.Attribute.Integer &
@@ -558,17 +554,7 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 200;
       }>;
-    tags: Schema.Attribute.JSON &
-      Schema.Attribute.DefaultTo<
-        [
-          'phapmontamlinh',
-          'ngoinhanho',
-          'udaitruong',
-          'quantheambotat',
-          'phatphapnhiemmau',
-          'tutam',
-        ]
-      >;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::blog-tag.blog-tag'>;
     thumbnail: Schema.Attribute.Media<'images'>;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -591,6 +577,51 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
         number
       > &
       Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiBlogTagBlogTag extends Struct.CollectionTypeSchema {
+  collectionName: 'blog_tags';
+  info: {
+    description: 'Searchable tags for blog posts (replaces JSON array)';
+    displayName: 'Blog Tag';
+    pluralName: 'blog-tags';
+    singularName: 'blog-tag';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    blog_posts: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::blog-post.blog-post'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 300;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::blog-tag.blog-tag'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -887,7 +918,13 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     featuredVideos: Schema.Attribute.Component<'homepage.featured-video', true>;
-    footerText: Schema.Attribute.RichText;
+    footerText: Schema.Attribute.RichText &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'pmtl-html';
+        }
+      >;
     gallerySlides: Schema.Attribute.Component<'homepage.gallery-slide', true>;
     heroSlides: Schema.Attribute.Component<'homepage.hero-slide', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1435,6 +1472,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::beginner-guide.beginner-guide': ApiBeginnerGuideBeginnerGuide;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
+      'api::blog-tag.blog-tag': ApiBlogTagBlogTag;
       'api::category.category': ApiCategoryCategory;
       'api::community-comment.community-comment': ApiCommunityCommentCommunityComment;
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
