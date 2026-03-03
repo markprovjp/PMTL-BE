@@ -43,19 +43,12 @@
       "default": 21,
       "required": true
     },
-    "teachings": {
-      "type": "customField",
-      "customField": "plugin::ckeditor5.CKEditor",
-      "options": {
-        "preset": "pmtl-html"
-      }
-    },
-    "todoList": {
-      "type": "customField",
-      "customField": "plugin::ckeditor5.CKEditor",
-      "options": {
-        "preset": "pmtl-html"
-      }
+    "relatedBlogs": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-post.blog-post",
+      "inversedBy": "lunarEvents",
+      "description": "Liên kết các bài blog khai thị liên quan đến sự kiện này"
     }
   }
 }

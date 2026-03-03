@@ -40,7 +40,7 @@
       "target": "api::category.category",
       "inversedBy": "blog_posts"
     },
-   "content": {
+    "content": {
       "type": "richtext",
       "required": true,
       "minLength": 10,
@@ -106,9 +106,12 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::blog-post.blog-post"
+    },
+    "lunarEvents": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::lunar-event.lunar-event",
+      "mappedBy": "relatedBlogs"
     }
   }
 }
-
-
-

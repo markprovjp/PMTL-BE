@@ -430,6 +430,41 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiBeginnerGuideFileBeginnerGuideFile
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'beginner_guide_files';
+  info: {
+    description: 'T\u00E0i li\u1EC7u PDF / file h\u01B0\u1EDBng d\u1EABn s\u01A1 h\u1ECDc cho ng\u01B0\u1EDDi m\u1EDBi';
+    displayName: 'H\u01B0\u1EDBng D\u1EABn S\u01A1 H\u1ECDc - File';
+    pluralName: 'beginner-guide-files';
+    singularName: 'beginner-guide-file';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    files: Schema.Attribute.Media<'files' | 'images', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::beginner-guide-file.beginner-guide-file'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    order: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiBeginnerGuideBeginnerGuide
   extends Struct.CollectionTypeSchema {
   collectionName: 'beginner_guides';
@@ -531,6 +566,10 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'api::blog-post.blog-post'
     > &
       Schema.Attribute.Private;
+    lunarEvents: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::lunar-event.lunar-event'
+    >;
     original_link: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -872,22 +911,12 @@ export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
     reciteCount: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<21>;
+    relatedBlogs: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::blog-post.blog-post'
+    >;
     solarDate: Schema.Attribute.Date;
-    teachings: Schema.Attribute.RichText &
-      Schema.Attribute.CustomField<
-        'plugin::ckeditor5.CKEditor',
-        {
-          preset: 'pmtl-html';
-        }
-      >;
     title: Schema.Attribute.String & Schema.Attribute.Required;
-    todoList: Schema.Attribute.RichText &
-      Schema.Attribute.CustomField<
-        'plugin::ckeditor5.CKEditor',
-        {
-          preset: 'pmtl-html';
-        }
-      >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1470,6 +1499,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::beginner-guide-file.beginner-guide-file': ApiBeginnerGuideFileBeginnerGuideFile;
       'api::beginner-guide.beginner-guide': ApiBeginnerGuideBeginnerGuide;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
       'api::blog-tag.blog-tag': ApiBlogTagBlogTag;
