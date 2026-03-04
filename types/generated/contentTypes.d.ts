@@ -709,6 +709,78 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiChantItemChantItem extends Struct.CollectionTypeSchema {
+  collectionName: 'chant_items';
+  info: {
+    description: 'M\u1ED9t b\u00E0i ni\u1EC7m: kinh, ch\u00FA, nghi th\u1EE9c b\u01B0\u1EDBc \u2014 d\u00F9ng trong k\u1EBF ho\u1EA1ch ni\u1EC7m kinh';
+    displayName: 'B\u00E0i Ni\u1EC7m (Chant Item)';
+    pluralName: 'chant-items';
+    singularName: 'chant-item';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    audio: Schema.Attribute.Media<'audios'>;
+    content: Schema.Attribute.RichText;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    kind: Schema.Attribute.Enumeration<['step', 'sutra', 'mantra']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'mantra'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::chant-item.chant-item'
+    > &
+      Schema.Attribute.Private;
+    openingPrayer: Schema.Attribute.RichText;
+    publishedAt: Schema.Attribute.DateTime;
+    recommendedPresets: Schema.Attribute.JSON;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    timeRules: Schema.Attribute.JSON;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiChantPlanChantPlan extends Struct.CollectionTypeSchema {
+  collectionName: 'chant_plans';
+  info: {
+    description: 'K\u1EBF ho\u1EA1ch ni\u1EC7m kinh: daily (th\u01B0\u1EDDng nh\u1EADt) ho\u1EB7c special (\u0111\u1EB7c bi\u1EC7t)';
+    displayName: 'K\u1EBF Ho\u1EA1ch Ni\u1EC7m Kinh (Chant Plan)';
+    pluralName: 'chant-plans';
+    singularName: 'chant-plan';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::chant-plan.chant-plan'
+    > &
+      Schema.Attribute.Private;
+    planItems: Schema.Attribute.Component<'chanting.plan-item', true>;
+    planType: Schema.Attribute.Enumeration<['daily', 'special']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'daily'>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCommunityCommentCommunityComment
   extends Struct.CollectionTypeSchema {
   collectionName: 'community_comments';
@@ -864,6 +936,50 @@ export interface ApiCommunityPostCommunityPost
   };
 }
 
+export interface ApiLunarEventChantOverrideLunarEventChantOverride
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'lunar_event_chant_overrides';
+  info: {
+    description: 'C\u1EA5u h\u00ECnh th\u00EAm/b\u1EDBt/ghi \u0111\u00E8 b\u00E0i ni\u1EC7m cho m\u1ED9t ng\u00E0y \u00E2m l\u1ECBch c\u1EE5 th\u1EC3';
+    displayName: 'Ghi \u0110\u00E8 Ni\u1EC7m Kinh Theo Ng\u00E0y (Override)';
+    pluralName: 'lunar-event-chant-overrides';
+    singularName: 'lunar-event-chant-override';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    item: Schema.Attribute.Relation<'manyToOne', 'api::chant-item.chant-item'> &
+      Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::lunar-event-chant-override.lunar-event-chant-override'
+    > &
+      Schema.Attribute.Private;
+    lunarEvent: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::lunar-event.lunar-event'
+    > &
+      Schema.Attribute.Required;
+    max: Schema.Attribute.Integer;
+    mode: Schema.Attribute.Enumeration<
+      ['enable', 'disable', 'override_target', 'cap_max']
+    > &
+      Schema.Attribute.Required;
+    note: Schema.Attribute.String;
+    priority: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    target: Schema.Attribute.Integer;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
   collectionName: 'lunar_events';
   info: {
@@ -908,9 +1024,6 @@ export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
         number
       >;
     publishedAt: Schema.Attribute.DateTime;
-    reciteCount: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<21>;
     relatedBlogs: Schema.Attribute.Relation<
       'manyToMany',
       'api::blog-post.blog-post'
@@ -920,6 +1033,44 @@ export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
+  collectionName: 'practice_logs';
+  info: {
+    description: 'L\u01B0u ti\u1EBFn \u0111\u1ED9 ni\u1EC7m kinh theo ng\u00E0y + ng\u01B0\u1EDDi d\u00F9ng';
+    displayName: 'Nh\u1EADt K\u00FD Tu H\u1ECDc (Practice Log)';
+    pluralName: 'practice-logs';
+    singularName: 'practice-log';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    completedAt: Schema.Attribute.DateTime;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    itemsProgress: Schema.Attribute.JSON;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::practice-log.practice-log'
+    > &
+      Schema.Attribute.Private;
+    planSlug: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'daily-newbie'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
   };
 }
 
@@ -1504,9 +1655,13 @@ declare module '@strapi/strapi' {
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
       'api::blog-tag.blog-tag': ApiBlogTagBlogTag;
       'api::category.category': ApiCategoryCategory;
+      'api::chant-item.chant-item': ApiChantItemChantItem;
+      'api::chant-plan.chant-plan': ApiChantPlanChantPlan;
       'api::community-comment.community-comment': ApiCommunityCommentCommunityComment;
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
+      'api::lunar-event-chant-override.lunar-event-chant-override': ApiLunarEventChantOverrideLunarEventChantOverride;
       'api::lunar-event.lunar-event': ApiLunarEventLunarEvent;
+      'api::practice-log.practice-log': ApiPracticeLogPracticeLog;
       'api::setting.setting': ApiSettingSetting;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

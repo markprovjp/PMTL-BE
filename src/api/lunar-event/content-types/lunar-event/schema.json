@@ -36,12 +36,8 @@
     "eventType": {
       "type": "enumeration",
       "enum": ["buddha", "bodhisattva", "teacher", "fast", "holiday", "normal"],
-      "default": "normal"
-    },
-    "reciteCount": {
-      "type": "integer",
-      "default": 21,
-      "required": true
+      "default": "normal",
+      "description": "Priority: holiday(5) > fast(4) > buddha(3) > bodhisattva(2) > teacher(1) > normal(0). Xác định ưu tiên của sự kiện khi nhập override."
     },
     "relatedBlogs": {
       "type": "relation",

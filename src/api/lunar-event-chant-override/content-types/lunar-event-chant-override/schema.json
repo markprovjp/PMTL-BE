@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "lunar_event_chant_overrides",
+  "info": {
+    "singularName": "lunar-event-chant-override",
+    "pluralName": "lunar-event-chant-overrides",
+    "displayName": "Ghi Đè Niệm Kinh Theo Ngày (Override)",
+    "description": "Cấu hình thêm/bớt/ghi đè bài niệm cho một ngày âm lịch cụ thể"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "lunarEvent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::lunar-event.lunar-event",
+      "required": true
+    },
+    "item": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::chant-item.chant-item",
+      "required": true
+    },
+    "mode": {
+      "type": "enumeration",
+      "enum": ["enable", "disable", "override_target", "cap_max"],
+      "required": true,
+      "description": "enable=thêm bài; disable=ẩn bài; override_target=ghi đè target; cap_max=giới hạn tối đa"
+    },
+    "target": {
+      "type": "integer",
+      "description": "Dùng khi mode=override_target: giá trị target mới"
+    },
+    "max": {
+      "type": "integer",
+      "description": "Dùng khi mode=cap_max: giá trị cap tối đa"
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Override priority (cao hơn = thắng). Nếu không set, dùng priority theo eventType"
+    },
+    "note": {
+      "type": "string",
+      "description": "Ghi chú nội bộ cho admin"
+    }
+  }
+}

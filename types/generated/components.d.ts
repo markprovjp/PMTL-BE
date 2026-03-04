@@ -1,5 +1,24 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
+export interface ChantingPlanItem extends Struct.ComponentSchema {
+  collectionName: 'components_chanting_plan_items';
+  info: {
+    description: 'M\u1ED9t b\u00E0i trong k\u1EBF ho\u1EA1ch ni\u1EC7m kinh: li\u00EAn k\u1EBFt chant_item + target/optional config';
+    displayName: 'Plan Item';
+    icon: 'book';
+  };
+  attributes: {
+    isOptional: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    item: Schema.Attribute.Relation<'oneToOne', 'api::chant-item.chant-item'>;
+    order: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
+    targetDefault: Schema.Attribute.Integer;
+    targetMax: Schema.Attribute.Integer;
+    targetMin: Schema.Attribute.Integer;
+  };
+}
+
 export interface HomepageActionCardItem extends Struct.ComponentSchema {
   collectionName: 'components_homepage_action_card_items';
   info: {
@@ -152,6 +171,7 @@ export interface SharedSeo extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
+      'chanting.plan-item': ChantingPlanItem;
       'homepage.action-card-item': HomepageActionCardItem;
       'homepage.award-item': HomepageAwardItem;
       'homepage.featured-video': HomepageFeaturedVideo;

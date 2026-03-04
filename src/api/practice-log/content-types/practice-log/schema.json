@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "practice_logs",
+  "info": {
+    "singularName": "practice-log",
+    "pluralName": "practice-logs",
+    "displayName": "Nhật Ký Tu Học (Practice Log)",
+    "description": "Lưu tiến độ niệm kinh theo ngày + người dùng"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "date": {
+      "type": "date",
+      "required": true,
+      "description": "Ngày tu học (YYYY-MM-DD)"
+    },
+    "planSlug": {
+      "type": "string",
+      "default": "daily-newbie",
+      "description": "Slug của chant_plan đang dùng"
+    },
+    "itemsProgress": {
+      "type": "json",
+      "description": "Map: { [itemSlug]: { count: number, done: boolean } }"
+    },
+    "completedAt": {
+      "type": "datetime",
+      "description": "Thời điểm hoàn thành tất cả bài (nếu có)"
+    }
+  }
+}

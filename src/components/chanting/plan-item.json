@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_chanting_plan_items",
+  "info": {
+    "displayName": "Plan Item",
+    "icon": "book",
+    "description": "Một bài trong kế hoạch niệm kinh: liên kết chant_item + target/optional config"
+  },
+  "options": {},
+  "attributes": {
+    "item": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::chant-item.chant-item"
+    },
+    "order": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    },
+    "targetDefault": {
+      "type": "integer",
+      "description": "Số biến mặc định (null nếu kind=step)"
+    },
+    "targetMin": {
+      "type": "integer",
+      "description": "Số biến tối thiểu (optional)"
+    },
+    "targetMax": {
+      "type": "integer",
+      "description": "Số biến tối đa (optional)"
+    },
+    "isOptional": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "chant_plans",
+  "info": {
+    "singularName": "chant-plan",
+    "pluralName": "chant-plans",
+    "displayName": "Kế Hoạch Niệm Kinh (Chant Plan)",
+    "description": "Kế hoạch niệm kinh: daily (thường nhật) hoặc special (đặc biệt)"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "planType": {
+      "type": "enumeration",
+      "enum": ["daily", "special"],
+      "required": true,
+      "default": "daily"
+    },
+    "planItems": {
+      "type": "component",
+      "repeatable": true,
+      "component": "chanting.plan-item"
+    }
+  }
+}

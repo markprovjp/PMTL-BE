@@ -1,0 +1,53 @@
+{
+  "kind": "collectionType",
+  "collectionName": "chant_items",
+  "info": {
+    "singularName": "chant-item",
+    "pluralName": "chant-items",
+    "displayName": "Bài Niệm (Chant Item)",
+    "description": "Một bài niệm: kinh, chú, nghi thức bước — dùng trong kế hoạch niệm kinh"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "kind": {
+      "type": "enumeration",
+      "enum": ["step", "sutra", "mantra"],
+      "required": true,
+      "default": "mantra",
+      "description": "step=nghi thức bước (checklist), sutra=kinh, mantra=chú/danh hiệu"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "openingPrayer": {
+      "type": "richtext",
+      "description": "Nguyện hương / mở đầu trước khi niệm"
+    },
+    "timeRules": {
+      "type": "json",
+      "description": "{ notAfter?: 'HH:mm', avoidRange?: ['HH:mm','HH:mm'] }"
+    },
+    "recommendedPresets": {
+      "type": "json",
+      "description": "Mảng số biến gợi ý, vd [3,7,21,49,108]"
+    },
+    "audio": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["audios"]
+    }
+  }
+}
