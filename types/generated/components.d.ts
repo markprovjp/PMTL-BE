@@ -56,7 +56,7 @@ export interface HomepageFeaturedVideo extends Struct.ComponentSchema {
     duration: Schema.Attribute.String;
     subtitle: Schema.Attribute.String;
     title: Schema.Attribute.String;
-    video_id: Schema.Attribute.String;
+    videoId: Schema.Attribute.String;
     youtubeId: Schema.Attribute.String;
   };
 }

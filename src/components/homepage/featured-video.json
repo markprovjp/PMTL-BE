@@ -3,13 +3,13 @@
   "info": { "displayName": "Video Nổi Bật (Featured Video)" },
   "options": {},
   "attributes": {
-    "video_id": { "type": "string", "description": "VD: intro" },
+    "videoId": { "type": "string", "description": "Mã định danh video, VD: intro, master-life" },
     "title": { "type": "string" },
     "subtitle": { "type": "string" },
     "description": { "type": "text" },
     "youtubeId": {
       "type": "string",
-      "description": "ID Youtube, VD: Nf4fBFHlVVE"
+      "description": "ID Youtube, VD: I__6Zi4xlIQ"
     },
     "duration": { "type": "string" },
     "category": { "type": "string" }

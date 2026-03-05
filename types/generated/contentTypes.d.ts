@@ -1116,10 +1116,6 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     logo: Schema.Attribute.Media<'images'>;
     phapBao: Schema.Attribute.Component<'homepage.phap-bao-item', true>;
     publishedAt: Schema.Attribute.DateTime;
-    searchCategories: Schema.Attribute.Component<
-      'homepage.search-category',
-      true
-    >;
     siteDescription: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'Trang th\u00F4ng tin Ph\u1EADt ph\u00E1p v\u00E0 tu t\u1EADp'>;

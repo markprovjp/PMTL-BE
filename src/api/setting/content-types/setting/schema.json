@@ -85,11 +85,6 @@
       "repeatable": true,
       "component": "homepage.gallery-slide"
     },
-    "searchCategories": {
-      "type": "component",
-      "repeatable": true,
-      "component": "homepage.search-category"
-    },
     "stickyBanner": {
       "type": "component",
       "repeatable": false,
