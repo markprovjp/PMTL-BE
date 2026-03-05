@@ -34,7 +34,12 @@
     },
     "completedAt": {
       "type": "datetime",
-      "description": "Thời điểm hoàn thành tất cả bài (nếu có)"
+      "description": "Thoi diem hoan thanh tat ca bai (neu co)"
+    },
+    "plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::chant-plan.chant-plan"
     }
   }
 }

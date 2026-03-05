@@ -47,6 +47,11 @@
     "parent_id": {
       "type": "integer",
       "default": 0
+    },
+    "parent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::community-comment.community-comment"
     }
   }
 }

@@ -450,6 +450,10 @@ export interface ApiBeginnerGuideFileBeginnerGuideFile
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
     files: Schema.Attribute.Media<'files' | 'images', true>;
+    guide: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::beginner-guide.beginner-guide'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -486,6 +490,10 @@ export interface ApiBeginnerGuideBeginnerGuide
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
     details: Schema.Attribute.JSON;
+    downloads: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::beginner-guide-file.beginner-guide-file'
+    >;
     duration: Schema.Attribute.String;
     guide_type: Schema.Attribute.Enumeration<['so-hoc', 'kinh-bai-tap']> &
       Schema.Attribute.Required &
@@ -823,6 +831,10 @@ export interface ApiCommunityCommentCommunityComment
       'api::community-comment.community-comment'
     > &
       Schema.Attribute.Private;
+    parent: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::community-comment.community-comment'
+    >;
     parent_id: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     post: Schema.Attribute.Relation<
       'manyToOne',
@@ -1060,6 +1072,7 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
       'api::practice-log.practice-log'
     > &
       Schema.Attribute.Private;
+    plan: Schema.Attribute.Relation<'manyToOne', 'api::chant-plan.chant-plan'>;
     planSlug: Schema.Attribute.String &
       Schema.Attribute.DefaultTo<'daily-newbie'>;
     publishedAt: Schema.Attribute.DateTime;

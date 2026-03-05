@@ -35,6 +35,14 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   ckeditor5: {
     enabled: true,
   },
+
+  // ── Meilisearch ──────────────────────────
+  meilisearch: {
+    config: {
+      host: env('MEILISEARCH_HOST', 'http://localhost:7700'),
+      apiKey: env('MEILISEARCH_API_KEY', 'super-secret-key-12345'),
+    },
+  },
 });
 
 export default config;

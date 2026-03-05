@@ -15,6 +15,7 @@
  * Không dùng multiplier chung mà dùng override_target cụ thể cho từng item để linh hoạt hơn.
  */
 import { factories } from '@strapi/strapi';
+import { createLogger } from '../../../utils/logger';
 
 const EVENT_PRIORITY: Record<string, number> = {
   holiday: 5,
@@ -32,6 +33,7 @@ function getEventPriority(event: any, overridePriority?: number | null): number 
 
 export default factories.createCoreController('api::chant-plan.chant-plan', ({ strapi }) => ({
   async getTodayChant(ctx) {
+    const log = createLogger(strapi, 'today-chant');
     const { date, lunarMonth, lunarDay, timezone = 'Asia/Bangkok', planSlug = 'daily-newbie' } =
       ctx.query as Record<string, string>;
 
@@ -69,7 +71,6 @@ export default factories.createCoreController('api::chant-plan.chant-plan', ({ s
 
     const getFirst = (res: any) => Array.isArray(res) ? res[0] : (res?.entries?.[0] ?? res?.data?.[0]);
 
-    console.log("[today-chant] Fetching planSlug = ", planSlug);
     let planRes;
     try {
       planRes = await strapi.documents('api::chant-plan.chant-plan').findMany({
@@ -78,26 +79,23 @@ export default factories.createCoreController('api::chant-plan.chant-plan', ({ s
         limit: 1,
         status: 'published',
       });
-      console.log("[today-chant] planRes => ", Boolean(planRes), Object.keys(planRes || {}));
     } catch (err) {
-      console.log("[today-chant] planRes ERROR =>", err);
+      log.error('fetchPlan failed', err);
     }
 
     let plan: any = getFirst(planRes) ?? null;
 
-    // Fallback: nếu không tìm thấy plan theo slug (đặc biệt là default), lấy đại 1 cái đầu tiên
+    // Fallback: neu khong tim thay plan theo slug, lay bat ky plan nao duoc publish
     if (!plan) {
-      console.log("[today-chant] Fallback fetching any plan...");
       try {
         const allPlans = await strapi.documents('api::chant-plan.chant-plan').findMany({
           populate: planPopulate,
           limit: 1,
           status: 'published',
         });
-        console.log("[today-chant] allPlans => ", Boolean(allPlans), Object.keys(allPlans || {}));
         plan = getFirst(allPlans) ?? null;
       } catch (err) {
-        console.log("[today-chant] allPlans ERROR =>", err);
+        log.error('fallback fetchPlan failed', err);
       }
     }
 

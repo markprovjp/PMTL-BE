@@ -3,64 +3,32 @@
  */
 
 import { factories } from '@strapi/strapi'
+import { atomicIncrementField, findPublished } from '../../../utils/strapi-helpers'
+import { createLogger } from '../../../utils/logger'
 
-export default factories.createCoreController('api::blog-post.blog-post', ({ strapi }) => ({
+const BLOG_UID = 'api::blog-post.blog-post'
+
+export default factories.createCoreController(BLOG_UID, ({ strapi }) => ({
   /**
    * POST /api/blog-posts/:documentId/view
-   * Atomically increments the view counter.
-   * Uses raw DB query to avoid race conditions.
+   * Atomically increments the view counter using a single raw SQL UPDATE.
    */
   async incrementView(ctx) {
     const { documentId } = ctx.params
-    console.log(`[incrementView] --- View Request for: ${documentId} ---`)
+    const log = createLogger(strapi, 'blog-post')
 
     try {
-      // Find the post by documentId - specify 'published' status to be sure
-      const publishedPost = await strapi.documents('api::blog-post.blog-post').findOne({
-        documentId,
-        status: 'published'
-      })
+      const exists = await findPublished(strapi, BLOG_UID, documentId)
+      if (!exists) return ctx.notFound('Post not found')
 
-      const draftPost = await strapi.documents('api::blog-post.blog-post').findOne({
-        documentId,
-        status: 'draft'
-      })
-
-      if (!publishedPost && !draftPost) {
-        console.warn(`[incrementView] Post NOT found for documentId: ${documentId}`)
-        return ctx.notFound('Post not found')
-      }
-
-      // Use highest count found as base
-      const currentViews = Math.max(publishedPost?.views || 0, draftPost?.views || 0)
-      const nextViews = currentViews + 1
-
-      // Update Published if it exists
-      if (publishedPost) {
-        await strapi.documents('api::blog-post.blog-post').update({
-          documentId,
-          status: 'published',
-          data: { views: nextViews },
-        })
-      }
-
-      // Update Draft if it exists
-      if (draftPost) {
-        await strapi.documents('api::blog-post.blog-post').update({
-          documentId,
-          status: 'draft',
-          data: { views: nextViews },
-        })
-      }
-
-      console.log(`[incrementView] Sync SUCCESS for DocID: ${documentId}. New views: ${nextViews}`)
+      const newViews = await atomicIncrementField(strapi, BLOG_UID, documentId, 'views')
 
       ctx.status = 200
-      ctx.body = { ok: true, newViews: nextViews }
+      ctx.body = { ok: true, newViews }
     } catch (err) {
-      console.error('[incrementView] FATAL ERROR:', err)
+      log.error('incrementView failed', err)
       ctx.status = 500
-      ctx.body = { ok: false, error: String(err) }
+      ctx.body = { ok: false, error: 'Internal server error' }
     }
   },
 }))

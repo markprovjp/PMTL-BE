@@ -17,7 +17,7 @@ export default {
     },
     {
       method: 'POST',
-      path: '/community-posts/like/:id',
+      path: '/community-posts/like/:documentId',
       handler: 'community-post.like',
       config: {
         auth: false,

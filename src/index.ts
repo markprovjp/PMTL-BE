@@ -10,27 +10,27 @@ export default {
     if (await fs.pathExists(configPath)) {
       try {
         const config = await fs.readJson(configPath);
-        console.log('[Google Auth] Loading dynamic configuration...');
+        strapi.log.info('[Google Auth] Loading dynamic configuration...');
 
         // Dynamically set env vars for Google Provider
         if (config.clientId) process.env.GOOGLE_CLIENT_ID = config.clientId;
         if (config.clientSecret) process.env.GOOGLE_CLIENT_SECRET = config.clientSecret;
         if (config.redirectUri) process.env.GOOGLE_REDIRECT_URI = config.redirectUri;
 
-        console.log('[Google Auth] Environment variables set from config file.');
+        strapi.log.info('[Google Auth] Environment variables set from config file.');
       } catch (err) {
-        console.error('[Google Auth] Failed to read config file:', err);
+        strapi.log.error('[Google Auth] Failed to read config file:', err);
       }
     }
 
     // 2.5) Prevent server crash on Windows EPERM / unlink errors ONLY
     process.on('uncaughtException', (err: any) => {
       if (err.code === 'EPERM' && err.syscall === 'unlink') {
-        console.warn('[Windows Fix] Ignored EPERM error during file cleanup:', err.path);
+        strapi.log.warn(`[Windows Fix] Ignored EPERM error during file cleanup: ${err.path}`);
         return; // swallow this specific error only
       }
       // Re-throw all other errors so Strapi/Node can handle them normally
-      console.error('[CRITICAL] Uncaught Exception:', err);
+      strapi.log.error('[CRITICAL] Uncaught Exception:', err);
       process.exit(1);
     });
   },
@@ -51,10 +51,10 @@ export default {
             default_role: 'authenticated',
           }
         });
-        console.log('[Fix] Re-initialized missing user-permissions advanced settings.');
+        strapi.log.info('[Fix] Re-initialized missing user-permissions advanced settings.');
       }
     } catch (err) {
-      console.error('[Fix] Could not init advanced settings', err);
+      strapi.log.error('[Fix] Could not init advanced settings', err);
     }
 
     // 1.5) Auto-repair users that are missing a role (due to earlier schema issues)
@@ -73,11 +73,11 @@ export default {
               data: { role: defaultRole.id },
             });
           }
-          console.log(`[Fix] Assigned default role to ${usersWithoutRole.length} users.`);
+          strapi.log.info(`[Fix] Assigned default role to ${usersWithoutRole.length} users.`);
         }
       }
     } catch (err) {
-      console.error('[Fix] Failed to auto-repair user roles:', err);
+      strapi.log.error('[Fix] Failed to auto-repair user roles:', err);
     }
 
     // 1.7) Cấp quyền public cho community APIs
@@ -116,10 +116,10 @@ export default {
             });
           }
         }
-        console.log('[Fix] Community API permissions granted to Public role.');
+        strapi.log.info('[Fix] Community API permissions granted to Public role.');
       }
     } catch (err) {
-      console.error('[Fix] Could not set community permissions:', err);
+      strapi.log.error('[Fix] Could not set community permissions:', err);
     }
 
     // 2) Ensure Google provider is enabled if config exists
@@ -130,7 +130,7 @@ export default {
         const settings = await pluginStore.get({ key: 'grant' }) as any;
 
         if (settings && settings.google && !settings.google.enabled) {
-          console.log('[Google Auth] Provider is disabled. Enabling it automatically...');
+          strapi.log.info('[Google Auth] Provider is disabled. Enabling it automatically...');
           settings.google.enabled = true;
           // We also need to set the keys if they are not in the database store
           const config = await fs.readJson(configPath);
@@ -139,10 +139,10 @@ export default {
           settings.google.callback = config.redirectUri;
 
           await pluginStore.set({ key: 'grant', value: settings });
-          console.log('[Google Auth] Google provider has been enabled and configured.');
+          strapi.log.info('[Google Auth] Google provider has been enabled and configured.');
         }
       } catch (err) {
-        console.error('[Google Auth] Failed to auto-enable provider:', err);
+        strapi.log.error('[Google Auth] Failed to auto-enable provider:', err);
       }
     }
   },

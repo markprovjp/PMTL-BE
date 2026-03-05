@@ -60,6 +60,12 @@
       "type": "media",
       "multiple": true,
       "allowedTypes": ["images"]
+    },
+    "downloads": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::beginner-guide-file.beginner-guide-file",
+      "mappedBy": "guide"
     }
   }
 }

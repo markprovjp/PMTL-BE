@@ -3,8 +3,16 @@
  */
 
 import { factories } from '@strapi/strapi';
+import { atomicIncrementField } from '../../../utils/strapi-helpers';
+import { createLogger } from '../../../utils/logger';
 
-export default factories.createCoreController('api::community-post.community-post', ({ strapi }) => ({
+const POST_UID = 'api::community-post.community-post';
+
+function stripHtml(str: string): string {
+  return str.replace(/<[^>]*>/g, '').trim();
+}
+
+export default factories.createCoreController(POST_UID, ({ strapi }) => ({
   // POST /api/community-posts/submit - Gửi bài mới, không cần auth
   async createPost(ctx) {
     const { title, content, type, category, author_name, author_country, author_avatar, video_url, rating, tags, cover_image } =
@@ -20,10 +28,10 @@ export default factories.createCoreController('api::community-post.community-pos
       processedTags = tags.split(',').map((t: string) => t.trim()).filter((t: string) => t !== '');
     }
 
-    const entity = await strapi.documents('api::community-post.community-post').create({
+    const entity = await strapi.documents(POST_UID).create({
       data: {
         title,
-        content,
+        content: stripHtml(content),
         type: type || 'story',
         category: category || 'Tâm Linh',
         author_name,
@@ -42,69 +50,46 @@ export default factories.createCoreController('api::community-post.community-pos
     ctx.body = { data: entity, message: 'Bài viết đang chờ kiểm duyệt!' };
   },
 
-  // POST /api/community-posts/like/:id - Tăng like
+  // POST /api/community-posts/like/:documentId - Tang like
   async like(ctx) {
-    const { id } = ctx.params as any;
+    const { documentId } = ctx.params as any;
+    const log = createLogger(strapi, 'community-post');
 
     try {
-      // 1. Tìm bằng documentId trước
-      let existing = await strapi.documents('api::community-post.community-post').findOne({
-        documentId: id,
+      const existing = await strapi.documents(POST_UID).findOne({
+        documentId,
         status: 'published',
+        fields: ['documentId'],
       });
-
-      // 2. Nếu không thấy, thử tìm bằng integer id dùng db.query
-      if (!existing && !isNaN(Number(id))) {
-        const results = await strapi.db.query('api::community-post.community-post').findMany({
-          where: { id: Number(id) },
-        });
-        if (results && results.length > 0) {
-          // Lấy documentId từ db.query results
-          const documentId = (results[0] as any).documentId;
-          existing = await strapi.documents('api::community-post.community-post').findOne({
-            documentId,
-            status: 'published',
-          });
-        }
-      }
-
       if (!existing) return ctx.notFound('Không tìm thấy bài viết');
 
-      const updated = await strapi.documents('api::community-post.community-post').update({
-        documentId: existing.documentId,
-        status: 'published',
-        data: { likes: (existing.likes || 0) + 1 },
-      });
-
-      ctx.body = { likes: (updated as any).likes };
-    } catch (error) {
-      console.error('[CommunityPost like] error:', error);
+      const newLikes = await atomicIncrementField(strapi, POST_UID, documentId, 'likes');
+      ctx.body = { likes: newLikes };
+    } catch (err) {
+      log.error('like failed', err);
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server' };
     }
   },
 
-  // POST /api/community-posts/:documentId/view - Tăng lượt xem
+  // POST /api/community-posts/:documentId/view - Tang luot xem
   async incrementView(ctx) {
     const { documentId } = ctx.params as any;
+    const log = createLogger(strapi, 'community-post');
+
     try {
-      let existing = await strapi.documents('api::community-post.community-post').findOne({
+      const existing = await strapi.documents(POST_UID).findOne({
         documentId,
         status: 'published',
+        fields: ['documentId'],
       });
       if (!existing) return ctx.notFound('Không tìm thấy bài viết');
 
-      const nextViews = (existing.views || 0) + 1;
-      await strapi.documents('api::community-post.community-post').update({
-        documentId: existing.documentId,
-        status: 'published',
-        data: { views: nextViews },
-      });
-
+      const newViews = await atomicIncrementField(strapi, POST_UID, documentId, 'views');
       ctx.status = 200;
-      ctx.body = { ok: true, views: nextViews };
-    } catch (error) {
-      console.error('[incrementView] error:', error);
+      ctx.body = { ok: true, views: newViews };
+    } catch (err) {
+      log.error('incrementView failed', err);
       ctx.status = 500;
       ctx.body = { ok: false, error: 'Lỗi server' };
     }
@@ -114,9 +99,9 @@ export default factories.createCoreController('api::community-post.community-pos
   // Thay vào đó dùng db.query để tìm comments theo post id thủ công
   async find(ctx) {
     // Gọi paginateResults từ super để giữ meta pagination
-    const { results, pagination } = await (strapi as any).service('api::community-post.community-post').find(ctx.query as any);
+    const { results, pagination } = await (strapi as any).service(POST_UID).find(ctx.query as any);
 
-    // Với mỗi post, fetch comments thủ công qua db.query (không vòng lặp)
+    // Voi moi post, fetch comments thu cong qua documents API (khong vong lap)
     const postsWithComments = await Promise.all(
       results.map(async (post: any) => {
         const comments = await strapi.documents('api::community-comment.community-comment' as any).findMany({
@@ -140,7 +125,7 @@ export default factories.createCoreController('api::community-post.community-pos
     const query = ctx.query as any;
 
     // Dùng document service với populate cover_image
-    const post = await strapi.documents('api::community-post.community-post').findOne({
+    const post = await strapi.documents(POST_UID).findOne({
       documentId: id,
       status: 'published',
       populate: { cover_image: true },
