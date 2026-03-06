@@ -1,0 +1,92 @@
+{
+  "kind": "collectionType",
+  "collectionName": "download_items",
+  "info": {
+    "singularName": "download-item",
+    "pluralName": "download-items",
+    "displayName": "Thư Viện · Tài Liệu Tải",
+    "description": "Quản lý link tải tài liệu (PDF, MP3, ZIP, Video) — internal & external"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 300
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 1000
+    },
+    "url": {
+      "type": "string",
+      "required": true,
+      "maxLength": 1000,
+      "description": "Link tải — có thể là Google Drive, internal path, CDN..."
+    },
+    "fileType": {
+      "type": "enumeration",
+      "enum": ["pdf", "mp3", "mp4", "zip", "doc", "epub", "html", "unknown"],
+      "default": "unknown",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "Kinh Điển",
+        "Khai Thị Audio",
+        "Khai Thị Video",
+        "Sách",
+        "Pháp Hội",
+        "Hướng Dẫn",
+        "Khác"
+      ],
+      "default": "Khác",
+      "required": true
+    },
+    "groupYear": {
+      "type": "integer",
+      "description": "Năm phát hành — dùng để gom nhóm theo năm"
+    },
+    "groupLabel": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Nhãn nhóm tuỳ chỉnh — ví dụ: '2008–2009', 'Toàn tập'"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Ghi chú — ví dụ: 'Cập nhật liên tục', 'Chỉ dùng nội bộ'"
+    },
+    "isUpdating": {
+      "type": "boolean",
+      "default": false,
+      "description": "Đánh dấu 'Đang cập nhật liên tục' (持续更新)"
+    },
+    "isNew": {
+      "type": "boolean",
+      "default": false,
+      "description": "Đánh dấu tài liệu mới thêm"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "description": "Thứ tự hiển thị trong nhóm (tăng dần)"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "fileSizeMB": {
+      "type": "decimal",
+      "description": "Kích thước file (MB) — điền tay để hiển thị"
+    }
+  }
+}

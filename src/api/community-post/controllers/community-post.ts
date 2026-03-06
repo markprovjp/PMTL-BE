@@ -53,12 +53,14 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
       return;
     }
 
-    const { title, content, type, category, author_name, author_country, author_avatar, video_url, rating, tags, cover_image } =
+    const { title, content, type, category, author_name, author_avatar, video_url, rating, tags, cover_image } =
       ctx.request.body as any;
 
     if (!title || !content || !author_name) {
       return ctx.badRequest('Thiếu thông tin bắt buộc: title, content, author_name');
     }
+
+    const authUserId = ctx.state?.user?.id;
 
     // Xử lý tags: nếu là chuỗi thì tách ra, nếu là mảng thì giữ nguyên
     let processedTags = tags;
@@ -73,15 +75,15 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
         type: type || 'story',
         category: category || 'Tâm Linh',
         author_name,
-        author_country: author_country || 'Việt Nam',
         author_avatar,
         video_url,
         tags: processedTags,
         cover_image,
         likes: 0,
         views: 0,
+        ...(authUserId ? { user: authUserId as number } : {}),
         // Draft: cần admin duyệt trước khi publish
-      },
+      } as any,
     });
 
     ctx.status = 201;
@@ -148,7 +150,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
             post: { documentId: post.documentId },
           },
           status: 'published',
-          fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'author_country', 'likes', 'createdAt'],
+          fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'likes', 'createdAt'],
           sort: 'createdAt:asc',
         });
         return { ...post, comments };
@@ -167,7 +169,9 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
     const post = await strapi.documents(POST_UID).findOne({
       documentId: id,
       status: 'published',
-      populate: { cover_image: true },
+      populate: {
+        cover_image: { fields: ['url', 'formats', 'width', 'height', 'alternativeText'] },
+      },
     });
 
     if (!post) return ctx.notFound('Không tìm thấy bài viết');
@@ -177,7 +181,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
         post: { documentId: post.documentId },
       },
       status: 'published',
-      fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'author_country', 'likes', 'parent_id', 'createdAt'],
+      fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'likes', 'createdAt'],
       sort: 'createdAt:asc',
     });
 

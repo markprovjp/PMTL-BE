@@ -58,7 +58,7 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
     }
 
     const body = ctx.request.body as Record<string, unknown>;
-    const { authorName, country, message } = body;
+    const { authorName, country, message, entryType, questionCategory } = body;
 
     if (!authorName || typeof authorName !== 'string' || authorName.trim().length < 1) {
       return ctx.badRequest('Thiếu tên tác giả.');
@@ -73,7 +73,10 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
           authorName: stripHtml(String(authorName)).slice(0, 100),
           country: country ? stripHtml(String(country)).slice(0, 100) : undefined,
           message: stripHtml(String(message)).slice(0, 2000),
-          status: 'pending',
+          entryType: entryType || 'message',
+          questionCategory: questionCategory ? stripHtml(String(questionCategory)).slice(0, 100) : undefined,
+          approvalStatus: 'pending',
+          isAnswered: false,
         },
       });
       recordCooldown(ipHash);
@@ -101,14 +104,16 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
     try {
       const [entries, total] = await Promise.all([
         (strapi.documents as any)(GB_UID).findMany({
-          filters: { status: { $eq: 'approved' } },
+          filters: { approvalStatus: { $eq: 'approved' } },
           sort: ['createdAt:desc'],
           start: (page - 1) * pageSize,
           limit: pageSize,
-          fields: ['documentId', 'authorName', 'country', 'message', 'adminReply', 'createdAt'],
+          fields: ['documentId', 'authorName', 'country', 'message', 'adminReply', 'isOfficialReply', 'badge', 'entryType', 'questionCategory', 'isAnswered', 'createdAt'],
           populate: { avatar: { fields: ['url', 'formats', 'width', 'height', 'alternativeText'] } },
         }),
-        (strapi.db as any).query(GB_UID).count({ where: { status: 'approved' } }),
+        (strapi.documents as any)(GB_UID).count({
+          filters: { approvalStatus: { $eq: 'approved' } }
+        }),
       ]);
 
       ctx.body = {
@@ -151,19 +156,19 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
       const [entries, total] = await Promise.all([
         (strapi.documents as any)(GB_UID).findMany({
           filters: {
-            status: { $eq: 'approved' },
+            approvalStatus: { $eq: 'approved' },
             createdAt: { $gte: dateFrom, $lt: dateTo },
           },
           sort: ['createdAt:desc'],
           start: (page - 1) * pageSize,
           limit: pageSize,
-          fields: ['documentId', 'authorName', 'country', 'message', 'adminReply', 'createdAt'],
+          fields: ['documentId', 'authorName', 'country', 'message', 'adminReply', 'isOfficialReply', 'badge', 'entryType', 'questionCategory', 'isAnswered', 'createdAt'],
           populate: { avatar: { fields: ['url', 'formats', 'width', 'height', 'alternativeText'] } },
         }),
-        (strapi.db as any).query(GB_UID).count({
-          where: {
-            status: 'approved',
-            created_at: { $gte: dateFrom, $lt: dateTo },
+        (strapi.documents as any)(GB_UID).count({
+          filters: {
+            approvalStatus: { $eq: 'approved' },
+            createdAt: { $gte: dateFrom, $lt: dateTo },
           },
         }),
       ]);
@@ -182,6 +187,50 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
       };
     } catch (err) {
       log.error('archive failed', err);
+      ctx.status = 500;
+      ctx.body = { error: 'Lỗi server.' };
+    }
+  },
+
+  /**
+   * GET /api/guestbook-entries/archive-list
+   * Thống kê số lượng lưu bút theo Năm/Tháng
+   */
+  async archiveList(ctx) {
+    const log = createLogger(strapi, 'guestbook-entry');
+    try {
+      const items = await (strapi.documents as any)(GB_UID).findMany({
+        filters: { approvalStatus: { $eq: 'approved' } },
+        fields: ['createdAt'],
+        limit: 100000,
+        start: 0
+      });
+
+      const map = new Map<string, number>();
+      for (const item of items) {
+        if (!item.createdAt) continue;
+        const d = new Date(item.createdAt);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        const key = `${y}-${m}`;
+        map.set(key, (map.get(key) || 0) + 1);
+      }
+
+      const mapped = Array.from(map.entries()).map(([k, count]) => {
+        const [y, m] = k.split('-');
+        return {
+          year: parseInt(y, 10),
+          month: parseInt(m, 10),
+          count: count as number
+        };
+      }).sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+      });
+
+      ctx.body = { data: mapped };
+    } catch (err) {
+      log.error('archiveList failed', err);
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server.' };
     }

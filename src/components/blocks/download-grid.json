@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_blocks_download_grids",
+  "info": {
+    "displayName": "Download Grid",
+    "description": "Hiển thị lưới tài liệu tải xuống"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "downloads": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::download-item.download-item"
+    }
+  }
+}

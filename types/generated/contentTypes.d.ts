@@ -505,6 +505,10 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 100;
       }>;
+    badge: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
     content: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -514,6 +518,12 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    ipHash: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 64;
+      }>;
+    isOfficialReply: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     likes: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -541,6 +551,10 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     userId: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 100;
@@ -551,7 +565,7 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
 export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
   collectionName: 'blog_posts';
   info: {
-    description: 'B\u00E0i vi\u1EBFt Ph\u1EADt ph\u00E1p (Phi\u00EAn b\u1EA3n gi\u1EA3n l\u01B0\u1EE3c)';
+    description: 'B\u00E0i vi\u1EBFt Ph\u1EADt ph\u00E1p (Khai Th\u1ECB)';
     displayName: 'N\u1ED9i Dung \u00B7 B\u00E0i Vi\u1EBFt';
     pluralName: 'blog-posts';
     singularName: 'blog-post';
@@ -562,6 +576,7 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    allowComments: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     audio_url: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -570,6 +585,14 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'manyToMany',
       'api::category.category'
     >;
+    commentCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     content: Schema.Attribute.RichText &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -601,20 +624,12 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     location: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
-        maxLength: 300;
+        maxLength: 200;
       }>;
     lunarEvents: Schema.Attribute.Relation<
       'manyToMany',
       'api::lunar-event.lunar-event'
     >;
-    original_link: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 500;
-      }>;
-    original_title: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 200;
-      }>;
     publishedAt: Schema.Attribute.DateTime;
     related_posts: Schema.Attribute.Relation<
       'manyToMany',
@@ -637,9 +652,17 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 200;
       }>;
-    source: Schema.Attribute.String &
+    sourceName: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 200;
+      }>;
+    sourceTitle: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    sourceUrl: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
       }>;
     tags: Schema.Attribute.Relation<'manyToMany', 'api::blog-tag.blog-tag'>;
     thumbnail: Schema.Attribute.Media<'images'>;
@@ -649,6 +672,14 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
         maxLength: 200;
         minLength: 3;
       }>;
+    unique_views: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -843,17 +874,21 @@ export interface ApiCommunityCommentCommunityComment
     timestamps: true;
   };
   attributes: {
-    author_avatar: Schema.Attribute.String;
-    author_country: Schema.Attribute.String &
+    author_avatar: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
-        maxLength: 100;
+        maxLength: 500;
       }>;
     author_name: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 100;
       }>;
-    content: Schema.Attribute.Text & Schema.Attribute.Required;
+    content: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2000;
+        minLength: 1;
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -887,7 +922,10 @@ export interface ApiCommunityCommentCommunityComment
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    user_id: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
   };
 }
 
@@ -905,10 +943,9 @@ export interface ApiCommunityPostCommunityPost
     timestamps: true;
   };
   attributes: {
-    author_avatar: Schema.Attribute.String;
-    author_country: Schema.Attribute.String &
+    author_avatar: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
-        maxLength: 100;
+        maxLength: 500;
       }>;
     author_name: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -975,7 +1012,10 @@ export interface ApiCommunityPostCommunityPost
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    user_id: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     video_url: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -988,6 +1028,83 @@ export interface ApiCommunityPostCommunityPost
         number
       > &
       Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiDownloadItemDownloadItem
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'download_items';
+  info: {
+    description: 'Qu\u1EA3n l\u00FD link t\u1EA3i t\u00E0i li\u1EC7u (PDF, MP3, ZIP, Video) \u2014 internal & external';
+    displayName: 'Th\u01B0 Vi\u1EC7n \u00B7 T\u00E0i Li\u1EC7u T\u1EA3i';
+    pluralName: 'download-items';
+    singularName: 'download-item';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      [
+        'Kinh \u0110i\u1EC3n',
+        'Khai Th\u1ECB Audio',
+        'Khai Th\u1ECB Video',
+        'S\u00E1ch',
+        'Ph\u00E1p H\u1ED9i',
+        'H\u01B0\u1EDBng D\u1EABn',
+        'Kh\u00E1c',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Kh\u00E1c'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1000;
+      }>;
+    fileSizeMB: Schema.Attribute.Decimal;
+    fileType: Schema.Attribute.Enumeration<
+      ['pdf', 'mp3', 'mp4', 'zip', 'doc', 'epub', 'html', 'unknown']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'unknown'>;
+    groupLabel: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    groupYear: Schema.Attribute.Integer;
+    isNew: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isUpdating: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::download-item.download-item'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 300;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    url: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1000;
+      }>;
   };
 }
 
@@ -1061,12 +1178,19 @@ export interface ApiGuestbookEntryGuestbookEntry
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 2000;
       }>;
+    approvalStatus: Schema.Attribute.Enumeration<['pending', 'approved']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
     authorName: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 100;
       }>;
     avatar: Schema.Attribute.Media<'images'>;
+    badge: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
     country: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 100;
@@ -1074,6 +1198,11 @@ export interface ApiGuestbookEntryGuestbookEntry
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    entryType: Schema.Attribute.Enumeration<['message', 'question']> &
+      Schema.Attribute.DefaultTo<'message'>;
+    isAnswered: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isOfficialReply: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1086,13 +1215,16 @@ export interface ApiGuestbookEntryGuestbookEntry
         maxLength: 2000;
         minLength: 5;
       }>;
+    month: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
-    status: Schema.Attribute.Enumeration<['pending', 'approved']> &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'pending'>;
+    questionCategory: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    year: Schema.Attribute.Integer;
   };
 }
 
@@ -1109,19 +1241,42 @@ export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    blocks: Schema.Attribute.DynamicZone<
+      [
+        'blocks.post-list-auto',
+        'blocks.post-list-manual',
+        'blocks.download-grid',
+        'blocks.rich-text',
+      ]
+    >;
+    coverImage: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    curated_posts: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::blog-post.blog-post'
+    >;
     description: Schema.Attribute.Text;
+    downloads: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::download-item.download-item'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::hub-page.hub-page'
     > &
       Schema.Attribute.Private;
+    menuIcon: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     sections: Schema.Attribute.Component<'hub.hub-section', true>;
+    showInMenu: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1250,6 +1405,7 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     date: Schema.Attribute.Date & Schema.Attribute.Required;
+    isCompleted: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     itemsProgress: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1258,9 +1414,8 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     plan: Schema.Attribute.Relation<'manyToOne', 'api::chant-plan.chant-plan'>;
-    planSlug: Schema.Attribute.String &
-      Schema.Attribute.DefaultTo<'daily-newbie'>;
     publishedAt: Schema.Attribute.DateTime;
+    startedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1944,6 +2099,7 @@ declare module '@strapi/strapi' {
       'api::chant-plan.chant-plan': ApiChantPlanChantPlan;
       'api::community-comment.community-comment': ApiCommunityCommentCommunityComment;
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
+      'api::download-item.download-item': ApiDownloadItemDownloadItem;
       'api::event.event': ApiEventEvent;
       'api::guestbook-entry.guestbook-entry': ApiGuestbookEntryGuestbookEntry;
       'api::hub-page.hub-page': ApiHubPageHubPage;

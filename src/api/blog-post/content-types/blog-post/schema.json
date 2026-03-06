@@ -5,7 +5,7 @@
     "singularName": "blog-post",
     "pluralName": "blog-posts",
     "displayName": "Nội Dung · Bài Viết",
-    "description": "Bài viết Phật pháp (Phiên bản giản lược)"
+    "description": "Bài viết Phật pháp (Khai Thị)"
   },
   "options": {
     "increments": true,
@@ -28,45 +28,42 @@
       "maxLength": 200,
       "index": true
     },
-    "gallery": {
-      "type": "media",
-      "multiple": true,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "categories": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::category.category",
-      "inversedBy": "blog_posts"
-    },
     "content": {
       "type": "richtext",
       "required": true,
       "minLength": 10,
       "index": true
     },
-    "original_title": {
+    "excerpt": {
       "type": "string",
-      "maxLength": 200
-    },
-    "original_link": {
-      "type": "string",
-      "maxLength": 500
-    },
-    "source": {
-      "type": "string",
-      "maxLength": 200
+      "maxLength": 300,
+      "description": "Tóm tắt ngắn tự động hoặc editor nhập tay (dùng cho danh sách bài)"
     },
     "thumbnail": {
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images"
-      ]
+      "allowedTypes": ["images"]
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "video_url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "audio_url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "inversedBy": "blog_posts"
     },
     "tags": {
       "type": "relation",
@@ -78,18 +75,17 @@
       "default": false,
       "index": true
     },
-    "video_url": {
-      "type": "string",
-      "maxLength": 500
-    },
-    "audio_url": {
-      "type": "string",
-      "maxLength": 500
-    },
     "views": {
       "type": "integer",
       "default": 0,
-      "min": 0
+      "min": 0,
+      "description": "Tổng lượt xem (mỗi IP đếm 1 lần/giờ)"
+    },
+    "unique_views": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "description": "Lượt xem unique theo session (dự phòng scale)"
     },
     "likes": {
       "type": "integer",
@@ -100,11 +96,6 @@
       "type": "component",
       "component": "shared.seo",
       "repeatable": false
-    },
-    "excerpt": {
-      "type": "string",
-      "maxLength": 300,
-      "description": "Auto-extracted text preview from rich content (for list view optimization)"
     },
     "related_posts": {
       "type": "relation",
@@ -126,12 +117,40 @@
       "type": "integer",
       "min": 1
     },
+    "sourceName": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Tên nguồn/kênh (ví dụ: wenda20140829)"
+    },
+    "sourceUrl": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "URL bài gốc nếu là repost/dịch"
+    },
+    "sourceTitle": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Tiêu đề gốc (tiếng Trung hoặc ngôn ngữ gốc)"
+    },
+    "allowComments": {
+      "type": "boolean",
+      "default": true,
+      "description": "Bật/tắt bình luận cho bài này. Tắt khi Admin khóa."
+    },
+    "commentCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "description": "Số bình luận đã duyệt (denorm để hiển thị nhanh)"
+    },
     "eventDate": {
-      "type": "date"
+      "type": "date",
+      "description": "Ngày tổ chức sự kiện (dùng cho các bài giảng có ngày cụ thể)"
     },
     "location": {
       "type": "string",
-      "maxLength": 300
+      "maxLength": 200,
+      "description": "Địa điểm tổ chức (ví dụ: Hồ Chí Minh, Úc, Đài Loan)"
     }
   }
 }

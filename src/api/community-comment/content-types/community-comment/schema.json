@@ -15,23 +15,26 @@
   "attributes": {
     "content": {
       "type": "text",
-      "required": true
+      "required": true,
+      "minLength": 1,
+      "maxLength": 2000
     },
     "author_name": {
       "type": "string",
       "required": true,
-      "maxLength": 100
-    },
-    "author_country": {
-      "type": "string",
-      "maxLength": 100
+      "maxLength": 100,
+      "description": "Snapshot tên tác giả tại thời điểm gửi"
     },
     "author_avatar": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 500,
+      "description": "URL avatar snapshot (cho khách chưa đăng nhập)"
     },
-    "user_id": {
-      "type": "integer",
-      "default": 0
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "description": "Liên kết user đã đăng nhập (nullable — guest comment để null)"
     },
     "post": {
       "type": "relation",

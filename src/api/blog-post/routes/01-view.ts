@@ -1,8 +1,7 @@
 /**
- * custom-blog-post routes
- * Extends the default CRUD router with custom endpoints.
+ * 01-view.ts — Blog-post view counter route (Strapi v5)
+ * POST /api/blog-posts/:documentId/view — atomic increment, no auth
  */
-
 export default {
   routes: [
     {
@@ -10,7 +9,7 @@ export default {
       path: '/blog-posts/:documentId/view',
       handler: 'blog-post.incrementView',
       config: {
-        auth: false,      // public — no API token required
+        auth: false,
         policies: [],
         middlewares: [],
       },

@@ -114,8 +114,7 @@ export default factories.createCoreController(BLOG_UID, ({ strapi }) => ({
 
       const total = await (strapi.db as any).query(BLOG_UID).count({
         where: {
-          publishedAt: { $gte: dateFrom, $lt: dateTo },
-          published_at: { $notNull: true },
+          published_at: { $gte: dateFrom, $lt: dateTo, $notNull: true },
         },
       })
 

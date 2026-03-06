@@ -27,9 +27,7 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images"
-      ]
+      "allowedTypes": ["images"]
     },
     "message": {
       "type": "text",
@@ -41,14 +39,45 @@
       "type": "text",
       "maxLength": 2000
     },
-    "status": {
+    "approvalStatus": {
       "type": "enumeration",
-      "enum": [
-        "pending",
-        "approved"
-      ],
+      "enum": ["pending", "approved"],
       "default": "pending",
       "required": true
+    },
+    "isOfficialReply": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = Đây là phản hồi chính thức từ Ban Quản Trị (hiển thị khung viền vàng)"
+    },
+    "badge": {
+      "type": "string",
+      "maxLength": 50,
+      "default": null,
+      "description": "Nhãn hiển thị — ví dụ: 'Ban Quản Trị' nebo 'Đông Phương Đài'"
+    },
+    "year": {
+      "type": "integer",
+      "description": "Năm gửi (denorm để filter archive nhanh)",
+      "index": true
+    },
+    "month": {
+      "type": "integer",
+      "description": "Tháng gửi (dùng phân loại theo tháng)",
+      "index": true
+    },
+    "entryType": {
+      "type": "enumeration",
+      "enum": ["message", "question"],
+      "default": "message"
+    },
+    "questionCategory": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "isAnswered": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

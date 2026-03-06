@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_blocks_post_list_manuals",
+  "info": {
+    "displayName": "Post List (Manual)",
+    "description": "Hiển thị danh sách bài viết được chọn tay"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "posts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::blog-post.blog-post"
+    }
+  }
+}

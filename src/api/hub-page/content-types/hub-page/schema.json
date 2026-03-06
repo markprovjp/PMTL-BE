@@ -26,10 +26,52 @@
     "description": {
       "type": "text"
     },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
     "sections": {
       "type": "component",
       "component": "hub.hub-section",
       "repeatable": true
+    },
+    "curated_posts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-post.blog-post",
+      "description": "Danh sách bài viết được Editor lựa chọn thủ công (pinned) — hiển thị ở đầu trang hub"
+    },
+    "downloads": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::download-item.download-item",
+      "description": "Khối tài liệu tải xuống gắn vào trang hub này"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "description": "Thứ tự hiển thị trong menu (tăng dần)"
+    },
+    "showInMenu": {
+      "type": "boolean",
+      "default": true,
+      "description": "Hiển thị trang này trong thanh điều hướng"
+    },
+    "menuIcon": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Tên icon Lucide (ví dụ: BookOpen, Download, Star)"
+    },
+    "blocks": {
+      "type": "dynamiczone",
+      "components": [
+        "blocks.post-list-auto",
+        "blocks.post-list-manual",
+        "blocks.download-grid",
+        "blocks.rich-text"
+      ]
     }
   }
 }

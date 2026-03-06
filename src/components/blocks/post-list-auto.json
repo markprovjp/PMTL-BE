@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_blocks_post_list_autos",
+  "info": {
+    "displayName": "Post List (Automatic)",
+    "description": "Hiển thị danh sách bài viết tự động theo phân loại"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::category.category"
+    },
+    "count": {
+      "type": "integer",
+      "default": 4
+    }
+  }
+}

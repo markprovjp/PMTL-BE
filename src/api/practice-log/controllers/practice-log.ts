@@ -1,13 +1,24 @@
 /**
  * practice-log controller
- * Auth-protected: users chi duoc doc/ghi log cua chinh ho
+ * Auth-protected: users chỉ được đọc/ghi log của chính họ
  *
- * NOTE: Type casts (as any) below are intentional — Strapi types are
- * auto-generated on first `strapi build`. Remove casts after regeneration.
+ * Sau khi xóa planSlug field khỏi schema, dùng `plan` relation để track.
+ * Query tìm log dựa vào user + date + plan.documentId thay vì planSlug string.
  */
 import { factories } from '@strapi/strapi';
 
 const UID = 'api::practice-log.practice-log' as any;
+const PLAN_UID = 'api::chant-plan.chant-plan' as any;
+
+/** Tìm documentId của chant-plan theo slug - dùng Document Service API */
+async function findPlanBySlug(strapi: any, planSlug: string): Promise<{ id: number; documentId: string } | null> {
+  const results = await strapi.documents(PLAN_UID).findMany({
+    filters: { slug: { $eq: planSlug } },
+    fields: ['id', 'documentId'],
+    limit: 1,
+  });
+  return results[0] ?? null;
+}
 
 export default factories.createCoreController(UID, ({ strapi }: any) => ({
   /**
@@ -16,20 +27,23 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
   async findMyLog(ctx: any) {
     try {
       const userId = ctx.state.user?.id;
-      if (!userId) return ctx.unauthorized('Yeu cau dang nhap');
+      if (!userId) return ctx.unauthorized('Yêu cầu đăng nhập');
 
       const { date, planSlug = 'daily-newbie' } = ctx.query as Record<string, string>;
-      if (!date) return ctx.badRequest('Thieu tham so date');
+      if (!date) return ctx.badRequest('Thiếu tham số date');
 
-      strapi.log.debug(`[PracticeLog] Finding log for user ${userId}, date ${date}, plan ${planSlug}`);
+      const plan = await findPlanBySlug(strapi, planSlug);
 
-      const entry = await strapi.db.query(UID).findOne({
-        where: {
-          user: userId,
-          date: date,
-          planSlug: planSlug,
+      const entries = await strapi.documents(UID).findMany({
+        filters: {
+          user: { id: userId },
+          date: { $eq: date },
+          ...(plan ? { plan: { documentId: { $eq: plan.documentId } } } : {}),
         },
+        populate: ['plan'],
+        limit: 1,
       });
+      const entry = entries[0] ?? null;
 
       ctx.body = entry ?? null;
     } catch (err) {
@@ -45,43 +59,59 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
   async upsertMyLog(ctx: any) {
     try {
       const userId = ctx.state.user?.id;
-      if (!userId) return ctx.unauthorized('Yeu cau dang nhap');
+      if (!userId) return ctx.unauthorized('Yêu cầu đăng nhập');
 
       const { date, planSlug = 'daily-newbie', itemsProgress } = ctx.request.body as any;
-      if (!date) return ctx.badRequest('Thieu tham so date');
+      if (!date) return ctx.badRequest('Thiếu tham số date');
 
-      const existing = await strapi.db.query(UID).findOne({
-        where: { user: userId, date, planSlug },
+      // Tìm plan theo slug để lấy documentId cho relation
+      const plan = await findPlanBySlug(strapi, planSlug);
+
+      const existingEntries = await strapi.documents(UID).findMany({
+        filters: {
+          user: { id: userId },
+          date: { $eq: date },
+          ...(plan ? { plan: { documentId: { $eq: plan.documentId } } } : {}),
+        },
+        fields: ['id', 'documentId'],
+        limit: 1,
       });
+      const existing = existingEntries[0] ?? null;
 
-      // Kiem tra xem tat ca item da done chua
+      // Kiểm tra xem tất cả item đã done chưa
       let completedAt: string | null = null;
+      let isCompleted = false;
       if (itemsProgress && typeof itemsProgress === 'object') {
         const values = Object.values(itemsProgress as Record<string, any>);
         if (values.length > 0) {
           const allDone = values.every((v: any) => v?.done === true);
-          if (allDone) completedAt = new Date().toISOString();
+          if (allDone) {
+            isCompleted = true;
+            completedAt = new Date().toISOString();
+          }
         }
       }
 
       let result;
       if (existing) {
-        // Dung Document Service de update boi vi no ho tro cac lifecycle v5 tot hon
         result = await strapi.documents(UID).update({
           documentId: existing.documentId,
           data: {
             itemsProgress,
-            completedAt
+            completedAt,
+            isCompleted,
           },
         });
       } else {
         result = await strapi.documents(UID).create({
           data: {
             user: userId,
+            ...(plan ? { plan: { connect: [{ documentId: plan.documentId }] } } : {}),
             date,
-            planSlug,
             itemsProgress,
-            completedAt
+            startedAt: new Date().toISOString(),
+            completedAt,
+            isCompleted,
           },
         });
       }
@@ -93,4 +123,3 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
     }
   },
 }));
-

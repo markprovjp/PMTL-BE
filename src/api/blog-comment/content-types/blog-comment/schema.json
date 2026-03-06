@@ -56,6 +56,28 @@
       "type": "integer",
       "default": 0,
       "min": 0
+    },
+    "isOfficialReply": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = Reply chính thức từ Ban Quản Trị (hiển thị viền vàng nổi bật)"
+    },
+    "badge": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Nhãn hiển thị kèm tên — ví dụ: 'Ban Quản Trị' hoặc 'Thầy Pháp Su'",
+      "default": null
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "description": "Liên kết user đăng nhập (nullable — khách không đăng nhập để null)"
+    },
+    "ipHash": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "Hash IP để rate-limit (không lưu thật)"
     }
   }
 }

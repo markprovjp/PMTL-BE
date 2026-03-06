@@ -1,5 +1,59 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
+export interface BlocksDownloadGrid extends Struct.ComponentSchema {
+  collectionName: 'components_blocks_download_grids';
+  info: {
+    description: 'Hi\u1EC3n th\u1ECB l\u01B0\u1EDBi t\u00E0i li\u1EC7u t\u1EA3i xu\u1ED1ng';
+    displayName: 'Download Grid';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    downloads: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::download-item.download-item'
+    >;
+    heading: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface BlocksPostListAuto extends Struct.ComponentSchema {
+  collectionName: 'components_blocks_post_list_autos';
+  info: {
+    description: 'Hi\u1EC3n th\u1ECB danh s\u00E1ch b\u00E0i vi\u1EBFt t\u1EF1 \u0111\u1ED9ng theo ph\u00E2n lo\u1EA1i';
+    displayName: 'Post List (Automatic)';
+  };
+  attributes: {
+    category: Schema.Attribute.Relation<'oneToOne', 'api::category.category'>;
+    count: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<4>;
+    description: Schema.Attribute.Text;
+    heading: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface BlocksPostListManual extends Struct.ComponentSchema {
+  collectionName: 'components_blocks_post_list_manuals';
+  info: {
+    description: 'Hi\u1EC3n th\u1ECB danh s\u00E1ch b\u00E0i vi\u1EBFt \u0111\u01B0\u1EE3c ch\u1ECDn tay';
+    displayName: 'Post List (Manual)';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    heading: Schema.Attribute.String & Schema.Attribute.Required;
+    posts: Schema.Attribute.Relation<'oneToMany', 'api::blog-post.blog-post'>;
+  };
+}
+
+export interface BlocksRichText extends Struct.ComponentSchema {
+  collectionName: 'components_blocks_rich_texts';
+  info: {
+    description: 'N\u1ED9i dung v\u0103n b\u1EA3n t\u1EF1 do';
+    displayName: 'Rich Text';
+  };
+  attributes: {
+    content: Schema.Attribute.RichText;
+  };
+}
+
 export interface ChantingPlanItem extends Struct.ComponentSchema {
   collectionName: 'components_chanting_plan_items';
   info: {
@@ -260,6 +314,10 @@ export interface SharedSocialLink extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
+      'blocks.download-grid': BlocksDownloadGrid;
+      'blocks.post-list-auto': BlocksPostListAuto;
+      'blocks.post-list-manual': BlocksPostListManual;
+      'blocks.rich-text': BlocksRichText;
       'chanting.plan-item': ChantingPlanItem;
       'homepage.action-card-item': HomepageActionCardItem;
       'homepage.award-item': HomepageAwardItem;

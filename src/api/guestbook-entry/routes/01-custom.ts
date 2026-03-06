@@ -17,6 +17,12 @@ export default {
     },
     {
       method: 'GET',
+      path: '/guestbook-entries/archive-list',
+      handler: 'guestbook-entry.archiveList',
+      config: { auth: false, policies: [], middlewares: [] },
+    },
+    {
+      method: 'GET',
       path: '/guestbook-entries/archive/:year/:month',
       handler: 'guestbook-entry.archive',
       config: { auth: false, policies: [], middlewares: [] },

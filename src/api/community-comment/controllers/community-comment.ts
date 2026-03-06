@@ -61,7 +61,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     }
 
     const body = ctx.request.body as Record<string, unknown>;
-    const { postDocumentId, content, author_name, author_country, author_avatar, parentDocumentId } = body;
+    const { postDocumentId, content, author_name, author_avatar, parentDocumentId } = body;
 
     if (!content || typeof content !== 'string' || content.trim().length < 1) {
       return ctx.badRequest('Nội dung bình luận không được trống.');
@@ -75,7 +75,9 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
 
     const cleanContent = stripHtml(content).slice(0, 2000);
     const cleanName = stripHtml(String(author_name)).slice(0, 100);
-    const cleanCountry = author_country ? stripHtml(String(author_country)).slice(0, 100) : 'Việt Nam';
+
+    // Lấy user id từ JWT header nếu đã đăng nhập
+    const authUserId: number | null = (ctx.state?.user?.id) ?? null;
 
     try {
       // Xác nhận bài viết tồn tại và đã publish
@@ -86,11 +88,11 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       });
       if (!post) return ctx.notFound('Không tìm thấy bài viết.');
 
-      const data: Record<string, unknown> = {
+      const data: any = {
         content: cleanContent,
         author_name: cleanName,
-        author_country: cleanCountry,
         ...(author_avatar ? { author_avatar: String(author_avatar).slice(0, 500) } : {}),
+        ...(authUserId ? { user: authUserId } : {}),
         post: { connect: [{ documentId: postDocumentId }] },
         likes: 0,
       };
