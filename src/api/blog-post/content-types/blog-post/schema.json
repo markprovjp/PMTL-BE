@@ -4,7 +4,7 @@
   "info": {
     "singularName": "blog-post",
     "pluralName": "blog-posts",
-    "displayName": "Bài Viết (Blog)",
+    "displayName": "Nội Dung · Bài Viết",
     "description": "Bài viết Phật pháp (Phiên bản giản lược)"
   },
   "options": {
@@ -32,7 +32,9 @@
       "type": "media",
       "multiple": true,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "categories": {
       "type": "relation",
@@ -62,7 +64,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "tags": {
       "type": "relation",
@@ -112,6 +116,22 @@
       "relation": "manyToMany",
       "target": "api::lunar-event.lunar-event",
       "mappedBy": "relatedBlogs"
+    },
+    "seriesKey": {
+      "type": "string",
+      "maxLength": 200,
+      "index": true
+    },
+    "seriesNumber": {
+      "type": "integer",
+      "min": 1
+    },
+    "eventDate": {
+      "type": "date"
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 300
     }
   }
 }

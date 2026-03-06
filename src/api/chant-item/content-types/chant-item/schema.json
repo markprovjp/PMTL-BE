@@ -4,7 +4,7 @@
   "info": {
     "singularName": "chant-item",
     "pluralName": "chant-items",
-    "displayName": "Bài Niệm (Chant Item)",
+    "displayName": "Niệm Kinh · Danh Mục Bài Niệm",
     "description": "Một bài niệm: kinh, chú, nghi thức bước — dùng trong kế hoạch niệm kinh"
   },
   "options": {
@@ -23,7 +23,11 @@
     },
     "kind": {
       "type": "enumeration",
-      "enum": ["step", "sutra", "mantra"],
+      "enum": [
+        "step",
+        "sutra",
+        "mantra"
+      ],
       "required": true,
       "default": "mantra",
       "description": "step=nghi thức bước (checklist), sutra=kinh, mantra=chú/danh hiệu"
@@ -47,7 +51,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["audios"]
+      "allowedTypes": [
+        "audios"
+      ]
     }
   }
 }

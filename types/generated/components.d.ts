@@ -143,6 +143,70 @@ export interface HomepageStickyBanner extends Struct.ComponentSchema {
   };
 }
 
+export interface HubHubLink extends Struct.ComponentSchema {
+  collectionName: 'components_hub_hub_links';
+  info: {
+    displayName: 'Hub Link';
+    pluralName: 'hub-links';
+    singularName: 'hub-link';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    kind: Schema.Attribute.Enumeration<['internal', 'external']> &
+      Schema.Attribute.DefaultTo<'internal'>;
+    thumbnail: Schema.Attribute.Media<'images'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    url: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+  };
+}
+
+export interface HubHubSection extends Struct.ComponentSchema {
+  collectionName: 'components_hub_hub_sections';
+  info: {
+    displayName: 'Hub Section';
+    pluralName: 'hub-sections';
+    singularName: 'hub-section';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    heading: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    links: Schema.Attribute.Component<'hub.hub-link', true>;
+  };
+}
+
+export interface SharedQuickLink extends Struct.ComponentSchema {
+  collectionName: 'components_shared_quick_links';
+  info: {
+    displayName: 'Quick Link';
+    pluralName: 'quick-links';
+    singularName: 'quick-link';
+  };
+  attributes: {
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    url: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+  };
+}
+
 export interface SharedSeo extends Struct.ComponentSchema {
   collectionName: 'components_shared_seos';
   info: {
@@ -168,6 +232,31 @@ export interface SharedSeo extends Struct.ComponentSchema {
   };
 }
 
+export interface SharedSocialLink extends Struct.ComponentSchema {
+  collectionName: 'components_shared_social_links';
+  info: {
+    displayName: 'Social Link';
+    pluralName: 'social-links';
+    singularName: 'social-link';
+  };
+  attributes: {
+    iconName: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
+    label: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    url: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+  };
+}
+
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
@@ -181,7 +270,11 @@ declare module '@strapi/strapi' {
       'homepage.search-category': HomepageSearchCategory;
       'homepage.stat-item': HomepageStatItem;
       'homepage.sticky-banner': HomepageStickyBanner;
+      'hub.hub-link': HubHubLink;
+      'hub.hub-section': HubHubSection;
+      'shared.quick-link': SharedQuickLink;
       'shared.seo': SharedSeo;
+      'shared.social-link': SharedSocialLink;
     }
   }
 }

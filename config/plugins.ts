@@ -28,6 +28,16 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       register: {
         allowedFields: ['fullName', 'phone', 'address', 'avatar_url', 'bio', 'dharmaName'],
       },
+      providers: {
+        google: {
+          enabled: true,
+          icon: 'google',
+          key: env('GOOGLE_CLIENT_ID'),
+          secret: env('GOOGLE_CLIENT_SECRET'),
+          callback: `${env('FRONTEND_URL', 'http://localhost:3000')}/auth/google/callback`,
+          scope: ['openid', 'email', 'profile'],
+        },
+      },
     },
   },
 

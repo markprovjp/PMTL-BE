@@ -4,7 +4,7 @@
   "info": {
     "singularName": "blog-tag",
     "pluralName": "blog-tags",
-    "displayName": "Blog Tag",
+    "displayName": "Nội Dung · Thẻ Bài Viết",
     "description": "Searchable tags for blog posts (replaces JSON array)"
   },
   "options": {

@@ -4,7 +4,7 @@
   "info": {
     "singularName": "lunar-event",
     "pluralName": "lunar-events",
-    "displayName": "Lịch Khóa Lễ (Sự Kiện)",
+    "displayName": "Niệm Kinh · Lịch Sự Kiện Âm",
     "description": "Lịch niệm Lễ Phật Đại Sám Hối Văn, khai thị và các ngày vía"
   },
   "options": {
@@ -35,7 +35,14 @@
     },
     "eventType": {
       "type": "enumeration",
-      "enum": ["buddha", "bodhisattva", "teacher", "fast", "holiday", "normal"],
+      "enum": [
+        "buddha",
+        "bodhisattva",
+        "teacher",
+        "fast",
+        "holiday",
+        "normal"
+      ],
       "default": "normal",
       "description": "Priority: holiday(5) > fast(4) > buddha(3) > bodhisattva(2) > teacher(1) > normal(0). Xác định ưu tiên của sự kiện khi nhập override."
     },

@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_hub_hub_sections",
+  "info": {
+    "displayName": "Hub Section",
+    "singularName": "hub-section",
+    "pluralName": "hub-sections"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "text"
+    },
+    "links": {
+      "type": "component",
+      "component": "hub.hub-link",
+      "repeatable": true
+    }
+  }
+}

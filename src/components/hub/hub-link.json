@@ -1,0 +1,35 @@
+{
+  "collectionName": "components_hub_hub_links",
+  "info": {
+    "displayName": "Hub Link",
+    "singularName": "hub-link",
+    "pluralName": "hub-links"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "url": {
+      "type": "string",
+      "required": true,
+      "maxLength": 500
+    },
+    "description": {
+      "type": "text"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "kind": {
+      "type": "enumeration",
+      "enum": ["internal", "external"],
+      "default": "internal"
+    }
+  }
+}

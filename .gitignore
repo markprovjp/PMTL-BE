@@ -128,5 +128,12 @@ exports
 dist
 build
 .strapi-updater.json
-.strapi-cloud.jsongoogle-auth-config.json
+.strapi-cloud.json
+
+############################
+# Sensitive Config Files
+############################
+
 google-auth-config.json
+.env.local
+.env.production.local

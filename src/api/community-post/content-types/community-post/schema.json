@@ -4,7 +4,7 @@
   "info": {
     "singularName": "community-post",
     "pluralName": "community-posts",
-    "displayName": "Chia Sẻ Cộng Đồng"
+    "displayName": "Cộng Đồng · Bài Đăng"
   },
   "options": {
     "increments": true,
@@ -24,7 +24,11 @@
     },
     "type": {
       "type": "enumeration",
-      "enum": ["story", "feedback", "video"],
+      "enum": [
+        "story",
+        "feedback",
+        "video"
+      ],
       "default": "story",
       "required": true
     },
@@ -48,7 +52,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "video_url": {
       "type": "string",

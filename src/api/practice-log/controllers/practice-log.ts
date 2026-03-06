@@ -14,23 +14,28 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
    * GET /practice-logs/my?date=YYYY-MM-DD&planSlug=daily-newbie
    */
   async findMyLog(ctx: any) {
-    const userId = ctx.state.user?.id;
-    if (!userId) return ctx.unauthorized('Yeu cau dang nhap');
+    try {
+      const userId = ctx.state.user?.id;
+      if (!userId) return ctx.unauthorized('Yeu cau dang nhap');
 
-    const { date, planSlug = 'daily-newbie' } = ctx.query as Record<string, string>;
-    if (!date) return ctx.badRequest('Thieu tham so date');
+      const { date, planSlug = 'daily-newbie' } = ctx.query as Record<string, string>;
+      if (!date) return ctx.badRequest('Thieu tham so date');
 
-    const entries = await strapi.documents(UID).findMany({
-      filters: {
-        user: { id: userId },
-        date,
-        planSlug,
-      },
-      limit: 1,
-    });
+      strapi.log.debug(`[PracticeLog] Finding log for user ${userId}, date ${date}, plan ${planSlug}`);
 
-    const list = Array.isArray(entries) ? entries : [entries];
-    ctx.body = list[0] ?? null;
+      const entry = await strapi.db.query(UID).findOne({
+        where: {
+          user: userId,
+          date: date,
+          planSlug: planSlug,
+        },
+      });
+
+      ctx.body = entry ?? null;
+    } catch (err) {
+      strapi.log.error('[PracticeLog findMyLog] Error:', err);
+      ctx.throw(500, err instanceof Error ? err.message : 'Lỗi hệ thống khi đọc nhật ký');
+    }
   },
 
   /**
@@ -38,40 +43,54 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
    * Body: { date, planSlug, itemsProgress }
    */
   async upsertMyLog(ctx: any) {
-    const userId = ctx.state.user?.id;
-    if (!userId) return ctx.unauthorized('Yeu cau dang nhap');
+    try {
+      const userId = ctx.state.user?.id;
+      if (!userId) return ctx.unauthorized('Yeu cau dang nhap');
 
-    const { date, planSlug = 'daily-newbie', itemsProgress } = ctx.request.body as any;
-    if (!date) return ctx.badRequest('Thieu tham so date');
+      const { date, planSlug = 'daily-newbie', itemsProgress } = ctx.request.body as any;
+      if (!date) return ctx.badRequest('Thieu tham so date');
 
-    const entries = await strapi.documents(UID).findMany({
-      filters: { user: { id: userId }, date, planSlug },
-      limit: 1,
-    });
-    const list = Array.isArray(entries) ? entries : [entries];
-
-    // Kiem tra xem tat ca item da done chua
-    let completedAt: string | null = null;
-    if (itemsProgress && typeof itemsProgress === 'object') {
-      const allDone = Object.values(itemsProgress as Record<string, any>).every(
-        (v: any) => v?.done === true
-      );
-      if (allDone) completedAt = new Date().toISOString();
-    }
-
-    let result;
-    if (list.length > 0 && list[0]) {
-      result = await strapi.documents(UID).update({
-        documentId: list[0].documentId,
-        data: { itemsProgress, completedAt },
+      const existing = await strapi.db.query(UID).findOne({
+        where: { user: userId, date, planSlug },
       });
-    } else {
-      result = await strapi.documents(UID).create({
-        data: { user: userId, date, planSlug, itemsProgress, completedAt },
-      });
-    }
 
-    ctx.body = result;
+      // Kiem tra xem tat ca item da done chua
+      let completedAt: string | null = null;
+      if (itemsProgress && typeof itemsProgress === 'object') {
+        const values = Object.values(itemsProgress as Record<string, any>);
+        if (values.length > 0) {
+          const allDone = values.every((v: any) => v?.done === true);
+          if (allDone) completedAt = new Date().toISOString();
+        }
+      }
+
+      let result;
+      if (existing) {
+        // Dung Document Service de update boi vi no ho tro cac lifecycle v5 tot hon
+        result = await strapi.documents(UID).update({
+          documentId: existing.documentId,
+          data: {
+            itemsProgress,
+            completedAt
+          },
+        });
+      } else {
+        result = await strapi.documents(UID).create({
+          data: {
+            user: userId,
+            date,
+            planSlug,
+            itemsProgress,
+            completedAt
+          },
+        });
+      }
+
+      ctx.body = result;
+    } catch (err) {
+      strapi.log.error('[PracticeLog upsertMyLog] Error:', err);
+      ctx.throw(500, err instanceof Error ? err.message : 'Lỗi hệ thống khi lưu nhật ký');
+    }
   },
 }));
 

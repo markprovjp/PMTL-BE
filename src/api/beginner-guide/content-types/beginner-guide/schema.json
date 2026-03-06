@@ -4,7 +4,7 @@
   "info": {
     "singularName": "beginner-guide",
     "pluralName": "beginner-guides",
-    "displayName": "Hướng Dẫn Sơ Học",
+    "displayName": "Nội Dung · Hướng Dẫn Sơ Học",
     "description": "Quản lý các bước hướng dẫn sơ học và kinh bài tập hằng ngày"
   },
   "options": {
@@ -18,7 +18,7 @@
       "required": true
     },
     "description": {
-     "type": "text"
+      "type": "text"
     },
     "content": {
       "type": "richtext"
@@ -40,7 +40,10 @@
     },
     "guide_type": {
       "type": "enumeration",
-      "enum": ["so-hoc", "kinh-bai-tap"],
+      "enum": [
+        "so-hoc",
+        "kinh-bai-tap"
+      ],
       "default": "so-hoc",
       "required": true
     },
@@ -59,13 +62,20 @@
     "images": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
-    "downloads": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::beginner-guide-file.beginner-guide-file",
-      "mappedBy": "guide"
+    "attached_files": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "description": "Tệp đính kèm (PDF, Word, Ảnh...)"
     }
   }
 }

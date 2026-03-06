@@ -101,6 +101,9 @@ export default {
           'api::community-comment.community-comment.findOne',
           'api::community-comment.community-comment.createComment',
           'api::community-comment.community-comment.likeComment',
+          // event
+          'api::event.event.find',
+          'api::event.event.findOne',
         ];
         for (const action of communityRoutes) {
           const existing = allPerms.find((p: any) => p.action === action);
@@ -147,3 +150,5 @@ export default {
     }
   },
 };
+
+// trigger restart 1772785727423

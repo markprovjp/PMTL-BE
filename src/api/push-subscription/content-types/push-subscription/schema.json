@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "push_subscriptions",
+  "info": {
+    "singularName": "push-subscription",
+    "pluralName": "push-subscriptions",
+    "displayName": "Hệ Thống · Cấu Hình Push",
+    "description": "Web Push subscriptions (endpoint + VAPID keys) — chỉ truy cập server-side"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "increments": true,
+    "timestamps": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "endpoint": {
+      "type": "text",
+      "required": true
+    },
+    "p256dh": {
+      "type": "string",
+      "required": true,
+      "maxLength": 500
+    },
+    "auth": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "reminderHour": {
+      "type": "integer",
+      "default": 6,
+      "min": 0,
+      "max": 23
+    }
+  }
+}

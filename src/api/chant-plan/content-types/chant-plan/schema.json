@@ -4,7 +4,7 @@
   "info": {
     "singularName": "chant-plan",
     "pluralName": "chant-plans",
-    "displayName": "Kế Hoạch Niệm Kinh (Chant Plan)",
+    "displayName": "Niệm Kinh · Lịch Trình Niệm",
     "description": "Kế hoạch niệm kinh: daily (thường nhật) hoặc special (đặc biệt)"
   },
   "options": {
@@ -23,7 +23,10 @@
     },
     "planType": {
       "type": "enumeration",
-      "enum": ["daily", "special"],
+      "enum": [
+        "daily",
+        "special"
+      ],
       "required": true,
       "default": "daily"
     },

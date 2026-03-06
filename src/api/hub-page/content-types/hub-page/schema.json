@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "hub_pages",
+  "info": {
+    "singularName": "hub-page",
+    "pluralName": "hub-pages",
+    "displayName": "Nội Dung · Trang Tổng Hợp"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "sections": {
+      "type": "component",
+      "component": "hub.hub-section",
+      "repeatable": true
+    }
+  }
+}

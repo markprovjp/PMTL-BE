@@ -4,7 +4,7 @@
   "info": {
     "singularName": "community-comment",
     "pluralName": "community-comments",
-    "displayName": "Bình Luận Cộng Đồng"
+    "displayName": "Cộng Đồng · Bình Luận CĐ"
   },
   "options": {
     "increments": true,
@@ -44,14 +44,17 @@
       "default": 0,
       "min": 0
     },
-    "parent_id": {
-      "type": "integer",
-      "default": 0
-    },
     "parent": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::community-comment.community-comment"
+      "target": "api::community-comment.community-comment",
+      "inversedBy": "replies"
+    },
+    "replies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::community-comment.community-comment",
+      "mappedBy": "parent"
     }
   }
 }

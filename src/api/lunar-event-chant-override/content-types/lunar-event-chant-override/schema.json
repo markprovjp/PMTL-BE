@@ -4,7 +4,7 @@
   "info": {
     "singularName": "lunar-event-chant-override",
     "pluralName": "lunar-event-chant-overrides",
-    "displayName": "Ghi Đè Niệm Kinh Theo Ngày (Override)",
+    "displayName": "Niệm Kinh · Giới Hạn Ngày ĐB",
     "description": "Cấu hình thêm/bớt/ghi đè bài niệm cho một ngày âm lịch cụ thể"
   },
   "options": {
@@ -26,7 +26,12 @@
     },
     "mode": {
       "type": "enumeration",
-      "enum": ["enable", "disable", "override_target", "cap_max"],
+      "enum": [
+        "enable",
+        "disable",
+        "override_target",
+        "cap_max"
+      ],
       "required": true,
       "description": "enable=thêm bài; disable=ẩn bài; override_target=ghi đè target; cap_max=giới hạn tối đa"
     },

@@ -430,51 +430,12 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiBeginnerGuideFileBeginnerGuideFile
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'beginner_guide_files';
-  info: {
-    description: 'T\u00E0i li\u1EC7u PDF / file h\u01B0\u1EDBng d\u1EABn s\u01A1 h\u1ECDc cho ng\u01B0\u1EDDi m\u1EDBi';
-    displayName: 'H\u01B0\u1EDBng D\u1EABn S\u01A1 H\u1ECDc - File';
-    pluralName: 'beginner-guide-files';
-    singularName: 'beginner-guide-file';
-  };
-  options: {
-    draftAndPublish: true;
-    increments: true;
-    timestamps: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    description: Schema.Attribute.Text;
-    files: Schema.Attribute.Media<'files' | 'images', true>;
-    guide: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::beginner-guide.beginner-guide'
-    >;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::beginner-guide-file.beginner-guide-file'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String & Schema.Attribute.Required;
-    order: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiBeginnerGuideBeginnerGuide
   extends Struct.CollectionTypeSchema {
   collectionName: 'beginner_guides';
   info: {
     description: 'Qu\u1EA3n l\u00FD c\u00E1c b\u01B0\u1EDBc h\u01B0\u1EDBng d\u1EABn s\u01A1 h\u1ECDc v\u00E0 kinh b\u00E0i t\u1EADp h\u1EB1ng ng\u00E0y';
-    displayName: 'H\u01B0\u1EDBng D\u1EABn S\u01A1 H\u1ECDc';
+    displayName: 'N\u1ED9i Dung \u00B7 H\u01B0\u1EDBng D\u1EABn S\u01A1 H\u1ECDc';
     pluralName: 'beginner-guides';
     singularName: 'beginner-guide';
   };
@@ -484,16 +445,16 @@ export interface ApiBeginnerGuideBeginnerGuide
     timestamps: true;
   };
   attributes: {
+    attached_files: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
     content: Schema.Attribute.RichText;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
     details: Schema.Attribute.JSON;
-    downloads: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::beginner-guide-file.beginner-guide-file'
-    >;
     duration: Schema.Attribute.String;
     guide_type: Schema.Attribute.Enumeration<['so-hoc', 'kinh-bai-tap']> &
       Schema.Attribute.Required &
@@ -524,11 +485,74 @@ export interface ApiBeginnerGuideBeginnerGuide
   };
 }
 
+export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
+  collectionName: 'blog_comments';
+  info: {
+    description: 'B\u00ECnh lu\u1EADn b\u00E0i vi\u1EBFt blog (c\u00F3 ki\u1EC3m duy\u1EC7t)';
+    displayName: 'C\u1ED9ng \u0110\u1ED3ng \u00B7 B\u00ECnh Lu\u1EADn Blog';
+    pluralName: 'blog-comments';
+    singularName: 'blog-comment';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    authorAvatar: Schema.Attribute.Media<'images'>;
+    authorName: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    content: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2000;
+        minLength: 2;
+      }>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    likes: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::blog-comment.blog-comment'
+    > &
+      Schema.Attribute.Private;
+    parent: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::blog-comment.blog-comment'
+    >;
+    post: Schema.Attribute.Relation<'manyToOne', 'api::blog-post.blog-post'>;
+    publishedAt: Schema.Attribute.DateTime;
+    replies: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::blog-comment.blog-comment'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userId: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+  };
+}
+
 export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
   collectionName: 'blog_posts';
   info: {
     description: 'B\u00E0i vi\u1EBFt Ph\u1EADt ph\u00E1p (Phi\u00EAn b\u1EA3n gi\u1EA3n l\u01B0\u1EE3c)';
-    displayName: 'B\u00E0i Vi\u1EBFt (Blog)';
+    displayName: 'N\u1ED9i Dung \u00B7 B\u00E0i Vi\u1EBFt';
     pluralName: 'blog-posts';
     singularName: 'blog-post';
   };
@@ -554,6 +578,7 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    eventDate: Schema.Attribute.Date;
     excerpt: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 300;
@@ -574,6 +599,10 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'api::blog-post.blog-post'
     > &
       Schema.Attribute.Private;
+    location: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 300;
+      }>;
     lunarEvents: Schema.Attribute.Relation<
       'manyToMany',
       'api::lunar-event.lunar-event'
@@ -592,6 +621,17 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'api::blog-post.blog-post'
     >;
     seo: Schema.Attribute.Component<'shared.seo', false>;
+    seriesKey: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    seriesNumber: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
     slug: Schema.Attribute.UID<'title'> &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -631,7 +671,7 @@ export interface ApiBlogTagBlogTag extends Struct.CollectionTypeSchema {
   collectionName: 'blog_tags';
   info: {
     description: 'Searchable tags for blog posts (replaces JSON array)';
-    displayName: 'Blog Tag';
+    displayName: 'N\u1ED9i Dung \u00B7 Th\u1EBB B\u00E0i Vi\u1EBFt';
     pluralName: 'blog-tags';
     singularName: 'blog-tag';
   };
@@ -675,7 +715,7 @@ export interface ApiBlogTagBlogTag extends Struct.CollectionTypeSchema {
 export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   collectionName: 'categories';
   info: {
-    displayName: 'Chuy\u00EAn M\u1EE5c (Category)';
+    displayName: 'N\u1ED9i Dung \u00B7 Chuy\u00EAn M\u1EE5c';
     pluralName: 'categories';
     singularName: 'category';
   };
@@ -721,7 +761,7 @@ export interface ApiChantItemChantItem extends Struct.CollectionTypeSchema {
   collectionName: 'chant_items';
   info: {
     description: 'M\u1ED9t b\u00E0i ni\u1EC7m: kinh, ch\u00FA, nghi th\u1EE9c b\u01B0\u1EDBc \u2014 d\u00F9ng trong k\u1EBF ho\u1EA1ch ni\u1EC7m kinh';
-    displayName: 'B\u00E0i Ni\u1EC7m (Chant Item)';
+    displayName: 'Ni\u1EC7m Kinh \u00B7 Danh M\u1EE5c B\u00E0i Ni\u1EC7m';
     pluralName: 'chant-items';
     singularName: 'chant-item';
   };
@@ -759,7 +799,7 @@ export interface ApiChantPlanChantPlan extends Struct.CollectionTypeSchema {
   collectionName: 'chant_plans';
   info: {
     description: 'K\u1EBF ho\u1EA1ch ni\u1EC7m kinh: daily (th\u01B0\u1EDDng nh\u1EADt) ho\u1EB7c special (\u0111\u1EB7c bi\u1EC7t)';
-    displayName: 'K\u1EBF Ho\u1EA1ch Ni\u1EC7m Kinh (Chant Plan)';
+    displayName: 'Ni\u1EC7m Kinh \u00B7 L\u1ECBch Tr\u00ECnh Ni\u1EC7m';
     pluralName: 'chant-plans';
     singularName: 'chant-plan';
   };
@@ -793,7 +833,7 @@ export interface ApiCommunityCommentCommunityComment
   extends Struct.CollectionTypeSchema {
   collectionName: 'community_comments';
   info: {
-    displayName: 'B\u00ECnh Lu\u1EADn C\u1ED9ng \u0110\u1ED3ng';
+    displayName: 'C\u1ED9ng \u0110\u1ED3ng \u00B7 B\u00ECnh Lu\u1EADn C\u0110';
     pluralName: 'community-comments';
     singularName: 'community-comment';
   };
@@ -835,12 +875,15 @@ export interface ApiCommunityCommentCommunityComment
       'manyToOne',
       'api::community-comment.community-comment'
     >;
-    parent_id: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     post: Schema.Attribute.Relation<
       'manyToOne',
       'api::community-post.community-post'
     >;
     publishedAt: Schema.Attribute.DateTime;
+    replies: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::community-comment.community-comment'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -852,7 +895,7 @@ export interface ApiCommunityPostCommunityPost
   extends Struct.CollectionTypeSchema {
   collectionName: 'community_posts';
   info: {
-    displayName: 'Chia S\u1EBB C\u1ED9ng \u0110\u1ED3ng';
+    displayName: 'C\u1ED9ng \u0110\u1ED3ng \u00B7 B\u00E0i \u0110\u0103ng';
     pluralName: 'community-posts';
     singularName: 'community-post';
   };
@@ -948,12 +991,154 @@ export interface ApiCommunityPostCommunityPost
   };
 }
 
+export interface ApiEventEvent extends Struct.CollectionTypeSchema {
+  collectionName: 'events';
+  info: {
+    description: 'Qu\u1EA3n l\u00FD s\u1EF1 ki\u1EC7n, ph\u00E1p h\u1ED9i, ph\u00F3ng sinh t\u1EA1i Vi\u1EC7t Nam';
+    displayName: 'N\u1ED9i Dung \u00B7 S\u1EF1 Ki\u1EC7n';
+    pluralName: 'events';
+    singularName: 'event';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    content: Schema.Attribute.RichText;
+    coverImage: Schema.Attribute.Media<'images'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    eventStatus: Schema.Attribute.Enumeration<['upcoming', 'live', 'past']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'upcoming'>;
+    files: Schema.Attribute.Media<'files', true>;
+    gallery: Schema.Attribute.Media<'images' | 'videos', true>;
+    language: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Ti\u1EBFng Vi\u1EC7t'>;
+    link: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::event.event'> &
+      Schema.Attribute.Private;
+    location: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Vi\u1EC7t Nam'>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    speaker: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'\u0110\u1ED9i ng\u0169 gi\u1EA3ng s\u01B0'>;
+    timeString: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      ['dharma-talk', 'webinar', 'retreat', 'liberation', 'festival']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'dharma-talk'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    youtubeId: Schema.Attribute.String;
+  };
+}
+
+export interface ApiGuestbookEntryGuestbookEntry
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'guestbook_entries';
+  info: {
+    description: 'Guestbook \u2014 l\u01B0u b\u00FAt t\u1EEB kh\u00E1ch th\u1EADp ph\u01B0\u01A1ng';
+    displayName: 'C\u1ED9ng \u0110\u1ED3ng \u00B7 S\u1ED5 L\u01B0u B\u00FAt';
+    pluralName: 'guestbook-entries';
+    singularName: 'guestbook-entry';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    adminReply: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2000;
+      }>;
+    authorName: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    avatar: Schema.Attribute.Media<'images'>;
+    country: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::guestbook-entry.guestbook-entry'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2000;
+        minLength: 5;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['pending', 'approved']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
+  collectionName: 'hub_pages';
+  info: {
+    displayName: 'N\u1ED9i Dung \u00B7 Trang T\u1ED5ng H\u1EE3p';
+    pluralName: 'hub-pages';
+    singularName: 'hub-page';
+  };
+  options: {
+    draftAndPublish: true;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::hub-page.hub-page'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    sections: Schema.Attribute.Component<'hub.hub-section', true>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiLunarEventChantOverrideLunarEventChantOverride
   extends Struct.CollectionTypeSchema {
   collectionName: 'lunar_event_chant_overrides';
   info: {
     description: 'C\u1EA5u h\u00ECnh th\u00EAm/b\u1EDBt/ghi \u0111\u00E8 b\u00E0i ni\u1EC7m cho m\u1ED9t ng\u00E0y \u00E2m l\u1ECBch c\u1EE5 th\u1EC3';
-    displayName: 'Ghi \u0110\u00E8 Ni\u1EC7m Kinh Theo Ng\u00E0y (Override)';
+    displayName: 'Ni\u1EC7m Kinh \u00B7 Gi\u1EDBi H\u1EA1n Ng\u00E0y \u0110B';
     pluralName: 'lunar-event-chant-overrides';
     singularName: 'lunar-event-chant-override';
   };
@@ -996,7 +1181,7 @@ export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
   collectionName: 'lunar_events';
   info: {
     description: 'L\u1ECBch ni\u1EC7m L\u1EC5 Ph\u1EADt \u0110\u1EA1i S\u00E1m H\u1ED1i V\u0103n, khai th\u1ECB v\u00E0 c\u00E1c ng\u00E0y v\u00EDa';
-    displayName: 'L\u1ECBch Kh\u00F3a L\u1EC5 (S\u1EF1 Ki\u1EC7n)';
+    displayName: 'Ni\u1EC7m Kinh \u00B7 L\u1ECBch S\u1EF1 Ki\u1EC7n \u00C2m';
     pluralName: 'lunar-events';
     singularName: 'lunar-event';
   };
@@ -1052,7 +1237,7 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
   collectionName: 'practice_logs';
   info: {
     description: 'L\u01B0u ti\u1EBFn \u0111\u1ED9 ni\u1EC7m kinh theo ng\u00E0y + ng\u01B0\u1EDDi d\u00F9ng';
-    displayName: 'Nh\u1EADt K\u00FD Tu H\u1ECDc (Practice Log)';
+    displayName: 'Ni\u1EC7m Kinh \u00B7 Nh\u1EADt K\u00FD Tu H\u1ECDc';
     pluralName: 'practice-logs';
     singularName: 'practice-log';
   };
@@ -1087,11 +1272,62 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPushSubscriptionPushSubscription
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'push_subscriptions';
+  info: {
+    description: 'Web Push subscriptions (endpoint + VAPID keys) \u2014 ch\u1EC9 truy c\u1EADp server-side';
+    displayName: 'H\u1EC7 Th\u1ED1ng \u00B7 C\u1EA5u H\u00ECnh Push';
+    pluralName: 'push-subscriptions';
+    singularName: 'push-subscription';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    auth: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 200;
+      }>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    endpoint: Schema.Attribute.Text & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::push-subscription.push-subscription'
+    > &
+      Schema.Attribute.Private;
+    p256dh: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    reminderHour: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 23;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<6>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiSettingSetting extends Struct.SingleTypeSchema {
   collectionName: 'settings';
   info: {
     description: 'C\u00E0i \u0111\u1EB7t chung v\u00E0 n\u1ED9i dung trang ch\u1EE7';
-    displayName: 'C\u00E0i \u0110\u1EB7t H\u1EC7 Th\u1ED1ng';
+    displayName: 'C\u1EA5u H\u00ECnh \u00B7 H\u1EC7 Th\u1ED1ng Trang Ch\u1EE7';
     pluralName: 'settings';
     singularName: 'setting';
   };
@@ -1138,6 +1374,46 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     socialLinks: Schema.Attribute.JSON;
     stats: Schema.Attribute.Component<'homepage.stat-item', true>;
     stickyBanner: Schema.Attribute.Component<'homepage.sticky-banner', false>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSidebarConfigSidebarConfig extends Struct.SingleTypeSchema {
+  collectionName: 'sidebar_configs';
+  info: {
+    displayName: 'C\u1EA5u H\u00ECnh \u00B7 Thanh B\u00EAn';
+    pluralName: 'sidebar-configs';
+    singularName: 'sidebar-config';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    downloadLinks: Schema.Attribute.Component<'shared.quick-link', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sidebar-config.sidebar-config'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    qrImages: Schema.Attribute.Media<'images', true>;
+    showArchive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    showCategoryTree: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    showDownloadLinks: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    showLatestComments: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    showSearch: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    socialLinks: Schema.Attribute.Component<'shared.social-link', true>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1659,8 +1935,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::beginner-guide-file.beginner-guide-file': ApiBeginnerGuideFileBeginnerGuideFile;
       'api::beginner-guide.beginner-guide': ApiBeginnerGuideBeginnerGuide;
+      'api::blog-comment.blog-comment': ApiBlogCommentBlogComment;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
       'api::blog-tag.blog-tag': ApiBlogTagBlogTag;
       'api::category.category': ApiCategoryCategory;
@@ -1668,10 +1944,15 @@ declare module '@strapi/strapi' {
       'api::chant-plan.chant-plan': ApiChantPlanChantPlan;
       'api::community-comment.community-comment': ApiCommunityCommentCommunityComment;
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
+      'api::event.event': ApiEventEvent;
+      'api::guestbook-entry.guestbook-entry': ApiGuestbookEntryGuestbookEntry;
+      'api::hub-page.hub-page': ApiHubPageHubPage;
       'api::lunar-event-chant-override.lunar-event-chant-override': ApiLunarEventChantOverrideLunarEventChantOverride;
       'api::lunar-event.lunar-event': ApiLunarEventLunarEvent;
       'api::practice-log.practice-log': ApiPracticeLogPracticeLog;
+      'api::push-subscription.push-subscription': ApiPushSubscriptionPushSubscription;
       'api::setting.setting': ApiSettingSetting;
+      'api::sidebar-config.sidebar-config': ApiSidebarConfigSidebarConfig;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

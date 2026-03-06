@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_comments",
+  "info": {
+    "singularName": "blog-comment",
+    "pluralName": "blog-comments",
+    "displayName": "Cộng Đồng · Bình Luận Blog",
+    "description": "Bình luận bài viết blog (có kiểm duyệt)"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "post": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-post.blog-post"
+    },
+    "authorName": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "authorAvatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "userId": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "content": {
+      "type": "text",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 2000
+    },
+    "parent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-comment.blog-comment",
+      "inversedBy": "replies"
+    },
+    "replies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::blog-comment.blog-comment",
+      "mappedBy": "parent"
+    },
+    "likes": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    }
+  }
+}

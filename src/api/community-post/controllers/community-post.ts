@@ -3,10 +3,35 @@
  */
 
 import { factories } from '@strapi/strapi';
+import { createHash } from 'node:crypto';
 import { atomicIncrementField } from '../../../utils/strapi-helpers';
 import { createLogger } from '../../../utils/logger';
 
 const POST_UID = 'api::community-post.community-post';
+
+// In-memory rate limiter cho submit (IP-based)
+const submitCooldown = new Map<string, number>();
+const SUBMIT_COOLDOWN_MS = 300_000; // 5 phút giữa 2 lần gửi cùng IP
+
+function hashIp(ip: string): string {
+  return createHash('sha256').update(ip).digest('hex').slice(0, 16);
+}
+
+function checkCooldown(ipHash: string): boolean {
+  const last = submitCooldown.get(ipHash);
+  if (!last) return false;
+  return Date.now() - last < SUBMIT_COOLDOWN_MS;
+}
+
+function recordCooldown(ipHash: string): void {
+  submitCooldown.set(ipHash, Date.now());
+  if (submitCooldown.size > 5000) {
+    const cutoff = Date.now() - SUBMIT_COOLDOWN_MS * 10;
+    for (const [k, v] of submitCooldown.entries()) {
+      if (v < cutoff) submitCooldown.delete(k);
+    }
+  }
+}
 
 function stripHtml(str: string): string {
   return str.replace(/<[^>]*>/g, '').trim();
@@ -15,6 +40,19 @@ function stripHtml(str: string): string {
 export default factories.createCoreController(POST_UID, ({ strapi }) => ({
   // POST /api/community-posts/submit - Gửi bài mới, không cần auth
   async createPost(ctx) {
+    const log = createLogger(strapi, 'community-post');
+    // Rate limiting theo IP
+    const rawIp: string =
+      (ctx.request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
+      ctx.request.ip ??
+      'unknown';
+    const ipHash = hashIp(rawIp);
+    if (checkCooldown(ipHash)) {
+      ctx.status = 429;
+      ctx.body = { error: 'Bạn gửi bài quá nhanh. Vui lòng thử lại sau 5 phút.' };
+      return;
+    }
+
     const { title, content, type, category, author_name, author_country, author_avatar, video_url, rating, tags, cover_image } =
       ctx.request.body as any;
 
@@ -48,6 +86,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
 
     ctx.status = 201;
     ctx.body = { data: entity, message: 'Bài viết đang chờ kiểm duyệt!' };
+    recordCooldown(ipHash);
   },
 
   // POST /api/community-posts/like/:documentId - Tang like
@@ -109,7 +148,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
             post: { documentId: post.documentId },
           },
           status: 'published',
-          fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'author_country', 'likes', 'parent_id', 'createdAt'],
+          fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'author_country', 'likes', 'createdAt'],
           sort: 'createdAt:asc',
         });
         return { ...post, comments };

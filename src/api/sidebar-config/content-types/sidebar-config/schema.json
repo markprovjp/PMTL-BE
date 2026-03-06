@@ -1,0 +1,55 @@
+{
+  "kind": "singleType",
+  "collectionName": "sidebar_configs",
+  "info": {
+    "singularName": "sidebar-config",
+    "pluralName": "sidebar-configs",
+    "displayName": "Cấu Hình · Thanh Bên"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "showSearch": {
+      "type": "boolean",
+      "default": true
+    },
+    "showCategoryTree": {
+      "type": "boolean",
+      "default": true
+    },
+    "showArchive": {
+      "type": "boolean",
+      "default": true
+    },
+    "showLatestComments": {
+      "type": "boolean",
+      "default": true
+    },
+    "showDownloadLinks": {
+      "type": "boolean",
+      "default": true
+    },
+    "downloadLinks": {
+      "type": "component",
+      "component": "shared.quick-link",
+      "repeatable": true
+    },
+    "socialLinks": {
+      "type": "component",
+      "component": "shared.social-link",
+      "repeatable": true
+    },
+    "qrImages": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

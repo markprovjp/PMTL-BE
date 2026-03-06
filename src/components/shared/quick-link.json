@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_shared_quick_links",
+  "info": {
+    "displayName": "Quick Link",
+    "singularName": "quick-link",
+    "pluralName": "quick-links"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "url": {
+      "type": "string",
+      "required": true,
+      "maxLength": 500
+    }
+  }
+}

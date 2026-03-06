@@ -4,7 +4,7 @@
   "info": {
     "singularName": "category",
     "pluralName": "categories",
-    "displayName": "Chuyên Mục (Category)"
+    "displayName": "Nội Dung · Chuyên Mục"
   },
   "options": {
     "increments": true,

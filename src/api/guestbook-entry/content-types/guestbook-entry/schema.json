@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "guestbook_entries",
+  "info": {
+    "singularName": "guestbook-entry",
+    "pluralName": "guestbook-entries",
+    "displayName": "Cộng Đồng · Sổ Lưu Bút",
+    "description": "Guestbook — lưu bút từ khách thập phương"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "authorName": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "country": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "message": {
+      "type": "text",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 2000
+    },
+    "adminReply": {
+      "type": "text",
+      "maxLength": 2000
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "approved"
+      ],
+      "default": "pending",
+      "required": true
+    }
+  }
+}
