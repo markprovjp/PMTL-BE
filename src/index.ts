@@ -148,6 +148,77 @@ export default {
         strapi.log.error('[Google Auth] Failed to auto-enable provider:', err);
       }
     }
+
+    // ─── 3) Auto-generate TypeScript Types ────────────────────────
+    try {
+      const generatedDir = path.join(process.cwd(), 'types', 'generated');
+      await fs.ensureDir(generatedDir);
+
+      const strapiTypeToTS = (fieldType: string, field: any): string => {
+        switch (fieldType) {
+          case 'string': case 'text': case 'richtext': case 'date': case 'datetime': case 'time': return 'string';
+          case 'integer': case 'biginteger': case 'decimal': case 'float': return 'number';
+          case 'boolean': return 'boolean';
+          case 'json': return 'Record<string, any>';
+          case 'media': return 'StrapiMediaRef | null';
+          case 'component': return field.repeatable ? 'any[]' : 'any';
+          case 'relation': {
+            const relation = field.relation || '';
+            const target = field.target || '';
+
+            if (target.startsWith('admin::')) return 'any';
+            if (target.startsWith('plugin::')) return 'any';
+            if (relation.includes('morph')) return 'any';
+
+            const modelName = target.split('.').pop() || '';
+            const targetType = modelName.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+
+            const isMany = relation.includes('Many') || relation === 'manyWay' || relation === 'morphToMany';
+
+            return targetType ? (isMany ? `${targetType}[]` : `${targetType} | null`) : 'any';
+          }
+          default: return 'unknown';
+        }
+      };
+
+      const generateContentTypeInterface = (uid: string, schema: any): string => {
+        const modelName = uid.split('.').pop() || '';
+        const typeName = modelName.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join('') || 'Unknown';
+        const fields: string[] = ['id?: number;', 'documentId: string;', 'createdAt: string;', 'updatedAt: string;'];
+
+        for (const [key, field] of Object.entries(schema.attributes || {})) {
+          if (['id', 'documentId', 'createdAt', 'updatedAt'].includes(key)) continue;
+          const fieldDef = field as any;
+          const tsType = strapiTypeToTS(fieldDef.type, fieldDef);
+          const optional = !fieldDef.required ? '?' : '';
+          const safeKey = key.includes('-') ? `'${key}'` : key;
+          fields.push(`${safeKey}${optional}: ${tsType};`);
+        }
+        return `export interface ${typeName} {\n  ${fields.join('\n  ')}\n}`;
+      };
+
+      const contentTypes = strapi.contentTypes;
+      const interfaces: string[] = [
+        '/**\n * AUTO-GENERATED TYPE DEFINITIONS\n * Do not edit manually!\n * Regenerate: npm run build\n */\n',
+        "import type { StrapiMediaRef } from './media'\n",
+      ];
+
+      for (const [uid, schema] of Object.entries(contentTypes)) {
+        if (uid.startsWith('admin::') || uid.startsWith('plugin::')) continue;
+        try {
+          interfaces.push(generateContentTypeInterface(uid, schema));
+          interfaces.push('');
+        } catch (err) {
+          strapi.log.warn(`[TypeScript] Skipped ${uid}:`, err);
+        }
+      }
+
+      const outputPath = path.join(generatedDir, 'content-types.ts');
+      await fs.writeFile(outputPath, interfaces.join('\n'), 'utf-8');
+      strapi.log.info(`[TypeScript] Generated custom types → ${outputPath}`);
+    } catch (err) {
+      strapi.log.error('[TypeScript] Generation failed:', err);
+    }
   },
 };
 

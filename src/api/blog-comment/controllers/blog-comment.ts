@@ -10,6 +10,7 @@ import { factories } from '@strapi/strapi';
 import { createHash } from 'node:crypto';
 import { atomicIncrementField } from '../../../utils/strapi-helpers';
 import { createLogger } from '../../../utils/logger';
+import { validateBlogCommentSubmit } from '../../../schemas/blog-comment';
 
 const COMMENT_UID = 'api::blog-comment.blog-comment';
 const POST_UID = 'api::blog-post.blog-post';
@@ -62,20 +63,18 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     }
 
     const body = ctx.request.body as Record<string, unknown>;
-    const { postSlug, content, authorName, parentDocumentId } = body;
 
-    if (!postSlug || typeof postSlug !== 'string') {
-      return ctx.badRequest('Thiếu trường: postSlug');
-    }
-    if (!content || typeof content !== 'string' || content.trim().length < 2) {
-      return ctx.badRequest('Nội dung bình luận quá ngắn.');
-    }
-    if (!authorName || typeof authorName !== 'string' || authorName.trim().length < 1) {
-      return ctx.badRequest('Thiếu tên tác giả.');
+    // Zod Validation
+    const validation = validateBlogCommentSubmit(body);
+    if (!validation.success) {
+      return ctx.badRequest('Dữ liệu không hợp lệ', { errors: validation.error.format() });
     }
 
-    const cleanContent = stripHtml(content).slice(0, 2000);
-    const cleanName = stripHtml(String(authorName)).slice(0, 100);
+    const { postSlug, content, authorName, authorCountry, authorAvatar, parentDocumentId } = validation.data;
+
+    // stripHtml as an extra safety measure (Zod does string validation, but not stripping tags)
+    const cleanContent = stripHtml(content);
+    const cleanName = stripHtml(String(authorName));
 
     try {
       // Tìm bài viết theo slug
@@ -92,6 +91,8 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       // Xây dựng data (mặc định là draft trong v5 Document Service)
       const data: Record<string, unknown> = {
         authorName: cleanName,
+        authorCountry,
+        authorAvatar,
         content: cleanContent,
         post: { connect: [{ documentId: post.documentId }] },
       };

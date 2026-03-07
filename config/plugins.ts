@@ -50,7 +50,24 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   meilisearch: {
     config: {
       host: env('MEILISEARCH_HOST', 'http://localhost:7700'),
-      apiKey: env('MEILISEARCH_API_KEY', 'super-secret-key-12345'),
+      apiKey: env('MEILISEARCH_API_KEY', ''),
+    },
+  },
+
+  // ── OpenAPI / Swagger ──────────────────────────
+  documentation: {
+    enabled: true,
+    config: {
+      openapi: '3.0.0',
+      info: {
+        version: '1.0.0',
+        title: 'PMTL Backend API',
+        description: 'Tài liệu OpenAPI cho BE PMTL',
+      },
+      'x-strapi-config': {
+        path: '/documentation',
+        showIncludedCustomResponses: false,
+      },
     },
   },
 });
