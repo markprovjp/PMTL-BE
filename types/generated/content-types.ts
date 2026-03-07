@@ -192,6 +192,7 @@ export interface CommunityPost {
   createdAt: string;
   updatedAt: string;
   title: string;
+  slug: unknown;
   content: string;
   type: unknown;
   category?: unknown;
@@ -199,6 +200,7 @@ export interface CommunityPost {
   video_url?: string;
   author_name: string;
   author_avatar?: string;
+  author_country?: string;
   user?: any;
   likes?: number;
   views?: number;
@@ -306,6 +308,7 @@ export interface HubPage {
   sortOrder?: number;
   showInMenu?: boolean;
   menuIcon?: string;
+  visualTheme?: unknown;
   blocks?: unknown;
   publishedAt?: string;
   createdBy?: any;

@@ -64,6 +64,12 @@
       "maxLength": 50,
       "description": "Tên icon Lucide (ví dụ: BookOpen, Download, Star)"
     },
+    "visualTheme": {
+      "type": "enumeration",
+      "enum": ["teaching", "practice", "story", "reference"],
+      "default": "teaching",
+      "description": "Chủ đề giao diện (chi phối màu sắc, header, và grid structure)"
+    },
     "blocks": {
       "type": "dynamiczone",
       "components": [

@@ -63,6 +63,8 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     const body = ctx.request.body as Record<string, unknown>;
     const { postDocumentId, content, author_name, author_avatar, parentDocumentId } = body;
 
+    log.info('createComment start', { postDocumentId, parentDocumentId, author_name });
+
     if (!content || typeof content !== 'string' || content.trim().length < 1) {
       return ctx.badRequest('Nội dung bình luận không được trống.');
     }
@@ -70,7 +72,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       return ctx.badRequest('Thiếu tên tác giả.');
     }
     if (!postDocumentId || typeof postDocumentId !== 'string') {
-      return ctx.badRequest('Thiếu postDocumentId.');
+      return ctx.badRequest('Thiếu bài viết (postDocumentId).');
     }
 
     const cleanContent = stripHtml(content).slice(0, 2000);
@@ -80,37 +82,95 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     const authUserId: number | null = (ctx.state?.user?.id) ?? null;
 
     try {
-      // Xác nhận bài viết tồn tại và đã publish
-      const post = await (strapi.documents as any)(POST_UID).findOne({
-        documentId: postDocumentId,
+      // 1. Xác nhận bài viết tồn tại và đã publish
+      const postResults = await strapi.documents(POST_UID as any).findMany({
+        filters: { documentId: postDocumentId },
         status: 'published',
-        fields: ['documentId'],
+        fields: ['id', 'documentId'],
+        limit: 1,
       });
-      if (!post) return ctx.notFound('Không tìm thấy bài viết.');
 
+      const post = postResults[0];
+      if (!post) {
+        log.warn('Post not found or not published', { postDocumentId });
+        return ctx.notFound('Không tìm thấy bài viết hoặc bài viết chưa được công khai.');
+      }
+
+      // 2. Nếu có reply (parent), xác nhận parent tồn tại và thuộc cùng post
+      let parentId: number | null = null;
+      if (parentDocumentId && typeof parentDocumentId === 'string') {
+        const parentResults = await strapi.documents(COMMENT_UID as any).findMany({
+          filters: { documentId: parentDocumentId },
+          status: 'published',
+          fields: ['id', 'documentId'],
+          populate: { post: { fields: ['documentId'] } },
+          limit: 1,
+        });
+
+        const parentComment = parentResults[0];
+        if (!parentComment) {
+          log.warn('Parent comment not found or not published', { parentDocumentId });
+          return ctx.notFound('Không tìm thấy bình luận cha đang được hiển thị.');
+        }
+
+        // Kiểm tra parent có thuộc cùng bài viết không
+        const parentPostId = parentComment.post?.documentId;
+        if (parentPostId !== postDocumentId) {
+          log.warn('Parent comment does not belong to this post', {
+            parentDocumentId,
+            expectedPost: postDocumentId,
+            actualPost: parentPostId
+          });
+          return ctx.badRequest('Bình luận cha không thuộc về bài viết này.');
+        }
+
+        parentId = parentComment.id;
+      }
+
+      // 3. Chuẩn bị data cho entityService
+      // Trong Strapi v5, Document Service đôi khi bị lỗi "locale null" khi connect 
+      // draft document vào published document. Ta dùng entityService (id integer) để vượt qua.
       const data: any = {
         content: cleanContent,
         author_name: cleanName,
-        ...(author_avatar ? { author_avatar: String(author_avatar).slice(0, 500) } : {}),
-        ...(authUserId ? { user: authUserId } : {}),
-        post: { connect: [{ documentId: postDocumentId }] },
+        author_avatar: author_avatar ? String(author_avatar).slice(0, 500) : undefined,
+        user: authUserId,
+        post: post.id,
+        parent: parentId,
         likes: 0,
+        publishedAt: null, // Mặc định là draft chờ duyệt
       };
 
-      // Bình luận lồng: kết nối qua quan hệ parent
-      if (parentDocumentId && typeof parentDocumentId === 'string') {
-        data.parent = { connect: [{ documentId: parentDocumentId }] };
-      }
+      log.info('Creating community comment via entityService', {
+        postId: post.id,
+        parentId,
+        author_name: cleanName
+      });
 
-      const entity = await (strapi.documents as any)(COMMENT_UID).create({ data });
+      const entity = await (strapi as any).entityService.create(COMMENT_UID, {
+        data,
+      });
+
       recordCooldown(ipHash);
 
       ctx.status = 201;
       ctx.body = { data: entity, message: 'Bình luận đang chờ duyệt!' };
-    } catch (err) {
-      log.error('createComment failed', err);
+    } catch (err: any) {
+      log.error('createComment failed', {
+        error: err.message,
+        stack: err.stack,
+        postDocumentId,
+        parentDocumentId
+      });
+
+      if (err.message?.includes('not found')) {
+        ctx.status = 404;
+        ctx.body = { error: 'Không tìm thấy dữ liệu liên quan (bài viết hoặc bình luận cha).' };
+        return;
+      }
+
       ctx.status = 500;
-      ctx.body = { error: 'Lỗi server khi gửi bình luận.' };
+      ctx.body = { error: `Lỗi server khi gửi bình luận: ${err.message}` };
     }
   },
 
@@ -120,17 +180,22 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     const log = createLogger(strapi, 'community-comment');
 
     try {
-      const existing = await (strapi.documents as any)(COMMENT_UID).findOne({
-        documentId,
+      const results = await strapi.documents(COMMENT_UID as any).findMany({
+        filters: { documentId },
         status: 'published',
         fields: ['documentId'],
+        limit: 1,
       });
+      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bình luận');
 
       const newLikes = await atomicIncrementField(strapi, COMMENT_UID, documentId, 'likes');
       ctx.body = { likes: newLikes };
-    } catch (err) {
-      log.error('likeComment failed', err);
+    } catch (err: any) {
+      log.error('likeComment failed', {
+        error: err.message,
+        documentId
+      });
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server' };
     }

@@ -3,9 +3,12 @@
  * Usage: const log = createLogger(strapi, 'my-controller');
  */
 export function createLogger(strapi: any, prefix: string) {
+  const format = (msg: string, data?: any) => {
+    return data ? `[${prefix}] ${msg} ${JSON.stringify(data)}` : `[${prefix}] ${msg}`;
+  };
   return {
-    info:  (msg: string) => strapi.log.info(`[${prefix}] ${msg}`),
-    warn:  (msg: string) => strapi.log.warn(`[${prefix}] ${msg}`),
-    error: (msg: string, err?: unknown) => strapi.log.error(`[${prefix}] ${msg}`, err),
+    info: (msg: string, data?: any) => strapi.log.info(format(msg, data)),
+    warn: (msg: string, data?: any) => strapi.log.warn(format(msg, data)),
+    error: (msg: string, data?: any) => strapi.log.error(format(msg, data)),
   };
 }

@@ -947,6 +947,10 @@ export interface ApiCommunityPostCommunityPost
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
       }>;
+    author_country: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
     author_name: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1000,6 +1004,7 @@ export interface ApiCommunityPostCommunityPost
         },
         number
       >;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
     tags: Schema.Attribute.JSON;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -1285,6 +1290,10 @@ export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    visualTheme: Schema.Attribute.Enumeration<
+      ['teaching', 'practice', 'story', 'reference']
+    > &
+      Schema.Attribute.DefaultTo<'teaching'>;
   };
 }
 

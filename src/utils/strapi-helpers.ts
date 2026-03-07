@@ -33,5 +33,10 @@ export async function findPublished(
   uid: string,
   documentId: string
 ): Promise<any | null> {
-  return (strapi.documents as any)(uid).findOne({ documentId, status: 'published' });
+  const results = await (strapi.documents(uid as any) as any).findMany({
+    filters: { documentId },
+    status: 'published',
+    limit: 1,
+  });
+  return results?.[0] || null;
 }

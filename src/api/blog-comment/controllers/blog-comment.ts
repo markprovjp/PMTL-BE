@@ -98,11 +98,12 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       };
 
       if (parentDocumentId && typeof parentDocumentId === 'string') {
-        const parentExists = await (strapi.documents as any)(COMMENT_UID).findOne({
-          documentId: String(parentDocumentId),
+        const parents = await (strapi.documents(COMMENT_UID as any) as any).findMany({
+          filters: { documentId: String(parentDocumentId) },
           fields: ['documentId'],
+          limit: 1,
         });
-        if (parentExists) {
+        if (parents?.length > 0) {
           data['parent'] = { connect: [{ documentId: String(parentDocumentId) }] };
         }
       }
@@ -132,11 +133,13 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     const log = createLogger(strapi, 'blog-comment');
 
     try {
-      const existing = await (strapi.documents as any)(COMMENT_UID).findOne({
-        documentId,
+      const results = await (strapi.documents(COMMENT_UID as any) as any).findMany({
+        filters: { documentId },
         status: 'published',
         fields: ['documentId', 'likes'],
+        limit: 1,
       });
+      const existing = results[0];
       if (!existing) {
         return ctx.notFound('Không tìm thấy bình luận.');
       }

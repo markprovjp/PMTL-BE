@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2026-03-07T06:10:08.924Z"
+    "x-generation-date": "2026-03-07T14:13:09.889Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -24412,6 +24412,9 @@
               "title": {
                 "type": "string"
               },
+              "slug": {
+                "type": "string"
+              },
               "content": {
                 "type": "string"
               },
@@ -24617,6 +24620,9 @@
                 "type": "string"
               },
               "author_avatar": {
+                "type": "string"
+              },
+              "author_country": {
                 "type": "string"
               },
               "user": {
@@ -25040,6 +25046,7 @@
           "data": {
             "required": [
               "title",
+              "slug",
               "content",
               "type",
               "author_name"
@@ -25047,6 +25054,9 @@
             "type": "object",
             "properties": {
               "title": {
+                "type": "string"
+              },
+              "slug": {
                 "type": "string"
               },
               "content": {
@@ -25093,6 +25103,9 @@
                 "type": "string"
               },
               "author_avatar": {
+                "type": "string"
+              },
+              "author_country": {
                 "type": "string"
               },
               "user": {
@@ -25193,6 +25206,7 @@
         "type": "object",
         "required": [
           "title",
+          "slug",
           "content",
           "type",
           "author_name"
@@ -25212,6 +25226,9 @@
             "type": "string"
           },
           "title": {
+            "type": "string"
+          },
+          "slug": {
             "type": "string"
           },
           "content": {
@@ -26059,6 +26076,9 @@
           "author_avatar": {
             "type": "string"
           },
+          "author_country": {
+            "type": "string"
+          },
           "user": {
             "type": "object",
             "properties": {
@@ -26662,6 +26682,9 @@
                     "title": {
                       "type": "string"
                     },
+                    "slug": {
+                      "type": "string"
+                    },
                     "content": {
                       "type": "string"
                     },
@@ -26867,6 +26890,9 @@
                       "type": "string"
                     },
                     "author_avatar": {
+                      "type": "string"
+                    },
+                    "author_country": {
                       "type": "string"
                     },
                     "user": {
@@ -32195,6 +32221,15 @@
               "menuIcon": {
                 "type": "string"
               },
+              "visualTheme": {
+                "type": "string",
+                "enum": [
+                  "teaching",
+                  "practice",
+                  "story",
+                  "reference"
+                ]
+              },
               "blocks": {
                 "type": "array",
                 "items": {
@@ -34411,6 +34446,15 @@
           "menuIcon": {
             "type": "string"
           },
+          "visualTheme": {
+            "type": "string",
+            "enum": [
+              "teaching",
+              "practice",
+              "story",
+              "reference"
+            ]
+          },
           "blocks": {
             "type": "array",
             "items": {
@@ -34745,6 +34789,15 @@
                 },
                 "menuIcon": {
                   "type": "string"
+                },
+                "visualTheme": {
+                  "type": "string",
+                  "enum": [
+                    "teaching",
+                    "practice",
+                    "story",
+                    "reference"
+                  ]
                 },
                 "blocks": {
                   "type": "array",

@@ -97,17 +97,22 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
     const log = createLogger(strapi, 'community-post');
 
     try {
-      const existing = await strapi.documents(POST_UID).findOne({
-        documentId,
+      const results = await strapi.documents(POST_UID).findMany({
+        filters: { documentId },
         status: 'published',
         fields: ['documentId'],
+        limit: 1,
       });
+      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bài viết');
 
       const newLikes = await atomicIncrementField(strapi, POST_UID, documentId, 'likes');
       ctx.body = { likes: newLikes };
-    } catch (err) {
-      log.error('like failed', err);
+    } catch (err: any) {
+      log.error('like failed', {
+        error: err.message,
+        documentId
+      });
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server' };
     }
@@ -119,18 +124,23 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
     const log = createLogger(strapi, 'community-post');
 
     try {
-      const existing = await strapi.documents(POST_UID).findOne({
-        documentId,
+      const results = await strapi.documents(POST_UID).findMany({
+        filters: { documentId },
         status: 'published',
         fields: ['documentId'],
+        limit: 1,
       });
+      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bài viết');
 
       const newViews = await atomicIncrementField(strapi, POST_UID, documentId, 'views');
       ctx.status = 200;
       ctx.body = { ok: true, views: newViews };
-    } catch (err) {
-      log.error('incrementView failed', err);
+    } catch (err: any) {
+      log.error('incrementView failed', {
+        error: err.message,
+        documentId
+      });
       ctx.status = 500;
       ctx.body = { ok: false, error: 'Lỗi server' };
     }
@@ -151,6 +161,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
           },
           status: 'published',
           fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'likes', 'createdAt'],
+          populate: { parent: { fields: ['documentId'] } },
           sort: 'createdAt:asc',
         });
         return { ...post, comments };
@@ -182,6 +193,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
       },
       status: 'published',
       fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'likes', 'createdAt'],
+      populate: { parent: { fields: ['documentId'] } },
       sort: 'createdAt:asc',
     });
 
