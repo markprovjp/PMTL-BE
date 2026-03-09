@@ -522,8 +522,13 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 64;
       }>;
+    isHidden: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     isOfficialReply: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
+    lastReportReason: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
     likes: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -538,6 +543,10 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
       'api::blog-comment.blog-comment'
     > &
       Schema.Attribute.Private;
+    moderationStatus: Schema.Attribute.Enumeration<
+      ['visible', 'flagged', 'hidden', 'removed']
+    > &
+      Schema.Attribute.DefaultTo<'visible'>;
     parent: Schema.Attribute.Relation<
       'manyToOne',
       'api::blog-comment.blog-comment'
@@ -548,6 +557,22 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::blog-comment.blog-comment'
     >;
+    reportCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    spamScore: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -892,6 +917,11 @@ export interface ApiCommunityCommentCommunityComment
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    isHidden: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    lastReportReason: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
     likes: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -906,6 +936,10 @@ export interface ApiCommunityCommentCommunityComment
       'api::community-comment.community-comment'
     > &
       Schema.Attribute.Private;
+    moderationStatus: Schema.Attribute.Enumeration<
+      ['visible', 'flagged', 'hidden', 'removed']
+    > &
+      Schema.Attribute.DefaultTo<'visible'>;
     parent: Schema.Attribute.Relation<
       'manyToOne',
       'api::community-comment.community-comment'
@@ -919,6 +953,22 @@ export interface ApiCommunityCommentCommunityComment
       'oneToMany',
       'api::community-comment.community-comment'
     >;
+    reportCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    spamScore: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -980,6 +1030,11 @@ export interface ApiCommunityPostCommunityPost
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    isHidden: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    lastReportReason: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
     likes: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -994,6 +1049,10 @@ export interface ApiCommunityPostCommunityPost
       'api::community-post.community-post'
     > &
       Schema.Attribute.Private;
+    moderationStatus: Schema.Attribute.Enumeration<
+      ['visible', 'flagged', 'hidden', 'removed']
+    > &
+      Schema.Attribute.DefaultTo<'visible'>;
     pinned: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     publishedAt: Schema.Attribute.DateTime;
     rating: Schema.Attribute.Integer &
@@ -1004,7 +1063,23 @@ export interface ApiCommunityPostCommunityPost
         },
         number
       >;
+    reportCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    spamScore: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     tags: Schema.Attribute.JSON;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -1436,6 +1511,127 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPushJobPushJob extends Struct.CollectionTypeSchema {
+  collectionName: 'push_jobs';
+  info: {
+    description: 'L\u01B0u h\u00E0ng \u0111\u1EE3i g\u1EEDi push \u0111\u1EC3 cron ch\u1EC9 enqueue, worker x\u1EED l\u00FD theo batch';
+    displayName: 'H\u1EC7 Th\u1ED1ng \u00B7 H\u00E0ng \u0110\u1EE3i Push';
+    pluralName: 'push-jobs';
+    singularName: 'push-job';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    body: Schema.Attribute.Text & Schema.Attribute.Required;
+    chunkSize: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 500;
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<100>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cursor: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    failedCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    finishedAt: Schema.Attribute.DateTime;
+    invalidCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    kind: Schema.Attribute.Enumeration<
+      [
+        'daily_chant',
+        'broadcast',
+        'content_update',
+        'event_reminder',
+        'community',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'daily_chant'>;
+    lastError: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::push-job.push-job'
+    > &
+      Schema.Attribute.Private;
+    payload: Schema.Attribute.JSON;
+    processedCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    publishedAt: Schema.Attribute.DateTime;
+    startedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'processing', 'completed', 'failed']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    successCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    tag: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    targetedCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 150;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    url: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+  };
+}
+
 export interface ApiPushSubscriptionPushSubscription
   extends Struct.CollectionTypeSchema {
   collectionName: 'push_subscriptions';
@@ -1460,18 +1656,48 @@ export interface ApiPushSubscriptionPushSubscription
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     endpoint: Schema.Attribute.Text & Schema.Attribute.Required;
+    failedCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    lastError: Schema.Attribute.Text;
+    lastSentAt: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::push-subscription.push-subscription'
     > &
       Schema.Attribute.Private;
+    notificationTypes: Schema.Attribute.JSON;
     p256dh: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
       }>;
     publishedAt: Schema.Attribute.DateTime;
+    quietHoursEnd: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 23;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<6>;
+    quietHoursStart: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 23;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<22>;
     reminderHour: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -1481,9 +1707,27 @@ export interface ApiPushSubscriptionPushSubscription
         number
       > &
       Schema.Attribute.DefaultTo<6>;
+    reminderMinute: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 59;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    timezone: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }> &
+      Schema.Attribute.DefaultTo<'Asia/Ho_Chi_Minh'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
   };
 }
 
@@ -2115,6 +2359,7 @@ declare module '@strapi/strapi' {
       'api::lunar-event-chant-override.lunar-event-chant-override': ApiLunarEventChantOverrideLunarEventChantOverride;
       'api::lunar-event.lunar-event': ApiLunarEventLunarEvent;
       'api::practice-log.practice-log': ApiPracticeLogPracticeLog;
+      'api::push-job.push-job': ApiPushJobPushJob;
       'api::push-subscription.push-subscription': ApiPushSubscriptionPushSubscription;
       'api::setting.setting': ApiSettingSetting;
       'api::sidebar-config.sidebar-config': ApiSidebarConfigSidebarConfig;

@@ -58,6 +58,29 @@
       "relation": "oneToMany",
       "target": "api::community-comment.community-comment",
       "mappedBy": "parent"
+    },
+    "moderationStatus": {
+      "type": "enumeration",
+      "enum": ["visible", "flagged", "hidden", "removed"],
+      "default": "visible"
+    },
+    "reportCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "lastReportReason": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "isHidden": {
+      "type": "boolean",
+      "default": false
+    },
+    "spamScore": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
     }
   }
 }

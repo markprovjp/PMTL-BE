@@ -34,7 +34,7 @@ function getEventPriority(event: any, overridePriority?: number | null): number 
 export default factories.createCoreController('api::chant-plan.chant-plan', ({ strapi }) => ({
   async getTodayChant(ctx) {
     const log = createLogger(strapi, 'today-chant');
-    const { date, lunarMonth, lunarDay, timezone = 'Asia/Bangkok', planSlug = 'daily-newbie' } =
+    const { date, lunarMonth, lunarDay, timezone = 'Asia/Bangkok', planSlug } =
       ctx.query as Record<string, string>;
 
     if (!date) return ctx.badRequest('Thiếu tham số date (ISO, vd 2026-03-03)');
@@ -71,32 +71,30 @@ export default factories.createCoreController('api::chant-plan.chant-plan', ({ s
 
     const getFirst = (res: any) => Array.isArray(res) ? res[0] : (res?.entries?.[0] ?? res?.data?.[0]);
 
-    let planRes;
+    let plan: any = null;
     try {
-      planRes = await strapi.documents('api::chant-plan.chant-plan').findMany({
-        filters: { slug: planSlug },
-        populate: planPopulate,
-        limit: 1,
-        status: 'published',
-      });
-    } catch (err) {
-      log.error('fetchPlan failed', err);
-    }
-
-    let plan: any = getFirst(planRes) ?? null;
-
-    // Fallback: neu khong tim thay plan theo slug, lay bat ky plan nao duoc publish
-    if (!plan) {
-      try {
-        const allPlans = await strapi.documents('api::chant-plan.chant-plan').findMany({
+      if (planSlug) {
+        const planRes = await strapi.documents('api::chant-plan.chant-plan').findMany({
+          filters: { slug: planSlug },
           populate: planPopulate,
           limit: 1,
           status: 'published',
         });
-        plan = getFirst(allPlans) ?? null;
-      } catch (err) {
-        log.error('fallback fetchPlan failed', err);
+        plan = getFirst(planRes) ?? null;
       }
+
+      if (!plan) {
+        const allPlans = await strapi.documents('api::chant-plan.chant-plan').findMany({
+          populate: planPopulate,
+          limit: 50,
+          status: 'published',
+        });
+        plan = (Array.isArray(allPlans) ? allPlans : []).find(
+          (entry: any) => Array.isArray(entry?.planItems) && entry.planItems.length > 0
+        ) ?? getFirst(allPlans) ?? null;
+      }
+    } catch (err) {
+      log.error('fetchPlan failed', err);
     }
 
     if (!plan) {

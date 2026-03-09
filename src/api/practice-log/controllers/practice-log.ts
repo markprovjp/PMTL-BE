@@ -10,14 +10,31 @@ import { factories } from '@strapi/strapi';
 const UID = 'api::practice-log.practice-log' as any;
 const PLAN_UID = 'api::chant-plan.chant-plan' as any;
 
-/** Tìm documentId của chant-plan theo slug - dùng Document Service API */
-async function findPlanBySlug(strapi: any, planSlug: string): Promise<{ id: number; documentId: string } | null> {
-  const results = await strapi.documents(PLAN_UID).findMany({
-    filters: { slug: { $eq: planSlug } },
+/** Tìm documentId của chant-plan theo slug, hoặc fallback sang plan publish đầu tiên có planItems */
+async function findPlanBySlug(strapi: any, planSlug?: string | null): Promise<{ id: number; documentId: string } | null> {
+  if (planSlug) {
+    const results = await strapi.documents(PLAN_UID).findMany({
+      filters: { slug: { $eq: planSlug } },
+      fields: ['id', 'documentId'],
+      limit: 1,
+      status: 'published',
+    });
+    if (results[0]) return results[0];
+  }
+
+  const plans = await strapi.documents(PLAN_UID).findMany({
     fields: ['id', 'documentId'],
-    limit: 1,
+    populate: {
+      planItems: {
+        fields: ['id'],
+      },
+    } as any,
+    limit: 50,
+    status: 'published',
   });
-  return results[0] ?? null;
+
+  const withItems = (plans as any[]).find((plan) => Array.isArray(plan?.planItems) && plan.planItems.length > 0);
+  return withItems ?? plans[0] ?? null;
 }
 
 export default factories.createCoreController(UID, ({ strapi }: any) => ({
@@ -29,7 +46,7 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
       const userId = ctx.state.user?.id;
       if (!userId) return ctx.unauthorized('Yêu cầu đăng nhập');
 
-      const { date, planSlug = 'daily-newbie' } = ctx.query as Record<string, string>;
+      const { date, planSlug } = ctx.query as Record<string, string>;
       if (!date) return ctx.badRequest('Thiếu tham số date');
 
       const plan = await findPlanBySlug(strapi, planSlug);
@@ -61,7 +78,7 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
       const userId = ctx.state.user?.id;
       if (!userId) return ctx.unauthorized('Yêu cầu đăng nhập');
 
-      const { date, planSlug = 'daily-newbie', itemsProgress } = ctx.request.body as any;
+      const { date, planSlug, itemsProgress } = ctx.request.body as any;
       if (!date) return ctx.badRequest('Thiếu tham số date');
 
       // Tìm plan theo slug để lấy documentId cho relation

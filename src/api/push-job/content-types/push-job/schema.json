@@ -1,0 +1,95 @@
+{
+  "kind": "collectionType",
+  "collectionName": "push_jobs",
+  "info": {
+    "singularName": "push-job",
+    "pluralName": "push-jobs",
+    "displayName": "Hệ Thống · Hàng Đợi Push",
+    "description": "Lưu hàng đợi gửi push để cron chỉ enqueue, worker xử lý theo batch"
+  },
+  "options": {
+    "draftAndPublish": false,
+    "increments": true,
+    "timestamps": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "kind": {
+      "type": "enumeration",
+      "enum": ["daily_chant", "broadcast", "content_update", "event_reminder", "community"],
+      "default": "daily_chant",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "processing", "completed", "failed"],
+      "default": "pending",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 150
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "tag": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "payload": {
+      "type": "json"
+    },
+    "cursor": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "chunkSize": {
+      "type": "integer",
+      "default": 100,
+      "min": 1,
+      "max": 500
+    },
+    "targetedCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "processedCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "successCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "failedCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "invalidCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "lastError": {
+      "type": "text"
+    },
+    "startedAt": {
+      "type": "datetime"
+    },
+    "finishedAt": {
+      "type": "datetime"
+    }
+  }
+}

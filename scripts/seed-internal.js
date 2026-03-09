@@ -25,7 +25,7 @@ async function seed() {
     // Chúng ta sẽ bỏ qua quan hệ Categories/Tags để tránh lỗi I18N/Validation của Strapi v5 khi seeding nhanh
     // Hoặc nếu muốn thì phải query đúng documentId và đảm bảo nó tồn tại.
 
-    const COUNT = 10000; // Tăng lên 10000 bài theo yêu cầu của anh
+    const COUNT = Number(process.env.SEED_BLOG_COUNT || 1000);
     console.log(`Tiến hành tạo ${COUNT} bài viết (Bỏ qua quan hệ để tăng tốc & ổn định)...`);
 
     for (let i = 0; i < COUNT; i++) {
@@ -55,14 +55,22 @@ async function seed() {
       }
     }
 
-    console.log("\n✅ Hoàn tất! Đã nạp 10000 bài viết mới.");
+    console.log(`\n✅ Hoàn tất! Đã nạp ${COUNT} bài viết mới.`);
     console.log("💡 Anh có thể vào Admin Panel để gán Category sau nếu muốn, hoặc chạy lại script sau khi Meilisearch đã sync xong.");
   } catch (err) {
     console.error("\n❌ Lỗi trong quá trình seed:", err);
   } finally {
     await strapi.destroy();
-    process.exit(0);
   }
 }
 
-seed();
+module.exports = { seedBulkBlogs: seed };
+
+if (require.main === module) {
+  seed()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}

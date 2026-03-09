@@ -78,6 +78,29 @@
       "type": "string",
       "maxLength": 64,
       "description": "Hash IP để rate-limit (không lưu thật)"
+    },
+    "moderationStatus": {
+      "type": "enumeration",
+      "enum": ["visible", "flagged", "hidden", "removed"],
+      "default": "visible"
+    },
+    "reportCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "lastReportReason": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "isHidden": {
+      "type": "boolean",
+      "default": false
+    },
+    "spamScore": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
     }
   }
 }

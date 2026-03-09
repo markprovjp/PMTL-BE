@@ -5,10 +5,15 @@
  * Toàn bộ 18 Collection Types & 2 Single Types với dữ liệu thật, liên kết chéo.
  */
 
+const path = require('path');
 const strapiFactory = require('@strapi/strapi');
 
-async function seed() {
-  const strapi = await strapiFactory.createStrapi({ distDir: './dist' }).load();
+async function seedCore() {
+  const appDir = process.cwd();
+  const strapi = await strapiFactory.createStrapi({
+    appDir,
+    distDir: path.join(appDir, 'dist'),
+  }).load();
   console.log('\n=============================================');
   console.log('--- STARTING PMTL MEGA SEED (INTERNAL V5) ---');
   console.log('=============================================\n');
@@ -264,9 +269,19 @@ async function seed() {
     // 20. Sidebar Config (Cấu Hình · Thanh Bên)
     await strapi.service('api::sidebar-config.sidebar-config').createOrUpdate({
       data: {
-        showSearch: true, showCategoryTree: true, showArchive: true, showTags: true, showFeaturedPosts: true,
-        downloadLinks: [{ label: 'Kinh Vô Lượng Thọ', url: '/files/vlt.pdf' }, { label: 'Hướng Dẫn Trợ Niệm', url: '/guide/tro-niem' }],
-        socialLinks: [{ platform: 'youtube', url: 'https://youtube.com/pmtl' }, { platform: 'facebook', url: 'https://fb.com/pmtl' }]
+        showSearch: true,
+        showCategoryTree: true,
+        showArchive: true,
+        showLatestComments: true,
+        showDownloadLinks: true,
+        downloadLinks: [
+          { title: 'Kinh Vô Lượng Thọ', url: '/files/vlt.pdf' },
+          { title: 'Hướng Dẫn Trợ Niệm', url: '/guide/tro-niem' }
+        ],
+        socialLinks: [
+          { label: 'YouTube', url: 'https://youtube.com/pmtl', iconName: 'youtube' },
+          { label: 'Facebook', url: 'https://fb.com/pmtl', iconName: 'facebook' }
+        ]
       }
     });
 
@@ -279,10 +294,18 @@ async function seed() {
   console.table(summary);
   console.log('--- ALL DONE! Website is now fully populated. ---');
   console.log('=============================================\n');
-  process.exit(0);
+
+  await strapi.destroy();
+  return summary;
 }
 
-seed().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+module.exports = { seedCore };
+
+if (require.main === module) {
+  seedCore()
+    .then(() => process.exit(0))
+    .catch(async (err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}

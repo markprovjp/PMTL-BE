@@ -33,6 +33,52 @@
       "default": 6,
       "min": 0,
       "max": 23
+    },
+    "reminderMinute": {
+      "type": "integer",
+      "default": 0,
+      "min": 0,
+      "max": 59
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "Asia/Ho_Chi_Minh",
+      "maxLength": 100
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "lastSentAt": {
+      "type": "datetime"
+    },
+    "lastError": {
+      "type": "text"
+    },
+    "failedCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "notificationTypes": {
+      "type": "json"
+    },
+    "quietHoursStart": {
+      "type": "integer",
+      "default": 22,
+      "min": 0,
+      "max": 23
+    },
+    "quietHoursEnd": {
+      "type": "integer",
+      "default": 6,
+      "min": 0,
+      "max": 23
     }
   }
 }

@@ -2,18 +2,19 @@
  * guestbook-entry controller (Strapi v5)
  *
  * Custom handlers:
- *  POST /guestbook-entries/submit          — gửi lưu bút chờ duyệt
- *  GET  /guestbook-entries/list            — lấy danh sách đã duyệt
+ *  POST /guestbook-entries/submit          — gửi lưu bút hiển thị ngay
+ *  GET  /guestbook-entries/list            — lấy danh sách đã hiển thị
  *  GET  /guestbook-entries/archive/:year/:month — lấy theo tháng/năm
  */
 import { factories } from '@strapi/strapi';
 import { createHash } from 'node:crypto';
 import { createLogger } from '../../../utils/logger';
+import { formatWaitTime, RATE_LIMITS } from '../../../utils/rate-limit';
 
 const GB_UID = 'api::guestbook-entry.guestbook-entry';
 
 const submitCooldown = new Map<string, number>();
-const COOLDOWN_MS = 120_000; // 2 phút
+const COOLDOWN_MS = RATE_LIMITS.guestbookSubmitMs;
 
 function checkCooldown(ipHash: string): boolean {
   const last = submitCooldown.get(ipHash);
@@ -53,7 +54,7 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
 
     if (checkCooldown(ipHash)) {
       ctx.status = 429;
-      ctx.body = { error: 'Bạn gửi lưu bút quá nhanh. Vui lòng thử lại sau.' };
+      ctx.body = { error: `Bạn gửi lưu bút quá nhanh. Vui lòng thử lại sau ${formatWaitTime(COOLDOWN_MS)}.` };
       return;
     }
 
@@ -75,8 +76,10 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
           message: stripHtml(String(message)).slice(0, 2000),
           entryType: entryType || 'message',
           questionCategory: questionCategory ? stripHtml(String(questionCategory)).slice(0, 100) : undefined,
-          approvalStatus: 'pending',
+          approvalStatus: 'approved',
           isAnswered: false,
+          year: new Date().getFullYear(),
+          month: new Date().getMonth() + 1,
         },
       });
       recordCooldown(ipHash);
@@ -84,7 +87,7 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
       ctx.status = 201;
       ctx.body = {
         data: { documentId: entity.documentId },
-        message: 'Lưu bút đã được nhận và đang chờ duyệt.',
+        message: 'Lưu bút đã được ghi lại.',
       };
     } catch (err) {
       log.error('submit failed', err);

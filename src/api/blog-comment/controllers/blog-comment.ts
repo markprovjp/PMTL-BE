@@ -1,148 +1,171 @@
-/**
- * blog-comment controller (Strapi v5)
- *
- * Custom handlers:
- *  POST /blog-comments/submit          — tạo bình luận chờ duyệt
- *  POST /blog-comments/like/:documentId — tăng lượt thích nguyên tử
- *  GET  /blog-comments/by-post/:slug   — lấy bình luận đã duyệt theo slug bài viết
- */
 import { factories } from '@strapi/strapi';
 import { createHash } from 'node:crypto';
 import { atomicIncrementField } from '../../../utils/strapi-helpers';
 import { createLogger } from '../../../utils/logger';
 import { validateBlogCommentSubmit } from '../../../schemas/blog-comment';
+import {
+  computeSpamScore,
+  getInitialModerationState,
+  getReportedState,
+  isReportReason,
+  stripHtmlForModeration,
+} from '../../../utils/moderation';
+import { formatWaitTime, RATE_LIMITS } from '../../../utils/rate-limit';
 
 const COMMENT_UID = 'api::blog-comment.blog-comment';
 const POST_UID = 'api::blog-post.blog-post';
 
-// In-memory rate limiter: ipHash → timestamp of last submit
 const submitCooldown = new Map<string, number>();
-const COOLDOWN_MS = 60_000; // 1 phút giữa hai lần gửi cùng IP
+const reportFingerprint = new Map<string, number>();
+const COOLDOWN_MS = RATE_LIMITS.blogCommentSubmitMs;
+const REPORT_TTL_MS = RATE_LIMITS.reportTtlMs;
 
 function checkCooldown(ipHash: string): boolean {
   const last = submitCooldown.get(ipHash);
-  if (!last) return false;
-  return Date.now() - last < COOLDOWN_MS;
+  return !!last && Date.now() - last < COOLDOWN_MS;
 }
 
 function recordCooldown(ipHash: string): void {
   submitCooldown.set(ipHash, Date.now());
-  if (submitCooldown.size > 5000) {
-    const cutoff = Date.now() - COOLDOWN_MS * 10;
-    for (const [k, v] of submitCooldown.entries()) {
-      if (v < cutoff) submitCooldown.delete(k);
-    }
-  }
 }
 
 function hashIp(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16);
 }
 
-function stripHtml(input: string): string {
-  return input.replace(/<[^>]*>/g, '').trim();
+function getRequesterKey(ctx: any): string {
+  const userId = ctx.state?.user?.id;
+  if (userId) return `user:${userId}`;
+  const rawIp =
+    (ctx.request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
+    ctx.request.ip ??
+    'unknown';
+  return `ip:${hashIp(rawIp)}`;
+}
+
+function recordUniqueReport(targetKey: string): boolean {
+  const now = Date.now();
+  const existing = reportFingerprint.get(targetKey);
+  if (existing && now - existing < REPORT_TTL_MS) return false;
+  reportFingerprint.set(targetKey, now);
+
+  if (reportFingerprint.size > 5000) {
+    const cutoff = now - REPORT_TTL_MS;
+    for (const [key, value] of reportFingerprint.entries()) {
+      if (value < cutoff) reportFingerprint.delete(key);
+    }
+  }
+
+  return true;
 }
 
 export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
-  /**
-   * POST /api/blog-comments/submit
-   * Tạo bình luận mới với trạng thái "pending".
-   */
   async submit(ctx) {
     const log = createLogger(strapi, 'blog-comment');
-    const rawIp: string =
-      (ctx.request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
-      ctx.request.ip ??
-      'unknown';
-    const ipHash = hashIp(rawIp);
+    const requesterKey = getRequesterKey(ctx);
+    const ipHash = requesterKey.startsWith('ip:') ? requesterKey.slice(3) : hashIp(requesterKey);
 
     if (checkCooldown(ipHash)) {
       ctx.status = 429;
-      ctx.body = { error: 'Bạn gửi bình luận quá nhanh. Vui lòng chờ một phút.' };
+      ctx.body = { error: `Bạn gửi bình luận quá nhanh. Vui lòng chờ ${formatWaitTime(COOLDOWN_MS)}.` };
       return;
     }
 
     const body = ctx.request.body as Record<string, unknown>;
-
-    // Zod Validation
     const validation = validateBlogCommentSubmit(body);
     if (!validation.success) {
       return ctx.badRequest('Dữ liệu không hợp lệ', { errors: validation.error.format() });
     }
 
-    const { postSlug, content, authorName, authorCountry, authorAvatar, parentDocumentId } = validation.data;
-
-    // stripHtml as an extra safety measure (Zod does string validation, but not stripping tags)
-    const cleanContent = stripHtml(content);
-    const cleanName = stripHtml(String(authorName));
+    const { postSlug, content, authorName, authorCountry, parentDocumentId } = validation.data;
+    const cleanContent = stripHtmlForModeration(content).slice(0, 2000);
+    const fallbackName =
+      ctx.state?.user?.fullName ??
+      ctx.state?.user?.username ??
+      ctx.state?.user?.email ??
+      '';
+    const cleanName = stripHtmlForModeration(String(authorName || fallbackName)).slice(0, 100);
+    const authUserId: number | null = ctx.state?.user?.id ?? null;
 
     try {
-      // Tìm bài viết theo slug
       const posts = await (strapi.documents as any)(POST_UID).findMany({
         filters: { slug: { $eq: postSlug } },
         status: 'published',
         fields: ['documentId', 'id'],
       });
-      if (!posts?.length) {
-        return ctx.notFound('Không tìm thấy bài viết.');
-      }
+      if (!posts?.length) return ctx.notFound('Không tìm thấy bài viết.');
       const post = posts[0];
 
-      // Xây dựng data (mặc định là draft trong v5 Document Service)
+      let parentId: number | undefined;
+      if (parentDocumentId && typeof parentDocumentId === 'string') {
+        const parents = await (strapi.documents(COMMENT_UID as any) as any).findMany({
+          filters: {
+            documentId: String(parentDocumentId),
+            isHidden: { $ne: true },
+            moderationStatus: { $notIn: ['hidden', 'removed'] },
+            post: { documentId: { $eq: post.documentId } },
+          },
+          status: 'published',
+          fields: ['documentId', 'id'],
+          limit: 1,
+        });
+        if (!parents?.length) return ctx.notFound('Không tìm thấy bình luận cha đang được hiển thị.');
+        parentId = parents[0].id;
+      }
+
+      const spamScore = computeSpamScore(cleanContent);
+      const moderation = getInitialModerationState(spamScore);
+
       const data: Record<string, unknown> = {
         authorName: cleanName,
         authorCountry,
-        authorAvatar,
         content: cleanContent,
-        post: { connect: [{ documentId: post.documentId }] },
+        post: post.id,
+        ...(parentId ? { parent: parentId } : {}),
+        ...(authUserId ? { user: authUserId } : {}),
+        ipHash,
+        moderationStatus: moderation.moderationStatus,
+        isHidden: moderation.isHidden,
+        spamScore: moderation.spamScore,
+        reportCount: 0,
+        lastReportReason: null,
+        publishedAt: new Date().toISOString(),
       };
 
-      if (parentDocumentId && typeof parentDocumentId === 'string') {
-        const parents = await (strapi.documents(COMMENT_UID as any) as any).findMany({
-          filters: { documentId: String(parentDocumentId) },
-          fields: ['documentId'],
-          limit: 1,
-        });
-        if (parents?.length > 0) {
-          data['parent'] = { connect: [{ documentId: String(parentDocumentId) }] };
-        }
-      }
-
-      const entity = await (strapi.documents as any)(COMMENT_UID).create({ data });
+      const entity = await (strapi as any).entityService.create(COMMENT_UID, { data });
       recordCooldown(ipHash);
 
       ctx.status = 201;
       ctx.body = {
         data: { documentId: entity.documentId },
-        message: 'Bình luận đã được gửi và đang chờ duyệt.',
+        message: moderation.isHidden
+          ? 'Bình luận đã được ghi nhận nhưng đang tạm ẩn để kiểm tra.'
+          : 'Bình luận đã được đăng.',
       };
-    } catch (err) {
-      console.error("DEBUG COMMENT ERROR:", err);
+    } catch (err: any) {
       log.error('submit failed', err);
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server khi gửi bình luận.' };
     }
   },
 
-  /**
-   * POST /api/blog-comments/like/:documentId
-   * Tăng nguyên tử lượt thích cho bình luận đã duyệt.
-   */
   async like(ctx) {
     const { documentId } = ctx.params as { documentId: string };
     const log = createLogger(strapi, 'blog-comment');
 
     try {
       const results = await (strapi.documents(COMMENT_UID as any) as any).findMany({
-        filters: { documentId },
+        filters: {
+          documentId,
+          isHidden: { $ne: true },
+          moderationStatus: { $notIn: ['hidden', 'removed'] },
+        },
         status: 'published',
         fields: ['documentId', 'likes'],
         limit: 1,
       });
       const existing = results[0];
-      if (!existing) {
-        return ctx.notFound('Không tìm thấy bình luận.');
-      }
+      if (!existing) return ctx.notFound('Không tìm thấy bình luận.');
 
       const newLikes = await atomicIncrementField(strapi, COMMENT_UID, documentId, 'likes');
       ctx.body = { ok: true, likes: newLikes };
@@ -153,11 +176,40 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     }
   },
 
-  /**
-   * GET /api/blog-comments/by-post/:slug
-   * Trả về bình luận đã duyệt (dạng cây, phân trang theo top-level).
-   * Query: ?page=1&pageSize=20
-   */
+  async report(ctx) {
+    const { documentId } = ctx.params as { documentId: string };
+    const reason = ctx.request.body?.reason;
+    const log = createLogger(strapi, 'blog-comment');
+
+    if (!isReportReason(reason)) return ctx.badRequest('Lý do báo cáo không hợp lệ.');
+    const reporterKey = `${documentId}:${getRequesterKey(ctx)}`;
+    if (!recordUniqueReport(reporterKey)) return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
+
+    try {
+      const results = await (strapi.documents(COMMENT_UID as any) as any).findMany({
+        filters: { documentId },
+        status: 'published',
+        fields: ['id', 'documentId', 'reportCount', 'moderationStatus', 'isHidden', 'spamScore'],
+        limit: 1,
+      });
+      const existing = results[0];
+      if (!existing) return ctx.notFound('Không tìm thấy bình luận.');
+
+      const nextState = getReportedState(existing, reason);
+      await (strapi as any).entityService.update(COMMENT_UID, existing.id, { data: nextState });
+
+      ctx.body = {
+        message: nextState.isHidden
+          ? 'Cảm ơn bạn. Bình luận đã được ẩn tạm thời để kiểm tra.'
+          : 'Cảm ơn bạn. Báo cáo đã được ghi nhận.',
+      };
+    } catch (err) {
+      log.error('report failed', err);
+      ctx.status = 500;
+      ctx.body = { error: 'Không thể báo cáo bình luận lúc này.' };
+    }
+  },
+
   async byPost(ctx) {
     const { slug } = ctx.params as { slug: string };
     const page = Math.max(1, parseInt(String(ctx.query['page'] ?? '1'), 10));
@@ -165,21 +217,19 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     const log = createLogger(strapi, 'blog-comment');
 
     try {
-      // Tìm bài viết
       const posts = await (strapi.documents as any)(POST_UID).findMany({
         filters: { slug: { $eq: slug } },
         status: 'published',
         fields: ['documentId'],
       });
-      if (!posts?.length) {
-        return ctx.notFound('Không tìm thấy bài viết.');
-      }
+      if (!posts?.length) return ctx.notFound('Không tìm thấy bài viết.');
       const post = posts[0];
 
-      // Lấy tất cả bình luận đã duyệt cho bài viết này (max 500)
       const allComments = await (strapi.documents as any)(COMMENT_UID).findMany({
         filters: {
           post: { documentId: { $eq: post.documentId } },
+          isHidden: { $ne: true },
+          moderationStatus: { $notIn: ['hidden', 'removed'] },
         },
         status: 'published',
         sort: ['createdAt:asc'],
@@ -191,11 +241,8 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
         },
       });
 
-      // Phân tách top-level và replies
       const topLevel = (allComments as any[]).filter((c: any) => !c.parent);
       const replies = (allComments as any[]).filter((c: any) => !!c.parent);
-
-      // Phân trang top-level
       const total = topLevel.length;
       const pageCount = Math.ceil(total / pageSize);
       const start = (page - 1) * pageSize;
@@ -203,7 +250,6 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
         .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(start, start + pageSize);
 
-      // Gắn replies vào top-level (replies sắp xếp cũ nhất trước)
       const threaded = paginatedTopLevel.map((comment: any) => ({
         ...comment,
         parent: undefined,
@@ -215,9 +261,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
 
       ctx.body = {
         data: threaded,
-        meta: {
-          pagination: { page, pageSize, pageCount, total },
-        },
+        meta: { pagination: { page, pageSize, pageCount, total } },
       };
     } catch (err) {
       log.error('byPost failed', err);
@@ -226,18 +270,17 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     }
   },
 
-  /**
-   * GET /api/blog-comments/latest
-   * Trả về N bình luận đã duyệt mới nhất (không phân trang, dùng cho sidebar).
-   * Query: ?limit=5
-   */
   async latest(ctx) {
     const limit = Math.min(20, Math.max(1, parseInt(String(ctx.query['limit'] ?? '5'), 10)));
     const log = createLogger(strapi, 'blog-comment');
 
     try {
       const comments = await (strapi.documents as any)(COMMENT_UID).findMany({
-        filters: { parent: null },
+        filters: {
+          parent: null,
+          isHidden: { $ne: true },
+          moderationStatus: { $notIn: ['hidden', 'removed'] },
+        },
         status: 'published',
         sort: ['createdAt:desc'],
         limit,

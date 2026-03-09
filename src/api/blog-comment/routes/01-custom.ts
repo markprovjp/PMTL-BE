@@ -19,6 +19,12 @@ export default {
       config: { auth: false, policies: [], middlewares: [] },
     },
     {
+      method: 'POST',
+      path: '/blog-comments/report/:documentId',
+      handler: 'blog-comment.report',
+      config: { auth: false, policies: [], middlewares: [] },
+    },
+    {
       method: 'GET',
       path: '/blog-comments/by-post/:slug',
       handler: 'blog-comment.byPost',

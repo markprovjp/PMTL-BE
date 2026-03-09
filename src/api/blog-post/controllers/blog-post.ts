@@ -6,12 +6,13 @@ import { factories } from '@strapi/strapi'
 import { createHash } from 'node:crypto'
 import { atomicIncrementField, findPublished } from '../../../utils/strapi-helpers'
 import { createLogger } from '../../../utils/logger'
+import { RATE_LIMITS } from '../../../utils/rate-limit'
 
 const BLOG_UID = 'api::blog-post.blog-post'
 
 // In-memory view dedup: key = `${ipHash}:${documentId}`, ttl = 1h
 const viewCooldown = new Map<string, number>()
-const VIEW_COOLDOWN_MS = 3_600_000 // 1 giờ
+const VIEW_COOLDOWN_MS = RATE_LIMITS.blogViewCooldownMs
 
 function hashIpView(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16)

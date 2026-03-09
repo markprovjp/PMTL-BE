@@ -2,7 +2,7 @@
  * push-subscription controller (Strapi v5)
  *
  * Custom handler:
- *  POST /api/push-subscriptions/upsert — tạo mới hoặc cập nhật reminderHour nếu endpoint đã tồn tại
+ *  POST /api/push-subscriptions/upsert — tạo mới hoặc cập nhật subscription theo endpoint
  *
  * Các route chuẩn (find, findOne, delete) giữ nguyên từ core router.
  * Tất cả routes đều yêu cầu API Token (không public).
@@ -11,15 +11,53 @@ import { factories } from '@strapi/strapi';
 import { createLogger } from '../../../utils/logger';
 
 const UID = 'api::push-subscription.push-subscription' as any;
+const PUSH_TYPES = ['daily_chant', 'content_update', 'event_reminder', 'community'] as const;
+
+function normalizeTypes(value: unknown): string[] {
+  if (!Array.isArray(value)) return ['community'];
+
+  const unique = Array.from(new Set(
+    value
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter((item) => PUSH_TYPES.includes(item as (typeof PUSH_TYPES)[number]))
+  ));
+
+  return unique.length > 0 ? unique : ['community'];
+}
+
+function normalizeHour(value: unknown, fallback: number): number {
+  const hour = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(hour)) return fallback;
+  return Math.min(23, Math.max(0, Math.round(hour)));
+}
+
+function normalizeMinute(value: unknown, fallback: number): number {
+  const minute = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(minute)) return fallback;
+  return Math.min(59, Math.max(0, Math.round(minute)));
+}
 
 export default factories.createCoreController(UID, ({ strapi }) => ({
   /**
    * POST /api/push-subscriptions/upsert
-   * Body: { endpoint, p256dh, auth, reminderHour }
+   * Body: { endpoint, p256dh, auth, notificationTypes }
    */
   async upsert(ctx) {
     const log = createLogger(strapi, 'push-subscription');
-    const { endpoint, p256dh, auth, reminderHour } = ctx.request.body as Record<string, unknown>;
+    const {
+      endpoint,
+      p256dh,
+      auth,
+      reminderHour,
+      reminderMinute,
+      userId,
+      timezone,
+      notificationTypes,
+      quietHoursStart,
+      quietHoursEnd,
+      isActive,
+    } = ctx.request.body as Record<string, unknown>;
 
     if (
       !endpoint || typeof endpoint !== 'string' ||
@@ -29,7 +67,27 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       return ctx.badRequest('Thiếu trường bắt buộc: endpoint, p256dh, auth');
     }
 
-    const hour = typeof reminderHour === 'number' ? reminderHour : 6;
+    const hour = normalizeHour(reminderHour, 6);
+    const minute = normalizeMinute(reminderMinute, 0);
+    const quietStart = normalizeHour(quietHoursStart, 22);
+    const quietEnd = normalizeHour(quietHoursEnd, 6);
+    const types = normalizeTypes(notificationTypes);
+    const cleanTimezone = typeof timezone === 'string' && timezone.trim()
+      ? timezone.trim().slice(0, 100)
+      : 'Asia/Ho_Chi_Minh';
+    const nextData = {
+      endpoint,
+      p256dh,
+      auth,
+      reminderHour: hour,
+      reminderMinute: minute,
+      timezone: cleanTimezone,
+      isActive: typeof isActive === 'boolean' ? isActive : true,
+      notificationTypes: types,
+      quietHoursStart: quietStart,
+      quietHoursEnd: quietEnd,
+      ...(typeof userId === 'number' && userId > 0 ? { user: userId } : {}),
+    };
 
     try {
       const existing = await (strapi.db as any)
@@ -39,12 +97,12 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       if (existing) {
         await (strapi.documents as any)(UID).update({
           documentId: existing.documentId,
-          data: { endpoint, p256dh, auth, reminderHour: hour },
+          data: nextData,
         });
         ctx.body = { action: 'updated' };
       } else {
         await (strapi.documents as any)(UID).create({
-          data: { endpoint, p256dh, auth, reminderHour: hour },
+          data: nextData,
         });
         ctx.body = { action: 'created' };
       }
@@ -52,6 +110,48 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
       log.error('upsert failed', err);
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server khi lưu subscription' };
+    }
+  },
+
+  async stats(ctx) {
+    const log = createLogger(strapi, 'push-subscription');
+
+    try {
+      const entries = await (strapi.documents as any)(UID).findMany({
+        limit: 5000,
+        fields: ['documentId', 'timezone', 'isActive', 'failedCount', 'updatedAt', 'notificationTypes'],
+      });
+
+      const active = entries.filter((item: any) => item.isActive !== false).length;
+      const inactive = entries.length - active;
+      const failing = entries.filter((item: any) => (item.failedCount ?? 0) > 0).length;
+
+      const byTimezoneMap = new Map<string, number>();
+      const byTypeMap = new Map<string, number>();
+      for (const item of entries) {
+        if (item.isActive === false) continue;
+        const tz = item.timezone || 'Asia/Ho_Chi_Minh';
+        byTimezoneMap.set(tz, (byTimezoneMap.get(tz) ?? 0) + 1);
+        const types = Array.isArray(item.notificationTypes) ? item.notificationTypes : [];
+        for (const type of types) {
+          byTypeMap.set(type, (byTypeMap.get(type) ?? 0) + 1);
+        }
+      }
+
+      ctx.body = {
+        data: {
+          total: entries.length,
+          active,
+          inactive,
+          failing,
+          byType: Array.from(byTypeMap.entries()).map(([type, total]) => ({ type, total })),
+          byTimezone: Array.from(byTimezoneMap.entries()).map(([timezone, total]) => ({ timezone, total })),
+        },
+      };
+    } catch (err) {
+      log.error('stats failed', err);
+      ctx.status = 500;
+      ctx.body = { error: 'Không thể lấy thống kê push lúc này.' };
     }
   },
 

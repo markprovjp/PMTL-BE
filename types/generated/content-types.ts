@@ -48,6 +48,11 @@ export interface BlogComment {
   badge?: string;
   user?: any;
   ipHash?: string;
+  moderationStatus?: unknown;
+  reportCount?: number;
+  lastReportReason?: string;
+  isHidden?: boolean;
+  spamScore?: number;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
@@ -179,6 +184,11 @@ export interface CommunityComment {
   likes?: number;
   parent?: CommunityComment | null;
   replies?: CommunityComment[];
+  moderationStatus?: unknown;
+  reportCount?: number;
+  lastReportReason?: string;
+  isHidden?: boolean;
+  spamScore?: number;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
@@ -208,6 +218,11 @@ export interface CommunityPost {
   tags?: Record<string, any>;
   rating?: number;
   pinned?: boolean;
+  moderationStatus?: unknown;
+  reportCount?: number;
+  lastReportReason?: string;
+  isHidden?: boolean;
+  spamScore?: number;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
@@ -374,6 +389,35 @@ export interface PracticeLog {
   localizations?: PracticeLog[];
 }
 
+export interface PushJob {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  kind: unknown;
+  status: unknown;
+  title: string;
+  body: string;
+  url?: string;
+  tag?: string;
+  payload?: Record<string, any>;
+  cursor?: number;
+  chunkSize?: number;
+  targetedCount?: number;
+  processedCount?: number;
+  successCount?: number;
+  failedCount?: number;
+  invalidCount?: number;
+  lastError?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: PushJob[];
+}
+
 export interface PushSubscription {
   id?: number;
   documentId: string;
@@ -383,6 +427,16 @@ export interface PushSubscription {
   p256dh: string;
   auth: string;
   reminderHour?: number;
+  reminderMinute?: number;
+  user?: any;
+  timezone?: string;
+  isActive?: boolean;
+  lastSentAt?: string;
+  lastError?: string;
+  failedCount?: number;
+  notificationTypes?: Record<string, any>;
+  quietHoursStart?: number;
+  quietHoursEnd?: number;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;

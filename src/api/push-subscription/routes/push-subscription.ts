@@ -25,5 +25,17 @@ export default {
       handler: 'push-subscription.find',
       config: { auth: false },
     },
+    {
+      method: 'PUT',
+      path: '/push-subscriptions/:documentId',
+      handler: 'push-subscription.update',
+      config: { auth: false },
+    },
+    {
+      method: 'GET',
+      path: '/push-subscriptions/stats',
+      handler: 'push-subscription.stats',
+      config: { auth: false },
+    },
   ],
 };
