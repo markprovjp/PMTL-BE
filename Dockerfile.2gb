@@ -1,0 +1,68 @@
+# Build stage
+FROM node:20-alpine as builder
+
+WORKDIR /app
+
+# Keep logs quieter on tiny VPS builders
+ENV npm_config_loglevel=warn
+
+# Copy package files
+COPY package*.json ./
+
+# Install full deps for build (Strapi build needs devDependencies)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build Strapi, then drop dev deps to keep runtime small
+ENV STRAPI_TELEMETRY_DISABLED=true \
+    STRAPI_DISABLE_UPDATE_NOTIFIER=true
+RUN npm run build && \
+    npm prune --omit=dev && \
+    npm cache clean --force
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init curl
+
+# Copy from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+
+# Copy config and public files (minimal)
+COPY config ./config
+COPY public ./public
+COPY types ./types
+
+# Create app user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
+
+USER nodejs
+
+# Expose port
+EXPOSE 1337
+
+# 🔴 MEMORY LIMIT: 384MB max heap for Strapi
+# Tuned for 2GB VPS
+ENV NODE_ENV=production \
+    STRAPI_TELEMETRY_DISABLED=true \
+    STRAPI_DISABLE_UPDATE_NOTIFIER=true \
+    NODE_OPTIONS="--max-old-space-size=384 --max-semi-space-size=64"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=5 \
+    CMD curl -f http://localhost:1337/admin || exit 1
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start command
+CMD ["node", "dist/index.js"]
