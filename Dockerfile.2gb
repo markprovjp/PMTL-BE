@@ -43,11 +43,10 @@ COPY --from=builder /app/.strapi ./.strapi
 COPY --from=builder /app/dist/config ./config
 COPY --from=builder /app/dist/types ./types
 
-# Strapi start detects TypeScript projects via tsconfig.json.
-# Keep the built admin SPA available in both possible runtime lookup paths.
-RUN mkdir -p /app/dist/build /app/build && \
-    cp -R /app/.strapi/client/. /app/dist/build/ && \
-    cp -R /app/.strapi/client/. /app/build/
+# `npm run build` emits the production admin bundle into dist/build.
+# Keep a compatibility copy at /app/build in case runtime dist detection changes.
+RUN mkdir -p /app/build && \
+    cp -R /app/dist/build/. /app/build/
 
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && \
