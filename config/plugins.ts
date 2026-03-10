@@ -30,7 +30,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       },
       providers: {
         google: {
-          enabled: true,
+          enabled: Boolean(env('GOOGLE_CLIENT_ID')) && Boolean(env('GOOGLE_CLIENT_SECRET')),
           icon: 'google',
           key: env('GOOGLE_CLIENT_ID'),
           secret: env('GOOGLE_CLIENT_SECRET'),
@@ -47,11 +47,13 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   },
 
   // ── Meilisearch ──────────────────────────
-  meilisearch: {
+  meilisearch: env.bool('MEILISEARCH_ENABLED', Boolean(env('MEILISEARCH_HOST'))) ? {
     config: {
       host: env('MEILISEARCH_HOST', 'http://localhost:7700'),
       apiKey: env('MEILISEARCH_API_KEY', ''),
     },
+  } : {
+    enabled: false,
   },
 
   // ── OpenAPI / Swagger ──────────────────────────

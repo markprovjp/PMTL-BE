@@ -25,33 +25,27 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init curl
 
-# Copy from builder
+# Copy binary and production files only
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/public ./public
 
-# Copy public files for uploads/static assets
-COPY public ./public
-
-# Create app user for security
+# Set non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
     chown -R nodejs:nodejs /app
 
 USER nodejs
 
-ENV NODE_OPTIONS="--max-old-space-size=384"
-ENV NODE_ENV=production
-
 # Expose port
 EXPOSE 1337
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=5 \
+# Health check (wait for it to be ready)
+HEALTHCHECK --interval=20s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:1337/admin || exit 1
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start command
+# 🚀 Strapi 5 Production start command
 CMD ["npm", "start"]
