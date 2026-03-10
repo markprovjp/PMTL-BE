@@ -34,11 +34,12 @@ RUN apk add --no-cache dumb-init curl
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/database ./database
+COPY --from=builder /app/public ./public
 
-# Copy config and public files (minimal)
-COPY config ./config
-COPY public ./public
-COPY types ./types
+# Strapi expects runtime config at /app/config; use compiled output (no TS at runtime)
+COPY --from=builder /app/dist/config ./config
+COPY --from=builder /app/dist/types ./types
 
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && \
