@@ -30,6 +30,7 @@ RUN apk add --no-cache dumb-init curl
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/database ./database
 COPY --from=builder /app/.strapi ./.strapi
@@ -38,9 +39,11 @@ COPY --from=builder /app/.strapi ./.strapi
 # Copy the compiled config so Node doesn't need to execute TypeScript config files.
 COPY --from=builder /app/dist/config ./config
 
-# Strapi 5 serves the admin SPA from dist/build in production.
-RUN mkdir -p /app/dist/build && \
-    cp -R /app/.strapi/client/. /app/dist/build/
+# Strapi start detects TypeScript projects via tsconfig.json.
+# Keep the built admin SPA available in both possible runtime lookup paths.
+RUN mkdir -p /app/dist/build /app/build && \
+    cp -R /app/.strapi/client/. /app/dist/build/ && \
+    cp -R /app/.strapi/client/. /app/build/
 
 # Set non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
