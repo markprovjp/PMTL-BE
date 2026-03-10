@@ -15,12 +15,10 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build Strapi, then drop dev deps to keep runtime small
+# Build Strapi
 ENV STRAPI_TELEMETRY_DISABLED=true \
     STRAPI_DISABLE_UPDATE_NOTIFIER=true
-RUN npm run build && \
-    npm prune --omit=dev && \
-    npm cache clean --force
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine
@@ -30,10 +28,12 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init curl
 
-# Copy from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+# Install production dependencies fresh (keeps runtime consistent + avoids prune edge cases)
 COPY --from=builder /app/package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy build output and runtime files
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/database ./database
 COPY --from=builder /app/public ./public
 

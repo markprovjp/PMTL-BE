@@ -7,15 +7,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
 
 # Build Strapi
 ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN npm run build && \
-    npm prune --production
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine
@@ -25,10 +24,12 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init curl
 
-# Copy binary and production files only
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
+# Install production dependencies fresh (avoids issues with pruning build-time deps)
 COPY --from=builder /app/package*.json ./
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
+
+# Copy build output and runtime files
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/database ./database
 
