@@ -4,8 +4,8 @@
   "info": {
     "singularName": "push-subscription",
     "pluralName": "push-subscriptions",
-    "displayName": "Hệ Thống · Cấu Hình Push",
-    "description": "Web Push subscriptions (endpoint + VAPID keys) — chỉ truy cập server-side"
+    "displayName": "Thiết Bị · Đăng Ký Nhận Thông Báo",
+    "description": "Mỗi dòng là một thiết bị đã bật nhận thông báo trên web"
   },
   "options": {
     "draftAndPublish": false,

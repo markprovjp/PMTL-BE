@@ -4,8 +4,8 @@
   "info": {
     "singularName": "push-job",
     "pluralName": "push-jobs",
-    "displayName": "Hệ Thống · Hàng Đợi Push",
-    "description": "Lưu hàng đợi gửi push để cron chỉ enqueue, worker xử lý theo batch"
+    "displayName": "Thông Báo · Nhật Ký Đã Gửi",
+    "description": "Lưu lại từng đợt thông báo để web và thiết bị cùng đọc chung một nguồn"
   },
   "options": {
     "draftAndPublish": false,

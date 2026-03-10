@@ -1514,8 +1514,8 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
 export interface ApiPushJobPushJob extends Struct.CollectionTypeSchema {
   collectionName: 'push_jobs';
   info: {
-    description: 'L\u01B0u h\u00E0ng \u0111\u1EE3i g\u1EEDi push \u0111\u1EC3 cron ch\u1EC9 enqueue, worker x\u1EED l\u00FD theo batch';
-    displayName: 'H\u1EC7 Th\u1ED1ng \u00B7 H\u00E0ng \u0110\u1EE3i Push';
+    description: 'L\u01B0u l\u1EA1i t\u1EEBng \u0111\u1EE3t th\u00F4ng b\u00E1o \u0111\u1EC3 web v\u00E0 thi\u1EBFt b\u1ECB c\u00F9ng \u0111\u1ECDc chung m\u1ED9t ngu\u1ED3n';
+    displayName: 'Th\u00F4ng B\u00E1o \u00B7 Nh\u1EADt K\u00FD \u0110\u00E3 G\u1EEDi';
     pluralName: 'push-jobs';
     singularName: 'push-job';
   };
@@ -1636,8 +1636,8 @@ export interface ApiPushSubscriptionPushSubscription
   extends Struct.CollectionTypeSchema {
   collectionName: 'push_subscriptions';
   info: {
-    description: 'Web Push subscriptions (endpoint + VAPID keys) \u2014 ch\u1EC9 truy c\u1EADp server-side';
-    displayName: 'H\u1EC7 Th\u1ED1ng \u00B7 C\u1EA5u H\u00ECnh Push';
+    description: 'M\u1ED7i d\u00F2ng l\u00E0 m\u1ED9t thi\u1EBFt b\u1ECB \u0111\u00E3 b\u1EADt nh\u1EADn th\u00F4ng b\u00E1o tr\u00EAn web';
+    displayName: 'Thi\u1EBFt B\u1ECB \u00B7 \u0110\u0103ng K\u00FD Nh\u1EADn Th\u00F4ng B\u00E1o';
     pluralName: 'push-subscriptions';
     singularName: 'push-subscription';
   };
