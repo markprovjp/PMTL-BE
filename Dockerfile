@@ -13,6 +13,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Build Strapi
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 RUN npm run build && \
     npm prune --production
 
