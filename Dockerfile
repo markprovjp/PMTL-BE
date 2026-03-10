@@ -30,11 +30,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
 
-# Copy config and public files
-COPY config ./config
+# Copy public files for uploads/static assets
 COPY public ./public
-COPY scripts ./scripts
-COPY types ./types
 
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && \
