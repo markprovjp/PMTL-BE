@@ -57,4 +57,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=5 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start command
-CMD ["node", "dist/index.js"]
+CMD ["npm", "start"]
