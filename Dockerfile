@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production && \
+RUN npm ci --only=production --legacy-peer-deps && \
     npm cache clean --force
 
 # Copy source code
@@ -41,6 +41,9 @@ RUN addgroup -g 1001 -S nodejs && \
     chown -R nodejs:nodejs /app
 
 USER nodejs
+
+ENV NODE_OPTIONS="--max-old-space-size=384"
+ENV NODE_ENV=production
 
 # Expose port
 EXPOSE 1337
