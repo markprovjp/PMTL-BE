@@ -7,14 +7,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production --legacy-peer-deps && \
-    npm cache clean --force
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
 
 # Build Strapi
-RUN npm run build
+RUN npm run build && \
+    npm prune --production
 
 # Production stage
 FROM node:20-alpine
