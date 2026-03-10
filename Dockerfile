@@ -32,6 +32,7 @@ RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/database ./database
+COPY --from=builder /app/.strapi ./.strapi
 
 # Strapi expects runtime config at /app/config (not only /app/dist/config)
 # Copy the compiled config so Node doesn't need to execute TypeScript config files.
