@@ -14,7 +14,9 @@ COPY . .
 
 # Build Strapi with enough headroom for the admin build on 4GB VPS hosts.
 ENV NODE_OPTIONS="--max-old-space-size=3072"
-RUN npm run build
+RUN npm run build && \
+    npm prune --omit=dev && \
+    npm cache clean --force
 
 # Production stage
 FROM node:20-alpine
@@ -24,12 +26,10 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init curl
 
-# Install production dependencies fresh (avoids issues with pruning build-time deps)
-COPY --from=builder /app/package*.json ./
-RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
-
 # Copy build output and runtime files
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/database ./database
 COPY --from=builder /app/.strapi ./.strapi
