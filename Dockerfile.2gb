@@ -42,6 +42,10 @@ COPY --from=builder /app/.strapi ./.strapi
 COPY --from=builder /app/dist/config ./config
 COPY --from=builder /app/dist/types ./types
 
+# Strapi 5 serves the admin SPA from the package path at runtime.
+RUN mkdir -p /app/node_modules/@strapi/admin/dist/server/server/build && \
+    cp -R /app/.strapi/client/. /app/node_modules/@strapi/admin/dist/server/server/build/
+
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \

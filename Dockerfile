@@ -38,6 +38,11 @@ COPY --from=builder /app/.strapi ./.strapi
 # Copy the compiled config so Node doesn't need to execute TypeScript config files.
 COPY --from=builder /app/dist/config ./config
 
+# Strapi 5 serves the admin SPA from the package path at runtime.
+# The build output lives in .strapi/client, so place it where Strapi resolves it.
+RUN mkdir -p /app/node_modules/@strapi/admin/dist/server/server/build && \
+    cp -R /app/.strapi/client/. /app/node_modules/@strapi/admin/dist/server/server/build/
+
 # Set non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
