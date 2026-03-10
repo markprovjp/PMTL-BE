@@ -12,8 +12,8 @@ RUN npm ci --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Build Strapi
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+# Build Strapi with enough headroom for the admin build on 4GB VPS hosts.
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 RUN npm run build
 
 # Production stage
@@ -48,8 +48,8 @@ USER nodejs
 # Expose port
 EXPOSE 1337
 
-# Health check (wait for it to be ready)
-HEALTHCHECK --interval=20s --timeout=10s --start-period=40s --retries=3 \
+# Health check (wait for Strapi + admin bundle to be ready)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
     CMD curl -f http://localhost:1337/admin || exit 1
 
 ENTRYPOINT ["dumb-init", "--"]
