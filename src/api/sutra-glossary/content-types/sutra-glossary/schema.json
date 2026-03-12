@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sutra_glossaries",
+  "info": {
+    "singularName": "sutra-glossary",
+    "pluralName": "sutra-glossaries",
+    "displayName": "Kinh Điển · Thích Nghĩa",
+    "description": "Giải thích thuật ngữ/marker trong nội dung kinh"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "markerKey": {
+      "type": "string",
+      "required": true,
+      "maxLength": 60,
+      "description": "Ví dụ: 1, 2, huu-danh, ta-la-song-tho"
+    },
+    "term": {
+      "type": "string",
+      "required": true,
+      "maxLength": 180
+    },
+    "meaning": {
+      "type": "text",
+      "required": true,
+      "maxLength": 2000
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "sutra": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra.sutra",
+      "inversedBy": "glossaries",
+      "required": true
+    },
+    "volume": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra-volume.sutra-volume"
+    },
+    "chapter": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra-chapter.sutra-chapter",
+      "inversedBy": "glossaries"
+    }
+  }
+}
+

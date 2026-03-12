@@ -10,12 +10,14 @@ import {
   StrapiUploadAdapter,
 } from '@_sh/strapi-plugin-ckeditor'
 
-import vi from './extensions/translations/vi.json'
+import vi from './extensions/translations/vi.merged.json'
 
 export default {
   config: {
     locales: ['vi'],
-    translations: { vi },
+    translations: {
+      vi: vi as Record<string, string>,
+    },
   },
 
   register(app: unknown) {

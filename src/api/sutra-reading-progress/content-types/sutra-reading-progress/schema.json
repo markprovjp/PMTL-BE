@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sutra_reading_progresses",
+  "info": {
+    "singularName": "sutra-reading-progress",
+    "pluralName": "sutra-reading-progresses",
+    "displayName": "Kinh Điển · Tiến Độ Đọc",
+    "description": "Lưu vị trí đọc theo user và từng phẩm"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "sutra": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra.sutra",
+      "required": true
+    },
+    "volume": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra-volume.sutra-volume"
+    },
+    "chapter": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra-chapter.sutra-chapter",
+      "required": true
+    },
+    "anchorKey": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "charOffset": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "scrollPercent": {
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 100
+    },
+    "lastReadAt": {
+      "type": "datetime"
+    }
+  }
+}
+

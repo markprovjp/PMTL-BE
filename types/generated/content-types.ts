@@ -517,3 +517,131 @@ export interface SidebarConfig {
   locale?: string;
   localizations?: SidebarConfig[];
 }
+
+export interface Sutra {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  slug: unknown;
+  description?: string;
+  shortExcerpt?: string;
+  coverImage?: StrapiMediaRef | null;
+  translatorHan?: string;
+  translatorViet?: string;
+  reviewer?: string;
+  tags?: BlogTag[];
+  volumes?: SutraVolume[];
+  glossaries?: SutraGlossary[];
+  isFeatured?: boolean;
+  sortOrder?: number;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: Sutra[];
+}
+
+export interface SutraBookmark {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  user: any;
+  sutra: Sutra | null;
+  volume?: SutraVolume | null;
+  chapter: SutraChapter | null;
+  anchorKey?: string;
+  charOffset?: number;
+  excerpt?: string;
+  note?: string;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: SutraBookmark[];
+}
+
+export interface SutraChapter {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  slug: unknown;
+  chapterNumber: number;
+  openingText?: string;
+  content: string;
+  endingText?: string;
+  estimatedReadMinutes?: number;
+  sortOrder?: number;
+  sutra: Sutra | null;
+  volume: SutraVolume | null;
+  glossaries?: SutraGlossary[];
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: SutraChapter[];
+}
+
+export interface SutraGlossary {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  markerKey: string;
+  term: string;
+  meaning: string;
+  sortOrder?: number;
+  sutra: Sutra | null;
+  volume?: SutraVolume | null;
+  chapter?: SutraChapter | null;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: SutraGlossary[];
+}
+
+export interface SutraReadingProgress {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  user: any;
+  sutra: Sutra | null;
+  volume?: SutraVolume | null;
+  chapter: SutraChapter | null;
+  anchorKey?: string;
+  charOffset?: number;
+  scrollPercent?: number;
+  lastReadAt?: string;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: SutraReadingProgress[];
+}
+
+export interface SutraVolume {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  slug: unknown;
+  volumeNumber: number;
+  bookStart?: number;
+  bookEnd?: number;
+  description?: string;
+  sutra: Sutra | null;
+  chapters?: SutraChapter[];
+  sortOrder?: number;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: SutraVolume[];
+}

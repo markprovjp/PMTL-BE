@@ -1910,6 +1910,395 @@ export interface ApiSidebarConfigSidebarConfig extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiSutraBookmarkSutraBookmark
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'sutra_bookmarks';
+  info: {
+    description: '\u0110\u00E1nh d\u1EA5u \u0111o\u1EA1n \u0111\u1ECDc c\u1EE7a t\u1EEBng user';
+    displayName: 'Kinh \u0110i\u1EC3n \u00B7 Bookmark';
+    pluralName: 'sutra-bookmarks';
+    singularName: 'sutra-bookmark';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    anchorKey: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 80;
+      }>;
+    chapter: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::sutra-chapter.sutra-chapter'
+    > &
+      Schema.Attribute.Required;
+    charOffset: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    excerpt: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 800;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-bookmark.sutra-bookmark'
+    > &
+      Schema.Attribute.Private;
+    note: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2000;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    sutra: Schema.Attribute.Relation<'manyToOne', 'api::sutra.sutra'> &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
+    volume: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::sutra-volume.sutra-volume'
+    >;
+  };
+}
+
+export interface ApiSutraChapterSutraChapter
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'sutra_chapters';
+  info: {
+    description: 'N\u1ED9i dung t\u1EEBng ph\u1EA9m/\u0111o\u1EA1n trong m\u1ED9t t\u1EADp kinh';
+    displayName: 'Kinh \u0110i\u1EC3n \u00B7 Ph\u1EA9m';
+    pluralName: 'sutra-chapters';
+    singularName: 'sutra-chapter';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    chapterNumber: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    content: Schema.Attribute.Text & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    endingText: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1200;
+      }>;
+    estimatedReadMinutes: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<5>;
+    glossaries: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-glossary.sutra-glossary'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-chapter.sutra-chapter'
+    > &
+      Schema.Attribute.Private;
+    openingText: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1200;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sutra: Schema.Attribute.Relation<'manyToOne', 'api::sutra.sutra'> &
+      Schema.Attribute.Required;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 260;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    volume: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::sutra-volume.sutra-volume'
+    > &
+      Schema.Attribute.Required;
+  };
+}
+
+export interface ApiSutraGlossarySutraGlossary
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'sutra_glossaries';
+  info: {
+    description: 'Gi\u1EA3i th\u00EDch thu\u1EADt ng\u1EEF/marker trong n\u1ED9i dung kinh';
+    displayName: 'Kinh \u0110i\u1EC3n \u00B7 Th\u00EDch Ngh\u0129a';
+    pluralName: 'sutra-glossaries';
+    singularName: 'sutra-glossary';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    chapter: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::sutra-chapter.sutra-chapter'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-glossary.sutra-glossary'
+    > &
+      Schema.Attribute.Private;
+    markerKey: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 60;
+      }>;
+    meaning: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2000;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sutra: Schema.Attribute.Relation<'manyToOne', 'api::sutra.sutra'> &
+      Schema.Attribute.Required;
+    term: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 180;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    volume: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::sutra-volume.sutra-volume'
+    >;
+  };
+}
+
+export interface ApiSutraReadingProgressSutraReadingProgress
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'sutra_reading_progresses';
+  info: {
+    description: 'L\u01B0u v\u1ECB tr\u00ED \u0111\u1ECDc theo user v\u00E0 t\u1EEBng ph\u1EA9m';
+    displayName: 'Kinh \u0110i\u1EC3n \u00B7 Ti\u1EBFn \u0110\u1ED9 \u0110\u1ECDc';
+    pluralName: 'sutra-reading-progresses';
+    singularName: 'sutra-reading-progress';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    anchorKey: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 80;
+      }>;
+    chapter: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::sutra-chapter.sutra-chapter'
+    > &
+      Schema.Attribute.Required;
+    charOffset: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    lastReadAt: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-reading-progress.sutra-reading-progress'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    scrollPercent: Schema.Attribute.Float &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    sutra: Schema.Attribute.Relation<'manyToOne', 'api::sutra.sutra'> &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
+    volume: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::sutra-volume.sutra-volume'
+    >;
+  };
+}
+
+export interface ApiSutraVolumeSutraVolume extends Struct.CollectionTypeSchema {
+  collectionName: 'sutra_volumes';
+  info: {
+    description: 'M\u1ED7i t\u1EADp thu\u1ED9c m\u1ED9t b\u1ED9 kinh';
+    displayName: 'Kinh \u0110i\u1EC3n \u00B7 T\u1EADp/Quy\u1EC3n';
+    pluralName: 'sutra-volumes';
+    singularName: 'sutra-volume';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    bookEnd: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    bookStart: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    chapters: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-chapter.sutra-chapter'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 800;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-volume.sutra-volume'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    sutra: Schema.Attribute.Relation<'manyToOne', 'api::sutra.sutra'> &
+      Schema.Attribute.Required;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 240;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    volumeNumber: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+  };
+}
+
+export interface ApiSutraSutra extends Struct.CollectionTypeSchema {
+  collectionName: 'sutras';
+  info: {
+    description: 'Th\u00F4ng tin t\u1ED5ng quan c\u1EE7a m\u1ED9t b\u1ED9 kinh \u0111\u1EA1i th\u1EEBa';
+    displayName: 'Kinh \u0110i\u1EC3n \u00B7 B\u1ED9 Kinh';
+    pluralName: 'sutras';
+    singularName: 'sutra';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    coverImage: Schema.Attribute.Media<'images'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1200;
+      }>;
+    glossaries: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-glossary.sutra-glossary'
+    >;
+    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::sutra.sutra'> &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    reviewer: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160;
+      }>;
+    shortExcerpt: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 360;
+      }>;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    tags: Schema.Attribute.Relation<'manyToMany', 'api::blog-tag.blog-tag'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 260;
+      }>;
+    translatorHan: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160;
+      }>;
+    translatorViet: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    volumes: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::sutra-volume.sutra-volume'
+    >;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -2446,6 +2835,12 @@ declare module '@strapi/strapi' {
       'api::push-subscription.push-subscription': ApiPushSubscriptionPushSubscription;
       'api::setting.setting': ApiSettingSetting;
       'api::sidebar-config.sidebar-config': ApiSidebarConfigSidebarConfig;
+      'api::sutra-bookmark.sutra-bookmark': ApiSutraBookmarkSutraBookmark;
+      'api::sutra-chapter.sutra-chapter': ApiSutraChapterSutraChapter;
+      'api::sutra-glossary.sutra-glossary': ApiSutraGlossarySutraGlossary;
+      'api::sutra-reading-progress.sutra-reading-progress': ApiSutraReadingProgressSutraReadingProgress;
+      'api::sutra-volume.sutra-volume': ApiSutraVolumeSutraVolume;
+      'api::sutra.sutra': ApiSutraSutra;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

@@ -1,0 +1,71 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sutra_chapters",
+  "info": {
+    "singularName": "sutra-chapter",
+    "pluralName": "sutra-chapters",
+    "displayName": "Kinh Điển · Phẩm",
+    "description": "Nội dung từng phẩm/đoạn trong một tập kinh"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 260
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "chapterNumber": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    "openingText": {
+      "type": "text",
+      "maxLength": 1200
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    },
+    "endingText": {
+      "type": "text",
+      "maxLength": 1200
+    },
+    "estimatedReadMinutes": {
+      "type": "integer",
+      "default": 5,
+      "min": 1
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "sutra": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra.sutra",
+      "required": true
+    },
+    "volume": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra-volume.sutra-volume",
+      "inversedBy": "chapters",
+      "required": true
+    },
+    "glossaries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::sutra-glossary.sutra-glossary",
+      "mappedBy": "chapter"
+    }
+  }
+}

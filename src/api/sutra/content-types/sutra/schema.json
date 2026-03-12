@@ -1,0 +1,77 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sutras",
+  "info": {
+    "singularName": "sutra",
+    "pluralName": "sutras",
+    "displayName": "Kinh Điển · Bộ Kinh",
+    "description": "Thông tin tổng quan của một bộ kinh đại thừa"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 260
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 1200
+    },
+    "shortExcerpt": {
+      "type": "text",
+      "maxLength": 360
+    },
+    "coverImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "translatorHan": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "translatorViet": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "reviewer": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "tags": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::blog-tag.blog-tag"
+    },
+    "volumes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::sutra-volume.sutra-volume",
+      "mappedBy": "sutra"
+    },
+    "glossaries": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::sutra-glossary.sutra-glossary",
+      "mappedBy": "sutra"
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "default": false
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}
+

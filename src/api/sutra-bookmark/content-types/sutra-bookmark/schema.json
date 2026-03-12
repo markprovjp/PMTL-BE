@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sutra_bookmarks",
+  "info": {
+    "singularName": "sutra-bookmark",
+    "pluralName": "sutra-bookmarks",
+    "displayName": "Kinh Điển · Bookmark",
+    "description": "Đánh dấu đoạn đọc của từng user"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "sutra": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra.sutra",
+      "required": true
+    },
+    "volume": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra-volume.sutra-volume"
+    },
+    "chapter": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra-chapter.sutra-chapter",
+      "required": true
+    },
+    "anchorKey": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "charOffset": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "excerpt": {
+      "type": "text",
+      "maxLength": 800
+    },
+    "note": {
+      "type": "text",
+      "maxLength": 2000
+    }
+  }
+}
+

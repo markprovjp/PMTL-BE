@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sutra_volumes",
+  "info": {
+    "singularName": "sutra-volume",
+    "pluralName": "sutra-volumes",
+    "displayName": "Kinh Điển · Tập/Quyển",
+    "description": "Mỗi tập thuộc một bộ kinh"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 240
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "volumeNumber": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    "bookStart": {
+      "type": "integer",
+      "min": 1
+    },
+    "bookEnd": {
+      "type": "integer",
+      "min": 1
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 800
+    },
+    "sutra": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::sutra.sutra",
+      "inversedBy": "volumes",
+      "required": true
+    },
+    "chapters": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::sutra-chapter.sutra-chapter",
+      "mappedBy": "volume"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}
+
