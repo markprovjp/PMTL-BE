@@ -48,8 +48,9 @@
       "required": true
     },
     "icon": {
-      "type": "string",
-      "default": "BookOpen"
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ui-icon.ui-icon"
     },
     "pdf_url": {
       "type": "string",

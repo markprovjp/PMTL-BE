@@ -5,9 +5,11 @@
   "attributes": {
     "category_id": { "type": "integer" },
     "title": { "type": "string" },
-    "iconName": {
-      "type": "string",
-      "description": "Tên icon Lucide, VD: BookOpen, Lamp"
+    "icon": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ui-icon.ui-icon",
+      "description": "Biểu tượng dùng chung từ danh mục UI Icon"
     },
     "link": { "type": "string" }
   }

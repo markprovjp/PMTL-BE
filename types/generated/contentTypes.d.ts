@@ -459,7 +459,7 @@ export interface ApiBeginnerGuideBeginnerGuide
     guide_type: Schema.Attribute.Enumeration<['so-hoc', 'kinh-bai-tap']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'so-hoc'>;
-    icon: Schema.Attribute.String & Schema.Attribute.DefaultTo<'BookOpen'>;
+    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
     images: Schema.Attribute.Media<'images', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1430,10 +1430,7 @@ export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
       'api::hub-page.hub-page'
     > &
       Schema.Attribute.Private;
-    menuIcon: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 50;
-      }>;
+    menuIcon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
     publishedAt: Schema.Attribute.DateTime;
     sections: Schema.Attribute.Component<'hub.hub-section', true>;
     showInMenu: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
@@ -2299,6 +2296,62 @@ export interface ApiSutraSutra extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiUiIconUiIcon extends Struct.CollectionTypeSchema {
+  collectionName: 'ui_icons';
+  info: {
+    description: 'Danh m\u1EE5c bi\u1EC3u t\u01B0\u1EE3ng d\u00F9ng chung cho to\u00E0n b\u1ED9 CMS/Frontend';
+    displayName: 'Giao Di\u1EC7n \u00B7 Bi\u1EC3u T\u01B0\u1EE3ng';
+    pluralName: 'ui-icons';
+    singularName: 'ui-icon';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    category: Schema.Attribute.Enumeration<
+      ['general', 'social', 'navigation', 'content', 'practice']
+    > &
+      Schema.Attribute.DefaultTo<'general'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    key: Schema.Attribute.UID<'name'> &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::ui-icon.ui-icon'
+    > &
+      Schema.Attribute.Private;
+    lucideName: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
+    name: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
+    notes: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -2841,6 +2894,7 @@ declare module '@strapi/strapi' {
       'api::sutra-reading-progress.sutra-reading-progress': ApiSutraReadingProgressSutraReadingProgress;
       'api::sutra-volume.sutra-volume': ApiSutraVolumeSutraVolume;
       'api::sutra.sutra': ApiSutraSutra;
+      'api::ui-icon.ui-icon': ApiUiIconUiIcon;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

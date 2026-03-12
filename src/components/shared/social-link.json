@@ -17,9 +17,10 @@
       "required": true,
       "maxLength": 500
     },
-    "iconName": {
-      "type": "string",
-      "maxLength": 50
+    "icon": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ui-icon.ui-icon"
     }
   }
 }

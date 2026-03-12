@@ -4,7 +4,7 @@ export interface BlocksDownloadGrid extends Struct.ComponentSchema {
   collectionName: 'components_blocks_download_grids';
   info: {
     description: 'Hi\u1EC3n th\u1ECB l\u01B0\u1EDBi t\u00E0i li\u1EC7u t\u1EA3i xu\u1ED1ng';
-    displayName: 'Download Grid';
+    displayName: 'L\u01B0\u1EDBi t\u00E0i li\u1EC7u t\u1EA3i xu\u1ED1ng';
   };
   attributes: {
     description: Schema.Attribute.Text;
@@ -20,7 +20,7 @@ export interface BlocksPostListAuto extends Struct.ComponentSchema {
   collectionName: 'components_blocks_post_list_autos';
   info: {
     description: 'Hi\u1EC3n th\u1ECB danh s\u00E1ch b\u00E0i vi\u1EBFt t\u1EF1 \u0111\u1ED9ng theo ph\u00E2n lo\u1EA1i';
-    displayName: 'Post List (Automatic)';
+    displayName: 'Danh s\u00E1ch b\u00E0i vi\u1EBFt (T\u1EF1 \u0111\u1ED9ng)';
   };
   attributes: {
     category: Schema.Attribute.Relation<'oneToOne', 'api::category.category'>;
@@ -34,7 +34,7 @@ export interface BlocksPostListManual extends Struct.ComponentSchema {
   collectionName: 'components_blocks_post_list_manuals';
   info: {
     description: 'Hi\u1EC3n th\u1ECB danh s\u00E1ch b\u00E0i vi\u1EBFt \u0111\u01B0\u1EE3c ch\u1ECDn tay';
-    displayName: 'Post List (Manual)';
+    displayName: 'Danh s\u00E1ch b\u00E0i vi\u1EBFt (Th\u1EE7 c\u00F4ng)';
   };
   attributes: {
     description: Schema.Attribute.Text;
@@ -47,7 +47,7 @@ export interface BlocksRichText extends Struct.ComponentSchema {
   collectionName: 'components_blocks_rich_texts';
   info: {
     description: 'N\u1ED9i dung v\u0103n b\u1EA3n t\u1EF1 do';
-    displayName: 'Rich Text';
+    displayName: 'V\u0103n b\u1EA3n phong ph\u00FA';
   };
   attributes: {
     content: Schema.Attribute.RichText;
@@ -80,7 +80,7 @@ export interface HomepageActionCardItem extends Struct.ComponentSchema {
   };
   attributes: {
     description: Schema.Attribute.Text;
-    iconType: Schema.Attribute.String;
+    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
     link: Schema.Attribute.String;
     title: Schema.Attribute.String;
   };
@@ -151,7 +151,7 @@ export interface HomepagePhapBaoItem extends Struct.ComponentSchema {
     chinese: Schema.Attribute.String;
     color: Schema.Attribute.String;
     description: Schema.Attribute.Text;
-    iconType: Schema.Attribute.String;
+    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
     item_id: Schema.Attribute.String;
     link: Schema.Attribute.String;
     title: Schema.Attribute.String;
@@ -165,7 +165,7 @@ export interface HomepageSearchCategory extends Struct.ComponentSchema {
   };
   attributes: {
     category_id: Schema.Attribute.Integer;
-    iconName: Schema.Attribute.String;
+    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
     link: Schema.Attribute.String;
     title: Schema.Attribute.String;
   };
@@ -294,10 +294,7 @@ export interface SharedSocialLink extends Struct.ComponentSchema {
     singularName: 'social-link';
   };
   attributes: {
-    iconName: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 50;
-      }>;
+    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
     label: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{

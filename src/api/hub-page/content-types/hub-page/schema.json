@@ -60,9 +60,10 @@
       "description": "Hiển thị trang này trong thanh điều hướng"
     },
     "menuIcon": {
-      "type": "string",
-      "maxLength": 50,
-      "description": "Tên icon Lucide (ví dụ: BookOpen, Download, Star)"
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ui-icon.ui-icon",
+      "description": "Biểu tượng menu dùng chung từ danh mục UI Icon"
     },
     "visualTheme": {
       "type": "enumeration",

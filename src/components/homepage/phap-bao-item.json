@@ -10,9 +10,11 @@
     "borderColor": { "type": "string" },
     "description": { "type": "text" },
     "link": { "type": "string" },
-    "iconType": {
-      "type": "string",
-      "description": "Tên icon vd: book, star, leaf, flame, house"
+    "icon": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ui-icon.ui-icon",
+      "description": "Biểu tượng dùng chung từ danh mục UI Icon"
     }
   }
 }

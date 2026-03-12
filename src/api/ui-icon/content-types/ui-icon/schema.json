@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ui_icons",
+  "info": {
+    "singularName": "ui-icon",
+    "pluralName": "ui-icons",
+    "displayName": "Giao Diện · Biểu Tượng",
+    "description": "Danh mục biểu tượng dùng chung cho toàn bộ CMS/Frontend"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "key": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true,
+      "unique": true,
+      "maxLength": 120
+    },
+    "lucideName": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120,
+      "description": "Tên icon trong lucide-react, ví dụ: BookOpen, Search, Flame"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "general",
+        "social",
+        "navigation",
+        "content",
+        "practice"
+      ],
+      "default": "general"
+    },
+    "notes": {
+      "type": "text",
+      "maxLength": 500
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

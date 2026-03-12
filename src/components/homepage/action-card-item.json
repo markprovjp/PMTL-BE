@@ -6,6 +6,10 @@
     "title": { "type": "string" },
     "description": { "type": "text" },
     "link": { "type": "string" },
-    "iconType": { "type": "string" }
+    "icon": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ui-icon.ui-icon"
+    }
   }
 }

@@ -1,7 +1,7 @@
 {
   "collectionName": "components_blocks_post_list_autos",
   "info": {
-    "displayName": "Post List (Automatic)",
+    "displayName": "Danh sách bài viết (Tự động)",
     "description": "Hiển thị danh sách bài viết tự động theo phân loại"
   },
   "options": {},

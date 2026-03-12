@@ -1,7 +1,7 @@
 {
   "collectionName": "components_blocks_post_list_manuals",
   "info": {
-    "displayName": "Post List (Manual)",
+    "displayName": "Danh sách bài viết (Thủ công)",
     "description": "Hiển thị danh sách bài viết được chọn tay"
   },
   "options": {},

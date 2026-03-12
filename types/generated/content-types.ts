@@ -19,7 +19,7 @@ export interface BeginnerGuide {
   order?: number;
   step_number?: number;
   guide_type: unknown;
-  icon?: string;
+  icon?: UiIcon | null;
   pdf_url?: string;
   video_url?: string;
   images?: StrapiMediaRef | null;
@@ -348,7 +348,7 @@ export interface HubPage {
   downloads?: DownloadItem[];
   sortOrder?: number;
   showInMenu?: boolean;
-  menuIcon?: string;
+  menuIcon?: UiIcon | null;
   visualTheme?: unknown;
   blocks?: unknown;
   publishedAt?: string;
@@ -644,4 +644,23 @@ export interface SutraVolume {
   updatedBy?: any;
   locale?: string;
   localizations?: SutraVolume[];
+}
+
+export interface UiIcon {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+  key: unknown;
+  lucideName: string;
+  category?: unknown;
+  notes?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: UiIcon[];
 }

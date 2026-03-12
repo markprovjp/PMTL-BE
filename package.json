@@ -12,6 +12,7 @@
     "dev": "strapi develop",
     "develop": "strapi develop",
     "seed:core": "npm run build && node scripts/seed-test.js",
+    "seed:ui-icons": "npm run build && node scripts/seed-ui-icons.js",
     "seed:rich": "npm run build && node scripts/seed-rich.js",
     "seed:bulk": "npm run build && node scripts/seed-internal.js",
     "seed:full": "npm run build && node scripts/seed-full.js",

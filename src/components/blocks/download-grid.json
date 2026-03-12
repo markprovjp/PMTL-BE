@@ -1,7 +1,7 @@
 {
   "collectionName": "components_blocks_download_grids",
   "info": {
-    "displayName": "Download Grid",
+    "displayName": "Lưới tài liệu tải xuống",
     "description": "Hiển thị lưới tài liệu tải xuống"
   },
   "options": {},
