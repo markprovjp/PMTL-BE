@@ -33,7 +33,7 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/database ./database
 COPY --from=builder /app/.strapi ./.strapi
-COPY --from=builder /app/src ./src
+COPY --from=builder /app/dist/src ./src
 
 # Strapi expects runtime config at /app/config (not only /app/dist/config)
 # Copy the compiled config so Node doesn't need to execute TypeScript config files.
@@ -46,7 +46,7 @@ RUN mkdir -p /app/build && \
 
 # Set non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 && \
+    adduser -S nodejs -u 1001 -G nodejs && \
     chown -R nodejs:nodejs /app
 
 USER nodejs

@@ -283,6 +283,32 @@ export interface Event {
   localizations?: Event[];
 }
 
+export interface GalleryItem {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  slug: unknown;
+  description?: string;
+  quote?: string;
+  category: unknown;
+  album?: string;
+  location?: string;
+  device?: string;
+  photographer?: string;
+  shotDate?: string;
+  image: StrapiMediaRef | null;
+  featured?: boolean;
+  sortOrder?: number;
+  keywords?: string;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: GalleryItem[];
+}
+
 export interface GuestbookEntry {
   id?: number;
   documentId: string;

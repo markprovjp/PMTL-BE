@@ -1,0 +1,92 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gallery_items",
+  "info": {
+    "singularName": "gallery-item",
+    "pluralName": "gallery-items",
+    "displayName": "Gallery · Ảnh Tư Liệu",
+    "description": "Quản lý thư viện ảnh pháp môn tâm linh hiển thị tại route /gallery"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 220
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 1200
+    },
+    "quote": {
+      "type": "text",
+      "maxLength": 500
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "Hoa Sen",
+        "Kiến Trúc",
+        "Nghi Lễ",
+        "Pháp Hội",
+        "Thiền Định",
+        "Thiên Nhiên",
+        "Kinh Sách",
+        "Phật Tượng",
+        "Khác"
+      ],
+      "default": "Khác",
+      "required": true
+    },
+    "album": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "Tên bộ ảnh hoặc nhánh lưu trữ để gom nhóm trên frontend"
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 180
+    },
+    "device": {
+      "type": "string",
+      "maxLength": 180
+    },
+    "photographer": {
+      "type": "string",
+      "maxLength": 120,
+      "default": "Ban Truyền Thông PMTL"
+    },
+    "shotDate": {
+      "type": "date"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Ưu tiên hiển thị nổi bật trong hero và spotlight"
+    },
+    "sortOrder": {
+      "type": "integer",
+      "default": 0,
+      "description": "Thứ tự hiển thị tăng dần trước khi xét ngày chụp"
+    },
+    "keywords": {
+      "type": "string",
+      "maxLength": 400,
+      "description": "Từ khóa phân tách bằng dấu phẩy để hỗ trợ tìm kiếm nhanh ở frontend"
+    }
+  }
+}

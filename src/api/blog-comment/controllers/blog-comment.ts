@@ -77,7 +77,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       return ctx.badRequest('Dữ liệu không hợp lệ', { errors: validation.error.format() });
     }
 
-    const { postSlug, content, authorName, authorCountry, parentDocumentId } = validation.data;
+    const { postSlug, content, authorName, authorCountry, parentDocumentId, authorAvatar } = validation.data;
     const cleanContent = stripHtmlForModeration(content).slice(0, 2000);
     const fallbackName =
       ctx.state?.user?.fullName ??
@@ -116,6 +116,23 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       const spamScore = computeSpamScore(cleanContent);
       const moderation = getInitialModerationState(spamScore);
 
+      let authorAvatarId: number | null = null;
+      if (authorAvatar && typeof authorAvatar === 'string') {
+        const rawUrl = authorAvatar.trim();
+        if (rawUrl) {
+          try {
+            const urlPath = rawUrl.startsWith('http') ? new URL(rawUrl).pathname : rawUrl;
+            const file = await strapi.db.query('plugin::upload.file').findOne({
+              where: { url: urlPath },
+              select: ['id'],
+            });
+            if (file?.id) authorAvatarId = Number(file.id);
+          } catch {
+            // ignore invalid avatar URL
+          }
+        }
+      }
+
       const data: Record<string, unknown> = {
         authorName: cleanName,
         authorCountry,
@@ -123,6 +140,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
         post: post.id,
         ...(parentId ? { parent: parentId } : {}),
         ...(authUserId ? { user: authUserId } : {}),
+        ...(authorAvatarId ? { authorAvatar: authorAvatarId } : {}),
         ipHash,
         moderationStatus: moderation.moderationStatus,
         isHidden: moderation.isHidden,

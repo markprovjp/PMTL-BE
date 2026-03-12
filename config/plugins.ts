@@ -15,8 +15,8 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
         },
       },
       settings: {
-        defaultFrom: env('SMTP_FROM', 'no-reply@phapmontamlinh.vn'),
-        defaultReplyTo: env('SMTP_REPLY_TO', 'contact@phapmontamlinh.vn'),
+        defaultFrom: env('SMTP_FROM', 'no-reply@phapmontamlinh-quantheambotat.vn'),
+        defaultReplyTo: env('SMTP_REPLY_TO', 'contact@phapmontamlinh-quantheambotat.vn'),
       },
     },
   },

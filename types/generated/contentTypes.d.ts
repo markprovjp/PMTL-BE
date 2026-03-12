@@ -1239,6 +1239,88 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
+  collectionName: 'gallery_items';
+  info: {
+    description: 'Qu\u1EA3n l\u00FD th\u01B0 vi\u1EC7n \u1EA3nh ph\u00E1p m\u00F4n t\u00E2m linh hi\u1EC3n th\u1ECB t\u1EA1i route /gallery';
+    displayName: 'Gallery \u00B7 \u1EA2nh T\u01B0 Li\u1EC7u';
+    pluralName: 'gallery-items';
+    singularName: 'gallery-item';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    album: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
+    category: Schema.Attribute.Enumeration<
+      [
+        'Hoa Sen',
+        'Ki\u1EBFn Tr\u00FAc',
+        'Nghi L\u1EC5',
+        'Ph\u00E1p H\u1ED9i',
+        'Thi\u1EC1n \u0110\u1ECBnh',
+        'Thi\u00EAn Nhi\u00EAn',
+        'Kinh S\u00E1ch',
+        'Ph\u1EADt T\u01B0\u1EE3ng',
+        'Kh\u00E1c',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Kh\u00E1c'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1200;
+      }>;
+    device: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 180;
+      }>;
+    featured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
+    keywords: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 400;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::gallery-item.gallery-item'
+    > &
+      Schema.Attribute.Private;
+    location: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 180;
+      }>;
+    photographer: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }> &
+      Schema.Attribute.DefaultTo<'Ban Truy\u1EC1n Th\u00F4ng PMTL'>;
+    publishedAt: Schema.Attribute.DateTime;
+    quote: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    shotDate: Schema.Attribute.Date;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 220;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGuestbookEntryGuestbookEntry
   extends Struct.CollectionTypeSchema {
   collectionName: 'guestbook_entries';
@@ -2354,6 +2436,7 @@ declare module '@strapi/strapi' {
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
       'api::download-item.download-item': ApiDownloadItemDownloadItem;
       'api::event.event': ApiEventEvent;
+      'api::gallery-item.gallery-item': ApiGalleryItemGalleryItem;
       'api::guestbook-entry.guestbook-entry': ApiGuestbookEntryGuestbookEntry;
       'api::hub-page.hub-page': ApiHubPageHubPage;
       'api::lunar-event-chant-override.lunar-event-chant-override': ApiLunarEventChantOverrideLunarEventChantOverride;

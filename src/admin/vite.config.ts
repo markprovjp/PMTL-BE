@@ -7,7 +7,9 @@ export default (config: UserConfig) => {
       host: '0.0.0.0',
       allowedHosts: [
         "art-cincinnati-anne-assessments.trycloudflare.com",
-        "traditions-gzip-act-authorized.trycloudflare.com"
+        "traditions-gzip-act-authorized.trycloudflare.com",
+        "phapmontamlinh-quantheambotat.vn",
+        "strapi.phapmontamlinh-quantheambotat.vn"
       ],
     },
   });
