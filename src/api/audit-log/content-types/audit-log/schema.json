@@ -1,0 +1,80 @@
+{
+  "kind": "collectionType",
+  "collectionName": "audit_logs",
+  "info": {
+    "singularName": "audit-log",
+    "pluralName": "audit-logs",
+    "displayName": "System · Audit Log",
+    "description": "Internal audit trail for admin and content changes"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "action": {
+      "type": "enumeration",
+      "enum": ["create", "update", "delete", "publish", "unpublish"],
+      "required": true
+    },
+    "targetUid": {
+      "type": "string",
+      "required": true,
+      "maxLength": 150
+    },
+    "targetDocumentId": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "targetId": {
+      "type": "integer"
+    },
+    "targetLabel": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "actorType": {
+      "type": "enumeration",
+      "enum": ["admin", "user", "guest", "system"],
+      "required": true
+    },
+    "actorId": {
+      "type": "integer"
+    },
+    "actorDisplayName": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "actorEmail": {
+      "type": "email"
+    },
+    "requestMethod": {
+      "type": "string",
+      "maxLength": 10
+    },
+    "requestPath": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "requestId": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "ipHash": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "userAgent": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "changedFields": {
+      "type": "json"
+    },
+    "metadata": {
+      "type": "json"
+    }
+  }
+}

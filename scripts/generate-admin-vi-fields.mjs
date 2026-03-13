@@ -15,6 +15,20 @@ const usersPermissionsUserSchema = path.join(
 )
 const translationsPath = path.join(appRoot, 'src', 'admin', 'extensions', 'translations', 'vi.json')
 
+const fixedTranslationMap = new Map([
+  ['System · Audit Log', 'Hệ thống · Nhật ký kiểm tra'],
+  ['System · Content History', 'Hệ thống · Lịch sử nội dung'],
+  ['System · Request Guard', 'Hệ thống · Chốt chống lặp'],
+  ['User', 'Người dùng'],
+  ['Users', 'Người dùng'],
+  ['Users & Permissions', 'Người dùng & Phân quyền'],
+  ['global.users', 'Người dùng'],
+  ['content-manager.content-types.api::audit-log.audit-log', 'Hệ thống · Nhật ký kiểm tra'],
+  ['content-manager.content-types.api::content-history.content-history', 'Hệ thống · Lịch sử nội dung'],
+  ['content-manager.content-types.api::request-guard.request-guard', 'Hệ thống · Chốt chống lặp'],
+  ['content-manager.content-types.plugin::users-permissions.user', 'Người dùng'],
+])
+
 const baseMap = new Map([
   ['title', 'Tiêu đề'],
   ['name', 'Tên'],
@@ -242,6 +256,29 @@ const baseMap = new Map([
   ['sortOrder', 'Thứ tự hiển thị'],
   ['notes', 'Ghi chú'],
   ['key', 'Mã khóa'],
+  ['action', 'Hành động'],
+  ['targetUid', 'UID nội dung'],
+  ['targetDocumentId', 'Document ID mục tiêu'],
+  ['targetId', 'ID mục tiêu'],
+  ['targetLabel', 'Nhãn mục tiêu'],
+  ['actorType', 'Loại tác nhân'],
+  ['actorId', 'ID tác nhân'],
+  ['actorDisplayName', 'Tên tác nhân'],
+  ['requestMethod', 'Phương thức request'],
+  ['requestPath', 'Đường dẫn request'],
+  ['requestId', 'Request ID'],
+  ['documentId', 'Mã tài liệu'],
+  ['userAgent', 'Trình duyệt / User Agent'],
+  ['changedFields', 'Các trường thay đổi'],
+  ['metadata', 'Dữ liệu bổ sung'],
+  ['versionNumber', 'Phiên bản'],
+  ['snapshot', 'Ảnh chụp dữ liệu'],
+  ['guardKey', 'Khóa guard'],
+  ['scope', 'Phạm vi'],
+  ['hits', 'Số lượt'],
+  ['expiresAt', 'Hết hạn lúc'],
+  ['lastSeenAt', 'Lần thấy gần nhất'],
+  ['actorEmail', 'Email tác nhân'],
 ])
 
 const enumMap = new Map([
@@ -318,6 +355,15 @@ const enumMap = new Map([
   ['navigation', 'Điều hướng'],
   ['content', 'Nội dung'],
   ['practice', 'Tu học'],
+  ['create', 'Tạo mới'],
+  ['update', 'Cập nhật'],
+  ['delete', 'Xóa'],
+  ['publish', 'Xuất bản'],
+  ['unpublish', 'Gỡ xuất bản'],
+  ['admin', 'Quản trị viên'],
+  ['user', 'Người dùng'],
+  ['guest', 'Khách'],
+  ['system', 'Hệ thống'],
 ])
 
 function normalizeKey(key) {
@@ -388,6 +434,17 @@ const translations = fs.existsSync(translationsPath)
 
 let added = 0
 let updated = 0
+
+for (const [key, value] of fixedTranslationMap.entries()) {
+  if (translations[key] !== value) {
+    if (translations[key]) {
+      updated += 1
+    } else {
+      added += 1
+    }
+    translations[key] = value
+  }
+}
 
 for (const schemaPath of schemas) {
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'))

@@ -70,6 +70,7 @@ const config: Core.Config.Middlewares = [
   'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
+  'global::request-context',
   'strapi::session',
   'strapi::favicon',
   'strapi::public',

@@ -6,6 +6,34 @@
 
 import type { StrapiMediaRef } from './media'
 
+export interface AuditLog {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  action: unknown;
+  targetUid: string;
+  targetDocumentId?: string;
+  targetId?: number;
+  targetLabel?: string;
+  actorType: unknown;
+  actorId?: number;
+  actorDisplayName?: string;
+  actorEmail?: unknown;
+  requestMethod?: string;
+  requestPath?: string;
+  requestId?: string;
+  ipHash?: string;
+  userAgent?: string;
+  changedFields?: Record<string, any>;
+  metadata?: Record<string, any>;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: AuditLog[];
+}
+
 export interface BeginnerGuide {
   id?: number;
   documentId: string;
@@ -73,6 +101,7 @@ export interface BlogPost {
   gallery?: StrapiMediaRef | null;
   video_url?: string;
   audio_url?: string;
+  oembed?: Record<string, any>;
   categories?: Category[];
   tags?: BlogTag[];
   featured?: boolean;
@@ -230,6 +259,31 @@ export interface CommunityPost {
   localizations?: CommunityPost[];
 }
 
+export interface ContentHistory {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  targetUid: string;
+  targetDocumentId: string;
+  targetId?: number;
+  targetLabel?: string;
+  action: unknown;
+  versionNumber: number;
+  actorType: unknown;
+  actorId?: number;
+  actorDisplayName?: string;
+  actorEmail?: unknown;
+  changedFields?: Record<string, any>;
+  snapshot: Record<string, any>;
+  metadata?: Record<string, any>;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: ContentHistory[];
+}
+
 export interface DownloadItem {
   id?: number;
   documentId: string;
@@ -273,6 +327,7 @@ export interface Event {
   language?: string;
   link?: string;
   youtubeId?: string;
+  oembed?: Record<string, any>;
   coverImage?: StrapiMediaRef | null;
   gallery?: StrapiMediaRef | null;
   files?: StrapiMediaRef | null;
@@ -468,6 +523,24 @@ export interface PushSubscription {
   updatedBy?: any;
   locale?: string;
   localizations?: PushSubscription[];
+}
+
+export interface RequestGuard {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  guardKey: string;
+  scope: string;
+  hits?: number;
+  expiresAt: string;
+  lastSeenAt: string;
+  notes?: Record<string, any>;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: RequestGuard[];
 }
 
 export interface Setting {

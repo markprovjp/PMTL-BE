@@ -5,6 +5,146 @@ import {
   BLOG_POST_MEILISEARCH_INDEX,
   BLOG_POST_MEILISEARCH_SETTINGS,
 } from './search/blog-post-search';
+import { persistAuditTrail, shouldTrackAudit } from './services/audit-trail';
+import { registerPushDispatchWorker } from './services/push-queue';
+import { cleanupExpiredGuards } from './services/request-guard';
+
+function clonePlain<T>(value: T): T | null {
+  if (!value) return null;
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function resolveLifecycleAction(
+  action: 'create' | 'update' | 'delete',
+  beforeValue: Record<string, unknown> | null,
+  afterValue: Record<string, unknown> | null
+): 'create' | 'update' | 'delete' | 'publish' | 'unpublish' {
+  if (action === 'create') {
+    return afterValue?.publishedAt ? 'publish' : 'create';
+  }
+
+  if (action === 'delete') {
+    return 'delete';
+  }
+
+  const beforePublished = Boolean(beforeValue?.publishedAt);
+  const afterPublished = Boolean(afterValue?.publishedAt);
+
+  if (!beforePublished && afterPublished) {
+    return 'publish';
+  }
+
+  if (beforePublished && !afterPublished) {
+    return 'unpublish';
+  }
+
+  return 'update';
+}
+
+async function fetchLifecycleEntry(
+  strapi: Core.Strapi,
+  uid: string,
+  id: number | string | undefined
+) {
+  if (id === undefined || id === null) return null;
+
+  try {
+    return await strapi.db.query(uid as any).findOne({
+      where: { id },
+    });
+  } catch (error) {
+    strapi.log.warn(`[Audit Trail] Failed to fetch snapshot for ${uid}#${id}`, error);
+    return null;
+  }
+}
+
+export function getTrackedAuditModelUids(strapi: Core.Strapi) {
+  return Object.keys(strapi.contentTypes ?? {}).filter(shouldTrackAudit);
+}
+
+function registerAuditLifecycleSubscribers(strapi: Core.Strapi) {
+  const trackedModels = getTrackedAuditModelUids(strapi);
+
+  strapi.db.lifecycles.subscribe({
+    models: trackedModels,
+
+    async beforeCreate(event) {
+      if (!shouldTrackAudit(event.model.uid)) return;
+      event.state = {
+        ...(event.state ?? {}),
+        beforeValue: null,
+      };
+    },
+
+    async beforeUpdate(event) {
+      if (!shouldTrackAudit(event.model.uid)) return;
+
+      const whereId = event.params?.where?.id;
+      const beforeValue = await fetchLifecycleEntry(strapi, event.model.uid, whereId);
+      event.state = {
+        ...(event.state ?? {}),
+        beforeValue: clonePlain(beforeValue),
+      };
+    },
+
+    async beforeDelete(event) {
+      if (!shouldTrackAudit(event.model.uid)) return;
+
+      const whereId = event.params?.where?.id;
+      const beforeValue = await fetchLifecycleEntry(strapi, event.model.uid, whereId);
+      event.state = {
+        ...(event.state ?? {}),
+        beforeValue: clonePlain(beforeValue),
+      };
+    },
+
+    async afterCreate(event) {
+      if (!shouldTrackAudit(event.model.uid)) return;
+
+      await persistAuditTrail(strapi, {
+        uid: event.model.uid,
+        action: resolveLifecycleAction('create', null, clonePlain(event.result)),
+        before: null,
+        after: clonePlain(event.result),
+      });
+    },
+
+    async afterUpdate(event) {
+      if (!shouldTrackAudit(event.model.uid)) return;
+
+      const beforeValue = asRecord(clonePlain(event.state?.beforeValue));
+      const afterValue = asRecord(clonePlain(event.result));
+
+      await persistAuditTrail(strapi, {
+        uid: event.model.uid,
+        action: resolveLifecycleAction('update', beforeValue, afterValue),
+        before: beforeValue,
+        after: afterValue,
+      });
+    },
+
+    async afterDelete(event) {
+      if (!shouldTrackAudit(event.model.uid)) return;
+
+      await persistAuditTrail(strapi, {
+        uid: event.model.uid,
+        action: 'delete',
+        before: asRecord(clonePlain(event.state?.beforeValue)),
+        after: null,
+      });
+    },
+  });
+
+  strapi.log.info(`[Audit Trail] Registered lifecycle subscribers for ${trackedModels.length} models.`);
+}
 
 async function configureMeilisearchBlogIndex(strapi: Core.Strapi) {
   const host = process.env.MEILISEARCH_HOST;
@@ -37,6 +177,71 @@ async function configureMeilisearchBlogIndex(strapi: Core.Strapi) {
     strapi.log.info(`[Meilisearch] Applied production settings to index ${indexName}.`);
   } catch (error) {
     strapi.log.warn('[Meilisearch] Failed to configure blog index settings:', error);
+  }
+}
+
+async function configureStrapiCalendarDefaults(strapi: Core.Strapi) {
+  if (!strapi.plugin('strapi-calendar')) {
+    return;
+  }
+
+  const pluginStore = strapi.store({
+    environment: '',
+    type: 'plugin',
+    name: 'strapi-calendar',
+  });
+
+  const currentSettings = (await pluginStore.get({ key: 'settings' })) as Record<string, unknown> | null;
+
+  if (currentSettings?.collection === 'api::event.event' && currentSettings?.startField === 'date') {
+    return;
+  }
+
+  await pluginStore.set({
+    key: 'settings',
+    value: {
+      collection: 'api::event.event',
+      titleField: 'title',
+      startField: 'date',
+      endField: null,
+      colorField: null,
+      defaultDuration: 120,
+      drafts: true,
+      startHour: '6:00',
+      endHour: '21:00',
+      defaultView: 'Month',
+      monthView: true,
+      weekView: true,
+      workWeekView: false,
+      dayView: true,
+      todayButton: true,
+      createButton: true,
+      primaryColor: '#a16207',
+      eventColor: '#d97706',
+    },
+  });
+
+  strapi.log.info('[Calendar] Default calendar settings mapped to api::event.event/date.');
+}
+
+async function logQueueOperationalWarnings(strapi: Core.Strapi) {
+  const redisEnabled = process.env.REDIS_ENABLED !== 'false' && Boolean(process.env.REDIS_HOST);
+  const bullmqEnabled = process.env.BULLMQ_ENABLED !== 'false' && redisEnabled;
+  const workerSecret = process.env.PUSH_WORKER_SECRET || process.env.PUSH_SEND_SECRET;
+  const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  const processUrl = process.env.PUSH_PROCESS_URL;
+
+  if (!redisEnabled || !bullmqEnabled) {
+    strapi.log.warn('[Push Queue] Redis/BullMQ is disabled. New push-jobs will remain pending until queue is enabled.');
+    return;
+  }
+
+  if (!workerSecret) {
+    strapi.log.warn('[Push Queue] Missing PUSH_WORKER_SECRET (or PUSH_SEND_SECRET fallback). Worker cannot authenticate to /api/push/process.');
+  }
+
+  if (!frontendUrl && !processUrl) {
+    strapi.log.warn('[Push Queue] Missing FRONTEND_URL or PUSH_PROCESS_URL. Worker does not know where to send push processing requests.');
   }
 }
 
@@ -258,7 +463,21 @@ export default {
       strapi.log.error('[TypeScript] Generation failed:', err);
     }
 
+    registerAuditLifecycleSubscribers(strapi);
+
+    try {
+      const deletedGuards = await cleanupExpiredGuards(strapi, 500);
+      if (deletedGuards > 0) {
+        strapi.log.info(`[Request Guard] Cleaned up ${deletedGuards} expired rows.`);
+      }
+    } catch (err) {
+      strapi.log.warn('[Request Guard] Cleanup failed during bootstrap:', err);
+    }
+
     await configureMeilisearchBlogIndex(strapi);
+    await configureStrapiCalendarDefaults(strapi);
+    await logQueueOperationalWarnings(strapi);
+    registerPushDispatchWorker(strapi);
   },
 };
 

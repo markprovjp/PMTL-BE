@@ -10,13 +10,13 @@ import {
   stripHtmlForModeration,
 } from '../../../utils/moderation';
 import { formatWaitTime, RATE_LIMITS } from '../../../utils/rate-limit';
+import { consumeGuard } from '../../../services/request-guard';
+import { groupCommentsByPostDocumentId } from '../../../utils/community-comments';
 
 const POST_UID = 'api::community-post.community-post';
 const COMMENT_UID = 'api::community-comment.community-comment';
 const UPLOAD_FILE_UID = 'plugin::upload.file';
 
-const submitCooldown = new Map<string, number>();
-const reportFingerprint = new Map<string, number>();
 const SUBMIT_COOLDOWN_MS = RATE_LIMITS.communityPostSubmitMs;
 const REPORT_TTL_MS = RATE_LIMITS.reportTtlMs;
 
@@ -44,39 +44,22 @@ function getRequesterKey(ctx: any): string {
   return `ip:${hashIp(rawIp)}`;
 }
 
-function checkCooldown(ipHash: string): boolean {
-  const last = submitCooldown.get(ipHash);
-  return !!last && Date.now() - last < SUBMIT_COOLDOWN_MS;
-}
-
-function recordCooldown(ipHash: string): void {
-  submitCooldown.set(ipHash, Date.now());
-}
-
-function recordUniqueReport(targetKey: string): boolean {
-  const now = Date.now();
-  const existing = reportFingerprint.get(targetKey);
-  if (existing && now - existing < REPORT_TTL_MS) return false;
-  reportFingerprint.set(targetKey, now);
-
-  if (reportFingerprint.size > 5000) {
-    const cutoff = now - REPORT_TTL_MS;
-    for (const [key, value] of reportFingerprint.entries()) {
-      if (value < cutoff) reportFingerprint.delete(key);
-    }
-  }
-
-  return true;
-}
-
 export default factories.createCoreController(POST_UID, ({ strapi }) => ({
   async createPost(ctx) {
     const log = createLogger(strapi, 'community-post');
     const requesterKey = getRequesterKey(ctx);
     const ipHash = requesterKey.startsWith('ip:') ? requesterKey.slice(3) : hashIp(requesterKey);
-    if (checkCooldown(ipHash)) {
+    const cooldown = await consumeGuard(strapi, {
+      scope: 'community-post-submit',
+      key: ipHash,
+      windowMs: SUBMIT_COOLDOWN_MS,
+      maxHits: 1,
+      notes: { ipHash },
+    });
+
+    if (!cooldown.allowed) {
       ctx.status = 429;
-      ctx.body = { error: `Bạn gửi bài quá nhanh. Vui lòng thử lại sau ${formatWaitTime(SUBMIT_COOLDOWN_MS)}.` };
+      ctx.body = { error: `Bạn gửi bài quá nhanh. Vui lòng thử lại sau ${formatWaitTime(cooldown.retryAfterMs)}.` };
       return;
     }
 
@@ -117,7 +100,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
         mediaId = resolvedMedia.id;
       }
 
-      const entity = await (strapi as any).entityService.create(POST_UID, {
+      const entity = await (strapi.documents as any)(POST_UID).create({
         data: {
           title: cleanTitle,
           slug: `${baseSlug}-${Date.now().toString(36)}`,
@@ -142,7 +125,6 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
         } as any,
       });
 
-      recordCooldown(ipHash);
       ctx.status = 201;
       ctx.body = {
         data: entity,
@@ -220,7 +202,14 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
     if (!isReportReason(reason)) return ctx.badRequest('Lý do báo cáo không hợp lệ.');
 
     const reporterKey = `${documentId}:${getRequesterKey(ctx)}`;
-    if (!recordUniqueReport(reporterKey)) {
+    const reportGuard = await consumeGuard(strapi, {
+      scope: 'community-post-report',
+      key: reporterKey,
+      windowMs: REPORT_TTL_MS,
+      maxHits: 1,
+      notes: { documentId, reason },
+    });
+    if (!reportGuard.allowed) {
       return ctx.badRequest('Bạn đã báo cáo bài viết này rồi.');
     }
 
@@ -240,7 +229,8 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
         isHidden: existing.isHidden ?? false,
         spamScore: existing.spamScore ?? 0,
       }, reason);
-      const updated = await (strapi as any).entityService.update(POST_UID, existing.id, {
+      const updated = await (strapi.documents as any)(POST_UID).update({
+        documentId: existing.documentId,
         data: nextState,
       });
 
@@ -273,22 +263,32 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
 
     const { results, pagination } = await (strapi as any).service(POST_UID).find(ctx.query as any);
 
-    const postsWithComments = await Promise.all(
-      results.map(async (post: any) => {
-        const comments = await strapi.documents(COMMENT_UID as any).findMany({
+    const postDocumentIds = results
+      .map((post: any) => post?.documentId)
+      .filter((value: unknown): value is string => typeof value === 'string' && value.length > 0);
+
+    const allComments = postDocumentIds.length > 0
+      ? await strapi.documents(COMMENT_UID as any).findMany({
           filters: {
-            post: { documentId: post.documentId },
+            post: { documentId: { $in: postDocumentIds } },
             isHidden: { $ne: true },
             moderationStatus: { $notIn: ['hidden', 'removed'] },
           },
           status: 'published',
           fields: ['id', 'documentId', 'content', 'author_name', 'author_avatar', 'likes', 'createdAt'],
-          populate: { parent: { fields: ['documentId'] } },
+          populate: {
+            parent: { fields: ['documentId'] },
+            post: { fields: ['documentId'] },
+          },
           sort: 'createdAt:asc',
-        });
-        return { ...post, comments };
-      })
-    );
+        })
+      : [];
+
+    const commentsByPost = groupCommentsByPostDocumentId(allComments as any[]);
+    const postsWithComments = results.map((post: any) => ({
+      ...post,
+      comments: commentsByPost.get(post.documentId) ?? [],
+    }));
 
     ctx.body = { data: postsWithComments, meta: { pagination } };
   },

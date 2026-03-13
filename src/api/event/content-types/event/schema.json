@@ -75,6 +75,10 @@
     "youtubeId": {
       "type": "string"
     },
+    "oembed": {
+      "type": "customField",
+      "customField": "plugin::oembed.oembed"
+    },
     "coverImage": {
       "type": "media",
       "multiple": false,

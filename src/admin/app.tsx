@@ -11,6 +11,7 @@ import {
 } from '@_sh/strapi-plugin-ckeditor'
 
 import vi from './extensions/translations/vi.merged.json'
+import { TranslatedEnumerationInput } from './extensions/components/TranslatedEnumerationInput'
 
 export default {
   config: {
@@ -20,7 +21,7 @@ export default {
     },
   },
 
-  register(app: unknown) {
+  register(app: any) {
     // Configure CKEditor before bootstrap
     setPluginConfig({
       presets: [
@@ -51,6 +52,12 @@ export default {
           },
         },
       ],
+    })
+
+    // Keep enum values in English for business logic, but show Vietnamese labels in admin.
+    app.addFields({
+      type: 'enumeration',
+      Component: TranslatedEnumerationInput,
     })
   },
 

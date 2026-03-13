@@ -117,10 +117,25 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
     const log = createLogger(strapi, 'push-subscription');
 
     try {
-      const entries = await (strapi.documents as any)(UID).findMany({
-        limit: 5000,
-        fields: ['documentId', 'timezone', 'isActive', 'failedCount', 'updatedAt', 'notificationTypes'],
-      });
+      const entries: any[] = [];
+      const pageSize = 500;
+      let start = 0;
+
+      while (true) {
+        const batch = await (strapi.documents as any)(UID).findMany({
+          start,
+          limit: pageSize,
+          fields: ['documentId', 'timezone', 'isActive', 'failedCount', 'updatedAt', 'notificationTypes'],
+        });
+
+        entries.push(...batch);
+
+        if (!Array.isArray(batch) || batch.length < pageSize) {
+          break;
+        }
+
+        start += pageSize;
+      }
 
       const active = entries.filter((item: any) => item.isActive !== false).length;
       const inactive = entries.length - active;

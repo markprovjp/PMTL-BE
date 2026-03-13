@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "request_guards",
+  "info": {
+    "singularName": "request-guard",
+    "pluralName": "request-guards",
+    "displayName": "System · Request Guard",
+    "description": "DB-backed cooldown and dedupe window for public abuse protection"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "guardKey": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 255
+    },
+    "scope": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "hits": {
+      "type": "integer",
+      "default": 1,
+      "min": 0
+    },
+    "expiresAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "lastSeenAt": {
+      "type": "datetime",
+      "required": true
+    },
+    "notes": {
+      "type": "json"
+    }
+  }
+}

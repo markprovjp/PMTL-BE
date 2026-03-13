@@ -6,7 +6,27 @@ import {
   transformBlogPostSearchEntry,
 } from '../src/search/blog-post-search';
 
-const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin => ({
+const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin => {
+  const redisEnabled = env.bool('REDIS_ENABLED', Boolean(env('REDIS_HOST')));
+  const bullmqEnabled = env.bool('BULLMQ_ENABLED', redisEnabled);
+  const redisConnection: Record<string, unknown> = {
+    host: env('REDIS_HOST', '127.0.0.1'),
+    port: env.int('REDIS_PORT', 6379),
+    maxRetriesPerRequest: null,
+  };
+
+  const redisUsername = env('REDIS_USERNAME', '');
+  const redisPassword = env('REDIS_PASSWORD', '');
+
+  if (redisUsername) {
+    redisConnection.username = redisUsername;
+  }
+
+  if (redisPassword) {
+    redisConnection.password = redisPassword;
+  }
+
+  return ({
   // ── Email via Nodemailer (SMTP) ───────────────────────────
   email: {
     config: {
@@ -52,6 +72,49 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
     enabled: true,
   },
 
+  // ── Admin productivity plugins ─────────────────────────────
+  'strapi-import-export': {
+    enabled: true,
+  },
+
+  'duplicate-button': {
+    enabled: true,
+  },
+
+  oembed: {
+    enabled: true,
+  },
+
+  'strapi-calendar': {
+    enabled: true,
+  },
+
+  'lucide-icon-picker': {
+    enabled: true,
+  },
+
+  redis: redisEnabled ? {
+    enabled: true,
+    config: {
+      connections: {
+        queue: {
+          connection: redisConnection,
+        },
+      },
+    },
+  } : {
+    enabled: false,
+  },
+
+  bullmq: bullmqEnabled ? {
+    enabled: true,
+    config: {
+      connectionName: 'queue',
+    },
+  } : {
+    enabled: false,
+  },
+
   // ── Meilisearch ──────────────────────────
   meilisearch: env.bool('MEILISEARCH_ENABLED', Boolean(env('MEILISEARCH_HOST'))) ? {
     config: {
@@ -84,6 +147,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       },
     },
   },
-});
+  });
+};
 
 export default config;

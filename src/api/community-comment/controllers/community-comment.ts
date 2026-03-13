@@ -10,23 +10,13 @@ import {
   stripHtmlForModeration,
 } from '../../../utils/moderation';
 import { formatWaitTime, RATE_LIMITS } from '../../../utils/rate-limit';
+import { consumeGuard } from '../../../services/request-guard';
 
 const COMMENT_UID = 'api::community-comment.community-comment';
 const POST_UID = 'api::community-post.community-post';
 
-const submitCooldown = new Map<string, number>();
-const reportFingerprint = new Map<string, number>();
 const COOLDOWN_MS = RATE_LIMITS.communityCommentSubmitMs;
 const REPORT_TTL_MS = RATE_LIMITS.reportTtlMs;
-
-function checkCooldown(ipHash: string): boolean {
-  const last = submitCooldown.get(ipHash);
-  return !!last && Date.now() - last < COOLDOWN_MS;
-}
-
-function recordCooldown(ipHash: string): void {
-  submitCooldown.set(ipHash, Date.now());
-}
 
 function hashIp(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16);
@@ -42,31 +32,23 @@ function getRequesterKey(ctx: any): string {
   return `ip:${hashIp(rawIp)}`;
 }
 
-function recordUniqueReport(targetKey: string): boolean {
-  const now = Date.now();
-  const existing = reportFingerprint.get(targetKey);
-  if (existing && now - existing < REPORT_TTL_MS) return false;
-  reportFingerprint.set(targetKey, now);
-
-  if (reportFingerprint.size > 5000) {
-    const cutoff = now - REPORT_TTL_MS;
-    for (const [key, value] of reportFingerprint.entries()) {
-      if (value < cutoff) reportFingerprint.delete(key);
-    }
-  }
-
-  return true;
-}
-
 export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
   async createComment(ctx) {
     const log = createLogger(strapi, 'community-comment');
     const requesterKey = getRequesterKey(ctx);
     const ipHash = requesterKey.startsWith('ip:') ? requesterKey.slice(3) : hashIp(requesterKey);
 
-    if (checkCooldown(ipHash)) {
+    const cooldown = await consumeGuard(strapi, {
+      scope: 'community-comment-submit',
+      key: ipHash,
+      windowMs: COOLDOWN_MS,
+      maxHits: 1,
+      notes: { ipHash },
+    });
+
+    if (!cooldown.allowed) {
       ctx.status = 429;
-      ctx.body = { error: `Bạn gửi bình luận quá nhanh. Vui lòng chờ ${formatWaitTime(COOLDOWN_MS)}.` };
+      ctx.body = { error: `Bạn gửi bình luận quá nhanh. Vui lòng chờ ${formatWaitTime(cooldown.retryAfterMs)}.` };
       return;
     }
 
@@ -123,7 +105,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       const spamScore = computeSpamScore(cleanContent);
       const moderation = getInitialModerationState(spamScore);
 
-      const entity = await (strapi as any).entityService.create(COMMENT_UID, {
+      const entity = await (strapi.documents as any)(COMMENT_UID).create({
         data: {
           content: cleanContent,
           author_name: cleanName,
@@ -140,8 +122,6 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
           publishedAt: new Date().toISOString(),
         },
       });
-
-      recordCooldown(ipHash);
 
       ctx.status = 201;
       ctx.body = {
@@ -194,7 +174,14 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     }
 
     const reporterKey = `${documentId}:${getRequesterKey(ctx)}`;
-    if (!recordUniqueReport(reporterKey)) {
+    const reportGuard = await consumeGuard(strapi, {
+      scope: 'community-comment-report',
+      key: reporterKey,
+      windowMs: REPORT_TTL_MS,
+      maxHits: 1,
+      notes: { documentId, reason },
+    });
+    if (!reportGuard.allowed) {
       return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
     }
 
@@ -209,7 +196,8 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       if (!existing) return ctx.notFound('Không tìm thấy bình luận.');
 
       const nextState = getReportedState(existing, reason);
-      const updated = await (strapi as any).entityService.update(COMMENT_UID, existing.id, {
+      const updated = await (strapi.documents as any)(COMMENT_UID).update({
+        documentId: existing.documentId,
         data: nextState,
       });
 

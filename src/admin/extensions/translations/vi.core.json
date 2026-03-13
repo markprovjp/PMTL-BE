@@ -369,8 +369,6 @@
   "app.component.table.view": "Chi tiết {target}",
   "app.components.BlockLink.blog": "Blog",
   "app.components.BlockLink.blog.content": "Đọc tin tức mới nhất về Strapi và hệ sinh thái.",
-  "app.components.BlockLink.cloud": "Strapi Cloud",
-  "app.components.BlockLink.cloud.content": "Dịch vụ lưu trữ đám mây được quản lý hoàn toàn cho dự án Strapi của bạn.",
   "app.components.BlockLink.code": "Ví dụ mã nguồn",
   "app.components.BlockLink.code.content": "Học bằng cách thử nghiệm các dự án thực tế do cộng đồng phát triển.",
   "app.components.BlockLink.documentation.content": "Khám phá các khái niệm, hướng dẫn và chỉ dẫn cần thiết.",

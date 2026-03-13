@@ -430,6 +430,86 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAuditLogAuditLog extends Struct.CollectionTypeSchema {
+  collectionName: 'audit_logs';
+  info: {
+    description: 'Internal audit trail for admin and content changes';
+    displayName: 'System \u00B7 Audit Log';
+    pluralName: 'audit-logs';
+    singularName: 'audit-log';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    action: Schema.Attribute.Enumeration<
+      ['create', 'update', 'delete', 'publish', 'unpublish']
+    > &
+      Schema.Attribute.Required;
+    actorDisplayName: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    actorEmail: Schema.Attribute.Email;
+    actorId: Schema.Attribute.Integer;
+    actorType: Schema.Attribute.Enumeration<
+      ['admin', 'user', 'guest', 'system']
+    > &
+      Schema.Attribute.Required;
+    changedFields: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    ipHash: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 64;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::audit-log.audit-log'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    requestId: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    requestMethod: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 10;
+      }>;
+    requestPath: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    targetDocumentId: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    targetId: Schema.Attribute.Integer;
+    targetLabel: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    targetUid: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 150;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userAgent: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+  };
+}
+
 export interface ApiBeginnerGuideBeginnerGuide
   extends Struct.CollectionTypeSchema {
   collectionName: 'beginner_guides';
@@ -655,6 +735,8 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'manyToMany',
       'api::lunar-event.lunar-event'
     >;
+    oembed: Schema.Attribute.JSON &
+      Schema.Attribute.CustomField<'plugin::oembed.oembed'>;
     publishedAt: Schema.Attribute.DateTime;
     related_posts: Schema.Attribute.Relation<
       'manyToMany',
@@ -1111,6 +1193,77 @@ export interface ApiCommunityPostCommunityPost
   };
 }
 
+export interface ApiContentHistoryContentHistory
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'content_histories';
+  info: {
+    description: 'Internal versioned snapshots for content changes';
+    displayName: 'System \u00B7 Content History';
+    pluralName: 'content-histories';
+    singularName: 'content-history';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    action: Schema.Attribute.Enumeration<
+      ['create', 'update', 'delete', 'publish', 'unpublish']
+    > &
+      Schema.Attribute.Required;
+    actorDisplayName: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    actorEmail: Schema.Attribute.Email;
+    actorId: Schema.Attribute.Integer;
+    actorType: Schema.Attribute.Enumeration<
+      ['admin', 'user', 'guest', 'system']
+    > &
+      Schema.Attribute.Required;
+    changedFields: Schema.Attribute.JSON;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::content-history.content-history'
+    > &
+      Schema.Attribute.Private;
+    metadata: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    snapshot: Schema.Attribute.JSON & Schema.Attribute.Required;
+    targetDocumentId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    targetId: Schema.Attribute.Integer;
+    targetLabel: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    targetUid: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 150;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    versionNumber: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+  };
+}
+
 export interface ApiDownloadItemDownloadItem
   extends Struct.CollectionTypeSchema {
   collectionName: 'download_items';
@@ -1221,6 +1374,8 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     location: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'Vi\u1EC7t Nam'>;
+    oembed: Schema.Attribute.JSON &
+      Schema.Attribute.CustomField<'plugin::oembed.oembed'>;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
     speaker: Schema.Attribute.String &
@@ -1810,6 +1965,59 @@ export interface ApiPushSubscriptionPushSubscription
   };
 }
 
+export interface ApiRequestGuardRequestGuard
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'request_guards';
+  info: {
+    description: 'DB-backed cooldown and dedupe window for public abuse protection';
+    displayName: 'System \u00B7 Request Guard';
+    pluralName: 'request-guards';
+    singularName: 'request-guard';
+  };
+  options: {
+    draftAndPublish: false;
+    increments: true;
+    timestamps: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    expiresAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    guardKey: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    hits: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
+    lastSeenAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::request-guard.request-guard'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    scope: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiSettingSetting extends Struct.SingleTypeSchema {
   collectionName: 'settings';
   info: {
@@ -2332,6 +2540,7 @@ export interface ApiUiIconUiIcon extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     lucideName: Schema.Attribute.String &
       Schema.Attribute.Required &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'> &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 120;
       }>;
@@ -2867,6 +3076,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::audit-log.audit-log': ApiAuditLogAuditLog;
       'api::beginner-guide.beginner-guide': ApiBeginnerGuideBeginnerGuide;
       'api::blog-comment.blog-comment': ApiBlogCommentBlogComment;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
@@ -2876,6 +3086,7 @@ declare module '@strapi/strapi' {
       'api::chant-plan.chant-plan': ApiChantPlanChantPlan;
       'api::community-comment.community-comment': ApiCommunityCommentCommunityComment;
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
+      'api::content-history.content-history': ApiContentHistoryContentHistory;
       'api::download-item.download-item': ApiDownloadItemDownloadItem;
       'api::event.event': ApiEventEvent;
       'api::gallery-item.gallery-item': ApiGalleryItemGalleryItem;
@@ -2886,6 +3097,7 @@ declare module '@strapi/strapi' {
       'api::practice-log.practice-log': ApiPracticeLogPracticeLog;
       'api::push-job.push-job': ApiPushJobPushJob;
       'api::push-subscription.push-subscription': ApiPushSubscriptionPushSubscription;
+      'api::request-guard.request-guard': ApiRequestGuardRequestGuard;
       'api::setting.setting': ApiSettingSetting;
       'api::sidebar-config.sidebar-config': ApiSidebarConfigSidebarConfig;
       'api::sutra-bookmark.sutra-bookmark': ApiSutraBookmarkSutraBookmark;

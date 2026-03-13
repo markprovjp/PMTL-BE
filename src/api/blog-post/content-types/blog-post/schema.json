@@ -59,6 +59,10 @@
       "type": "string",
       "maxLength": 500
     },
+    "oembed": {
+      "type": "customField",
+      "customField": "plugin::oembed.oembed"
+    },
     "categories": {
       "type": "relation",
       "relation": "manyToMany",

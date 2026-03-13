@@ -10,27 +10,11 @@ import { factories } from '@strapi/strapi';
 import { createHash } from 'node:crypto';
 import { createLogger } from '../../../utils/logger';
 import { formatWaitTime, RATE_LIMITS } from '../../../utils/rate-limit';
+import { consumeGuard } from '../../../services/request-guard';
 
 const GB_UID = 'api::guestbook-entry.guestbook-entry';
 
-const submitCooldown = new Map<string, number>();
 const COOLDOWN_MS = RATE_LIMITS.guestbookSubmitMs;
-
-function checkCooldown(ipHash: string): boolean {
-  const last = submitCooldown.get(ipHash);
-  if (!last) return false;
-  return Date.now() - last < COOLDOWN_MS;
-}
-
-function recordCooldown(ipHash: string): void {
-  submitCooldown.set(ipHash, Date.now());
-  if (submitCooldown.size > 5000) {
-    const cutoff = Date.now() - COOLDOWN_MS * 10;
-    for (const [k, v] of submitCooldown.entries()) {
-      if (v < cutoff) submitCooldown.delete(k);
-    }
-  }
-}
 
 function hashIp(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16);
@@ -52,9 +36,17 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
       'unknown';
     const ipHash = hashIp(rawIp);
 
-    if (checkCooldown(ipHash)) {
+    const cooldown = await consumeGuard(strapi, {
+      scope: 'guestbook-submit',
+      key: ipHash,
+      windowMs: COOLDOWN_MS,
+      maxHits: 1,
+      notes: { ipHash },
+    });
+
+    if (!cooldown.allowed) {
       ctx.status = 429;
-      ctx.body = { error: `Bạn gửi lưu bút quá nhanh. Vui lòng thử lại sau ${formatWaitTime(COOLDOWN_MS)}.` };
+      ctx.body = { error: `Bạn gửi lưu bút quá nhanh. Vui lòng thử lại sau ${formatWaitTime(cooldown.retryAfterMs)}.` };
       return;
     }
 
@@ -82,8 +74,6 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
           month: new Date().getMonth() + 1,
         },
       });
-      recordCooldown(ipHash);
-
       ctx.status = 201;
       ctx.body = {
         data: { documentId: entity.documentId },
@@ -202,21 +192,32 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
   async archiveList(ctx) {
     const log = createLogger(strapi, 'guestbook-entry');
     try {
-      const items = await (strapi.documents as any)(GB_UID).findMany({
-        filters: { approvalStatus: { $eq: 'approved' } },
-        fields: ['createdAt'],
-        limit: 100000,
-        start: 0
-      });
-
       const map = new Map<string, number>();
-      for (const item of items) {
-        if (!item.createdAt) continue;
-        const d = new Date(item.createdAt);
-        const y = d.getFullYear();
-        const m = d.getMonth() + 1;
-        const key = `${y}-${m}`;
-        map.set(key, (map.get(key) || 0) + 1);
+      const pageSize = 500;
+      let start = 0;
+
+      while (true) {
+        const items = await (strapi.documents as any)(GB_UID).findMany({
+          filters: { approvalStatus: { $eq: 'approved' } },
+          fields: ['createdAt'],
+          limit: pageSize,
+          start,
+        });
+
+        for (const item of items) {
+          if (!item.createdAt) continue;
+          const d = new Date(item.createdAt);
+          const y = d.getFullYear();
+          const m = d.getMonth() + 1;
+          const key = `${y}-${m}`;
+          map.set(key, (map.get(key) || 0) + 1);
+        }
+
+        if (!Array.isArray(items) || items.length < pageSize) {
+          break;
+        }
+
+        start += pageSize;
       }
 
       const mapped = Array.from(map.entries()).map(([k, count]) => {

@@ -28,6 +28,7 @@
     },
     "lucideName": {
       "type": "string",
+      "customField": "plugin::lucide-icon-picker.lucide-icon",
       "required": true,
       "maxLength": 120,
       "description": "Tên icon trong lucide-react, ví dụ: BookOpen, Search, Flame"

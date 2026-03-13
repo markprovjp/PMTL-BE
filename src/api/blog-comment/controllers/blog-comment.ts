@@ -11,23 +11,13 @@ import {
   stripHtmlForModeration,
 } from '../../../utils/moderation';
 import { formatWaitTime, RATE_LIMITS } from '../../../utils/rate-limit';
+import { consumeGuard } from '../../../services/request-guard';
 
 const COMMENT_UID = 'api::blog-comment.blog-comment';
 const POST_UID = 'api::blog-post.blog-post';
 
-const submitCooldown = new Map<string, number>();
-const reportFingerprint = new Map<string, number>();
 const COOLDOWN_MS = RATE_LIMITS.blogCommentSubmitMs;
 const REPORT_TTL_MS = RATE_LIMITS.reportTtlMs;
-
-function checkCooldown(ipHash: string): boolean {
-  const last = submitCooldown.get(ipHash);
-  return !!last && Date.now() - last < COOLDOWN_MS;
-}
-
-function recordCooldown(ipHash: string): void {
-  submitCooldown.set(ipHash, Date.now());
-}
 
 function hashIp(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16);
@@ -43,31 +33,23 @@ function getRequesterKey(ctx: any): string {
   return `ip:${hashIp(rawIp)}`;
 }
 
-function recordUniqueReport(targetKey: string): boolean {
-  const now = Date.now();
-  const existing = reportFingerprint.get(targetKey);
-  if (existing && now - existing < REPORT_TTL_MS) return false;
-  reportFingerprint.set(targetKey, now);
-
-  if (reportFingerprint.size > 5000) {
-    const cutoff = now - REPORT_TTL_MS;
-    for (const [key, value] of reportFingerprint.entries()) {
-      if (value < cutoff) reportFingerprint.delete(key);
-    }
-  }
-
-  return true;
-}
-
 export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
   async submit(ctx) {
     const log = createLogger(strapi, 'blog-comment');
     const requesterKey = getRequesterKey(ctx);
     const ipHash = requesterKey.startsWith('ip:') ? requesterKey.slice(3) : hashIp(requesterKey);
 
-    if (checkCooldown(ipHash)) {
+    const cooldown = await consumeGuard(strapi, {
+      scope: 'blog-comment-submit',
+      key: ipHash,
+      windowMs: COOLDOWN_MS,
+      maxHits: 1,
+      notes: { ipHash },
+    });
+
+    if (!cooldown.allowed) {
       ctx.status = 429;
-      ctx.body = { error: `Bạn gửi bình luận quá nhanh. Vui lòng chờ ${formatWaitTime(COOLDOWN_MS)}.` };
+      ctx.body = { error: `Bạn gửi bình luận quá nhanh. Vui lòng chờ ${formatWaitTime(cooldown.retryAfterMs)}.` };
       return;
     }
 
@@ -150,8 +132,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
         publishedAt: new Date().toISOString(),
       };
 
-      const entity = await (strapi as any).entityService.create(COMMENT_UID, { data });
-      recordCooldown(ipHash);
+      const entity = await (strapi.documents as any)(COMMENT_UID).create({ data });
 
       ctx.status = 201;
       ctx.body = {
@@ -201,7 +182,14 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
 
     if (!isReportReason(reason)) return ctx.badRequest('Lý do báo cáo không hợp lệ.');
     const reporterKey = `${documentId}:${getRequesterKey(ctx)}`;
-    if (!recordUniqueReport(reporterKey)) return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
+    const reportGuard = await consumeGuard(strapi, {
+      scope: 'blog-comment-report',
+      key: reporterKey,
+      windowMs: REPORT_TTL_MS,
+      maxHits: 1,
+      notes: { documentId, reason },
+    });
+    if (!reportGuard.allowed) return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
 
     try {
       const results = await (strapi.documents(COMMENT_UID as any) as any).findMany({
@@ -214,7 +202,10 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       if (!existing) return ctx.notFound('Không tìm thấy bình luận.');
 
       const nextState = getReportedState(existing, reason);
-      await (strapi as any).entityService.update(COMMENT_UID, existing.id, { data: nextState });
+      await (strapi.documents as any)(COMMENT_UID).update({
+        documentId: existing.documentId,
+        data: nextState,
+      });
 
       ctx.body = {
         message: nextState.isHidden

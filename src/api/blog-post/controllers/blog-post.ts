@@ -7,31 +7,14 @@ import { createHash } from 'node:crypto'
 import { atomicIncrementField, findPublished } from '../../../utils/strapi-helpers'
 import { createLogger } from '../../../utils/logger'
 import { RATE_LIMITS } from '../../../utils/rate-limit'
+import { consumeGuard } from '../../../services/request-guard'
 
 const BLOG_UID = 'api::blog-post.blog-post'
 
-// In-memory view dedup: key = `${ipHash}:${documentId}`, ttl = 1h
-const viewCooldown = new Map<string, number>()
 const VIEW_COOLDOWN_MS = RATE_LIMITS.blogViewCooldownMs
 
 function hashIpView(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').slice(0, 16)
-}
-
-function shouldCountView(key: string): boolean {
-  const last = viewCooldown.get(key)
-  if (!last) return true
-  return Date.now() - last >= VIEW_COOLDOWN_MS
-}
-
-function recordView(key: string): void {
-  viewCooldown.set(key, Date.now())
-  if (viewCooldown.size > 50_000) {
-    const cutoff = Date.now() - VIEW_COOLDOWN_MS
-    for (const [k, v] of viewCooldown.entries()) {
-      if (v < cutoff) viewCooldown.delete(k)
-    }
-  }
 }
 
 export default factories.createCoreController(BLOG_UID, ({ strapi }) => ({
@@ -53,12 +36,18 @@ export default factories.createCoreController(BLOG_UID, ({ strapi }) => ({
         ctx.request.ip ??
         'unknown'
       const cooldownKey = `${hashIpView(rawIp)}:${documentId}`
-      if (!shouldCountView(cooldownKey)) {
+      const viewGuard = await consumeGuard(strapi, {
+        scope: 'blog-post-view',
+        key: cooldownKey,
+        windowMs: VIEW_COOLDOWN_MS,
+        maxHits: 1,
+        notes: { documentId },
+      })
+      if (!viewGuard.allowed) {
         ctx.status = 200
         ctx.body = { ok: true, skipped: true }
         return
       }
-      recordView(cooldownKey)
 
       const newViews = await atomicIncrementField(strapi, BLOG_UID, documentId, 'views')
 
