@@ -62,6 +62,13 @@ export default factories.createCoreController(BLOG_UID, ({ strapi }) => ({
 
       const newViews = await atomicIncrementField(strapi, BLOG_UID, documentId, 'views')
 
+      void strapi
+        .service('api::blog-post.search-index')
+        .reindexBlogPost(documentId)
+        .catch((error) => {
+          log.warn('incrementView reindex failed', error)
+        })
+
       ctx.status = 200
       ctx.body = { ok: true, newViews }
     } catch (err) {

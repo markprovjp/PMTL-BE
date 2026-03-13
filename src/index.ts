@@ -1,6 +1,44 @@
 import type { Core } from '@strapi/strapi';
 import fs from 'fs-extra';
 import path from 'path';
+import {
+  BLOG_POST_MEILISEARCH_INDEX,
+  BLOG_POST_MEILISEARCH_SETTINGS,
+} from './search/blog-post-search';
+
+async function configureMeilisearchBlogIndex(strapi: Core.Strapi) {
+  const host = process.env.MEILISEARCH_HOST;
+  const apiKey = process.env.MEILISEARCH_API_KEY;
+  const isEnabled = process.env.MEILISEARCH_ENABLED !== 'false' && Boolean(host);
+
+  if (!isEnabled || !host) {
+    return;
+  }
+
+  const indexName = process.env.MEILISEARCH_BLOG_POST_INDEX || BLOG_POST_MEILISEARCH_INDEX;
+  const settingsUrl = `${host.replace(/\/$/, '')}/indexes/${indexName}/settings`;
+
+  try {
+    const response = await fetch(settingsUrl, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      },
+      body: JSON.stringify(BLOG_POST_MEILISEARCH_SETTINGS),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      strapi.log.warn(`[Meilisearch] Could not apply index settings for ${indexName}: ${response.status} ${body}`);
+      return;
+    }
+
+    strapi.log.info(`[Meilisearch] Applied production settings to index ${indexName}.`);
+  } catch (error) {
+    strapi.log.warn('[Meilisearch] Failed to configure blog index settings:', error);
+  }
+}
 
 export default {
   async register({ strapi }: { strapi: Core.Strapi }) {
@@ -219,6 +257,8 @@ export default {
     } catch (err) {
       strapi.log.error('[TypeScript] Generation failed:', err);
     }
+
+    await configureMeilisearchBlogIndex(strapi);
   },
 };
 

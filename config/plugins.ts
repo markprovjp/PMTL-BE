@@ -1,4 +1,10 @@
 import type { Core } from '@strapi/strapi';
+import {
+  BLOG_POST_MEILISEARCH_ENTRIES_QUERY,
+  BLOG_POST_MEILISEARCH_INDEX,
+  BLOG_POST_MEILISEARCH_SETTINGS,
+  transformBlogPostSearchEntry,
+} from '../src/search/blog-post-search';
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin => ({
   // ── Email via Nodemailer (SMTP) ───────────────────────────
@@ -51,6 +57,12 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
     config: {
       host: env('MEILISEARCH_HOST', 'http://localhost:7700'),
       apiKey: env('MEILISEARCH_API_KEY', ''),
+      'blog-post': {
+        indexName: env('MEILISEARCH_BLOG_POST_INDEX', BLOG_POST_MEILISEARCH_INDEX),
+        entriesQuery: BLOG_POST_MEILISEARCH_ENTRIES_QUERY,
+        settings: BLOG_POST_MEILISEARCH_SETTINGS,
+        transformEntry: transformBlogPostSearchEntry,
+      },
     },
   } : {
     enabled: false,
