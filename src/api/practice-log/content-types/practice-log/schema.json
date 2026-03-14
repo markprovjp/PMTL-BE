@@ -33,6 +33,10 @@
       "type": "json",
       "description": "Map: { [itemSlug]: { count: number, done: boolean } }"
     },
+    "sessionConfig": {
+      "type": "json",
+      "description": "Cấu hình công khóa áp dụng cho riêng ngày này"
+    },
     "startedAt": {
       "type": "datetime",
       "description": "Thời điểm bắt đầu tu học trong ngày"

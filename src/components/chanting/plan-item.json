@@ -9,7 +9,7 @@
   "attributes": {
     "item": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::chant-item.chant-item"
     },
     "order": {

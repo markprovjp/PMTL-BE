@@ -26,13 +26,15 @@ export async function enqueuePushDispatch(strapi: Core.Strapi, jobDocumentId: st
     return false;
   }
 
+  const safeJobId = `push-dispatch-${jobDocumentId}`.replace(/:/g, '-');
+
   try {
     const queue = strapi.plugin('bullmq').service('queue').get(PUSH_DISPATCH_QUEUE);
     await queue.add(
       PUSH_DISPATCH_JOB,
       { jobDocumentId },
       {
-        jobId: `push-dispatch:${jobDocumentId}`,
+        jobId: safeJobId,
         attempts: 3,
         backoff: {
           type: 'exponential',
@@ -47,6 +49,38 @@ export async function enqueuePushDispatch(strapi: Core.Strapi, jobDocumentId: st
   } catch (error) {
     strapi.log.warn('[Push Queue] Failed to enqueue dispatch job', error);
     return false;
+  }
+}
+
+export async function enqueuePendingPushJobs(strapi: Core.Strapi, limit = 50) {
+  if (!hasQueuePlugins(strapi)) {
+    return 0;
+  }
+
+  try {
+    const pendingJobs = await strapi.db.query('api::push-job.push-job').findMany({
+      where: { status: 'pending' },
+      select: ['documentId'],
+      orderBy: { createdAt: 'desc' },
+      limit,
+    });
+
+    let queuedCount = 0;
+    for (const item of pendingJobs ?? []) {
+      const documentId = typeof item?.documentId === 'string' ? item.documentId : null;
+      if (!documentId) continue;
+      const queued = await enqueuePushDispatch(strapi, documentId);
+      if (queued) queuedCount += 1;
+    }
+
+    if (queuedCount > 0) {
+      strapi.log.info(`[Push Queue] Re-enqueued ${queuedCount} pending push jobs on bootstrap.`);
+    }
+
+    return queuedCount;
+  } catch (error) {
+    strapi.log.warn('[Push Queue] Failed to re-enqueue pending push jobs', error);
+    return 0;
   }
 }
 

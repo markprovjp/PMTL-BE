@@ -1018,6 +1018,8 @@ export interface ApiChantItemChantItem extends Struct.CollectionTypeSchema {
     openingPrayer: Schema.Attribute.RichText;
     publishedAt: Schema.Attribute.DateTime;
     recommendedPresets: Schema.Attribute.JSON;
+    scriptFile: Schema.Attribute.Media<'files'>;
+    scriptPreviewImages: Schema.Attribute.Media<'images', true>;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
     timeRules: Schema.Attribute.JSON;
     title: Schema.Attribute.String & Schema.Attribute.Required;
@@ -1060,6 +1062,90 @@ export interface ApiChantPlanChantPlan extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
     title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
+  };
+}
+
+export interface ApiChantPreferenceChantPreference
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'chant_preferences';
+  info: {
+    description: 'M\u1EABu c\u00F4ng kh\u00F3a c\u00E1 nh\u00E2n theo ng\u01B0\u1EDDi d\u00F9ng v\u00E0 plan';
+    displayName: 'Ni\u1EC7m Kinh \u00B7 C\u1EA5u H\u00ECnh C\u00E1 Nh\u00E2n';
+    pluralName: 'chant-preferences';
+    singularName: 'chant-preference';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::chant-preference.chant-preference'
+    > &
+      Schema.Attribute.Private;
+    plan: Schema.Attribute.Relation<'manyToOne', 'api::chant-plan.chant-plan'> &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    templateConfig: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
+  };
+}
+
+export interface ApiChantingSettingChantingSetting
+  extends Struct.SingleTypeSchema {
+  collectionName: 'chanting_settings';
+  info: {
+    description: 'N\u1ED9i dung chung cho tr\u1EA3i nghi\u1EC7m ni\u1EC7m kinh';
+    displayName: 'Ni\u1EC7m Kinh \u00B7 C\u00E0i \u0110\u1EB7t Trang';
+    pluralName: 'chanting-settings';
+    singularName: 'chanting-setting';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    guidelineSections: Schema.Attribute.Component<
+      'chanting.guideline-section',
+      true
+    >;
+    guidelinesSummary: Schema.Attribute.Text;
+    guidelinesTitle: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::chanting-setting.chanting-setting'
+    > &
+      Schema.Attribute.Private;
+    pageDescription: Schema.Attribute.Text;
+    pageTitle: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1683,50 +1769,6 @@ export interface ApiGuestbookEntryGuestbookEntry
   };
 }
 
-export interface ApiHeThongTestHeThongTest extends Struct.CollectionTypeSchema {
-  collectionName: 'he_thong_tests';
-  info: {
-    displayName: 'H\u1EC7 Th\u1ED1ng - Test ';
-    pluralName: 'he-thong-tests';
-    singularName: 'he-thong-test';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
-    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
-    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
-    Ckeditor5: Schema.Attribute.RichText &
-      Schema.Attribute.Required &
-      Schema.Attribute.CustomField<
-        'plugin::ckeditor5.CKEditor',
-        {
-          preset: 'pmtl-html';
-        }
-      >;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::he-thong-test.he-thong-test'
-    > &
-      Schema.Attribute.Private;
-    LucideIcon: Schema.Attribute.String &
-      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'>;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    uuid: Schema.Attribute.UID &
-      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
-    UUID: Schema.Attribute.UID &
-      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
-  };
-}
-
 export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
   collectionName: 'hub_pages';
   info: {
@@ -1937,6 +1979,7 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     plan: Schema.Attribute.Relation<'manyToOne', 'api::chant-plan.chant-plan'>;
     publishedAt: Schema.Attribute.DateTime;
+    sessionConfig: Schema.Attribute.JSON;
     startedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -3102,64 +3145,6 @@ export interface PluginReviewWorkflowsWorkflowStage
   };
 }
 
-export interface PluginTreeMenusMenu extends Struct.CollectionTypeSchema {
-  collectionName: 'menus';
-  info: {
-    description: '';
-    displayName: 'Menu';
-    name: 'Menu';
-    pluralName: 'menus';
-    singularName: 'menu';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  pluginOptions: {
-    'content-manager': {
-      visible: true;
-    };
-    'content-type-builder': {
-      visible: true;
-    };
-    i18n: {
-      localized: true;
-    };
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    items: Schema.Attribute.JSON &
-      Schema.Attribute.Required &
-      Schema.Attribute.CustomField<
-        'plugin::tree-menus.tree',
-        {
-          schemas: '{\n  "attributes": [\n    {\n      "id": "title",\n      "label": "Title",\n      "placeholder": "Enter item title",\n      "type": "text",\n      "validationType": "string",\n      "value": "New items",\n      "required": true,\n      "validations": [\n        {\n          "type": "required",\n          "params": [\n            "this field is required"\n          ]\n        },\n        {\n          "type": "max",\n          "params": [\n            100,\n            "Title cannot be more than 100 characters"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            "New items"\n          ]\n        }\n      ]\n    },\n    {\n      "id": "url",\n      "label": "Url",\n      "placeholder": "Enter url",\n      "type": "text",\n      "validationType": "string",\n      "value": "/",\n      "required": true,\n      "validations": [\n        {\n          "type": "required",\n          "params": [\n            "this field is required"\n          ]\n        },\n        {\n          "type": "max",\n          "params": [\n            200,\n            "Url cannot be more than 200 characters"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            "/"\n          ]\n        }\n      ]\n    },\n    {\n      "id": "target",\n      "label": "Target",\n      "placeholder": "Enter target",\n      "type": "select",\n      "validationType": "mixed",\n      "value": "_self",\n      "required": true,\n      "validations": [\n        {\n          "type": "oneOf",\n          "params": [\n            [\n              "_blank",\n              "_parent",\n              "_self",\n              "_top"\n            ],\n            "this field needs to be one of the following: _blank, _parent, _self, _top"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            "_self"\n          ]\n        }\n      ],\n      "options": [\n        {\n          "key": "_blank",\n          "value": "_blank",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._blank",\n              "defaultMessage": "New window (_blank)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        },\n        {\n          "key": "_parent",\n          "value": "_parent",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._parent",\n              "defaultMessage": "Parent window (_parent)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        },\n        {\n          "key": "_self",\n          "value": "_self",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._self",\n              "defaultMessage": "Same window (_self)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        },\n        {\n          "key": "_top",\n          "value": "_top",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._top",\n              "defaultMessage": "Top window (_top)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        }\n      ]\n    },\n    {\n      "id": "isProtected",\n      "label": "isProtected",\n      "placeholder": "Choose isProtected",\n      "type": "bool",\n      "validationType": "boolean",\n      "value": false,\n      "required": true,\n      "validations": [\n        {\n          "type": "required",\n          "params": [\n            "Need to choose isProtected"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            false\n          ]\n        }\n      ]\n    }\n  ]\n}';
-        }
-      >;
-    locale: Schema.Attribute.String;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'plugin::tree-menus.menu'
-    >;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
-    title: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: false;
-        };
-      }> &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 100;
-      }>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface PluginUploadFile extends Struct.CollectionTypeSchema {
   collectionName: 'files';
   info: {
@@ -3449,6 +3434,8 @@ declare module '@strapi/strapi' {
       'api::category.category': ApiCategoryCategory;
       'api::chant-item.chant-item': ApiChantItemChantItem;
       'api::chant-plan.chant-plan': ApiChantPlanChantPlan;
+      'api::chant-preference.chant-preference': ApiChantPreferenceChantPreference;
+      'api::chanting-setting.chanting-setting': ApiChantingSettingChantingSetting;
       'api::community-comment.community-comment': ApiCommunityCommentCommunityComment;
       'api::community-post.community-post': ApiCommunityPostCommunityPost;
       'api::content-history.content-history': ApiContentHistoryContentHistory;
@@ -3456,7 +3443,6 @@ declare module '@strapi/strapi' {
       'api::event.event': ApiEventEvent;
       'api::gallery-item.gallery-item': ApiGalleryItemGalleryItem;
       'api::guestbook-entry.guestbook-entry': ApiGuestbookEntryGuestbookEntry;
-      'api::he-thong-test.he-thong-test': ApiHeThongTestHeThongTest;
       'api::hub-page.hub-page': ApiHubPageHubPage;
       'api::lunar-event-chant-override.lunar-event-chant-override': ApiLunarEventChantOverrideLunarEventChantOverride;
       'api::lunar-event.lunar-event': ApiLunarEventLunarEvent;
@@ -3479,7 +3465,6 @@ declare module '@strapi/strapi' {
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::review-workflows.workflow': PluginReviewWorkflowsWorkflow;
       'plugin::review-workflows.workflow-stage': PluginReviewWorkflowsWorkflowStage;
-      'plugin::tree-menus.menu': PluginTreeMenusMenu;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;

@@ -226,6 +226,8 @@ export interface ChantItem {
   timeRules?: Record<string, any>;
   recommendedPresets?: Record<string, any>;
   audio?: StrapiMediaRef | null;
+  scriptFile?: StrapiMediaRef | null;
+  scriptPreviewImages?: StrapiMediaRef | null;
   uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
@@ -252,6 +254,46 @@ export interface ChantPlan {
   updatedBy?: any;
   locale?: string;
   localizations?: ChantPlan[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
+}
+
+export interface ChantPreference {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  user: any;
+  plan: ChantPlan | null;
+  templateConfig?: Record<string, any>;
+  uuid?: unknown;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: ChantPreference[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
+}
+
+export interface ChantingSetting {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  pageTitle?: string;
+  pageDescription?: string;
+  guidelinesTitle?: string;
+  guidelinesSummary?: string;
+  guidelineSections?: any[];
+  uuid?: unknown;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: ChantingSetting[];
   _softDeletedAt?: string;
   _softDeletedById?: number;
   _softDeletedByType?: string;
@@ -474,25 +516,6 @@ export interface GuestbookEntry {
   _softDeletedByType?: string;
 }
 
-export interface HeThongTest {
-  id?: number;
-  documentId: string;
-  createdAt: string;
-  updatedAt: string;
-  Ckeditor5: string;
-  LucideIcon?: string;
-  UUID?: unknown;
-  uuid?: unknown;
-  publishedAt?: string;
-  createdBy?: any;
-  updatedBy?: any;
-  locale?: string;
-  localizations?: HeThongTest[];
-  _softDeletedAt?: string;
-  _softDeletedById?: number;
-  _softDeletedByType?: string;
-}
-
 export interface HubPage {
   id?: number;
   documentId: string;
@@ -576,6 +599,7 @@ export interface PracticeLog {
   plan?: ChantPlan | null;
   date: string;
   itemsProgress?: Record<string, any>;
+  sessionConfig?: Record<string, any>;
   startedAt?: string;
   completedAt?: string;
   isCompleted?: boolean;

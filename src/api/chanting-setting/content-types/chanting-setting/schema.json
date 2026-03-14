@@ -1,0 +1,37 @@
+{
+  "kind": "singleType",
+  "collectionName": "chanting_settings",
+  "info": {
+    "singularName": "chanting-setting",
+    "pluralName": "chanting-settings",
+    "displayName": "Niệm Kinh · Cài Đặt Trang",
+    "description": "Nội dung chung cho trải nghiệm niệm kinh"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string"
+    },
+    "pageDescription": {
+      "type": "text"
+    },
+    "guidelinesTitle": {
+      "type": "string"
+    },
+    "guidelinesSummary": {
+      "type": "text"
+    },
+    "guidelineSections": {
+      "type": "component",
+      "repeatable": true,
+      "component": "chanting.guideline-section"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
+    }
+  }
+}

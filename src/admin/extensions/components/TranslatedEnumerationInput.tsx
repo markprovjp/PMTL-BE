@@ -3,10 +3,6 @@ import { Field, SingleSelect, SingleSelectOption } from '@strapi/design-system';
 import { useField } from '@strapi/admin/strapi-admin';
 import { useIntl } from 'react-intl';
 import { useLocation } from 'react-router-dom';
-import {
-  resolveEnumDisplayLabel,
-  shouldTranslateEnumDisplay,
-} from '../enum-display-labels';
 
 type EnumerationOption = {
   disabled?: boolean;
@@ -26,6 +22,7 @@ type EnumerationInputProps = {
   options?: EnumerationOption[];
   placeholder?: string;
   required?: boolean;
+  size?: 'S' | 'M' | 'L';
   type: 'enumeration';
 };
 
@@ -40,13 +37,34 @@ function getModelFromPathname(pathname: string) {
   }
 }
 
+function getTranslatedEnumLabel(
+  formatMessage: ReturnType<typeof useIntl>['formatMessage'],
+  model: string | null,
+  fieldName: string,
+  value: string,
+  fallback?: string
+) {
+  const keys = [
+    model ? `content-manager.content-types.${model}.${fieldName}.enum.${value}` : '',
+    model ? `content-manager.content-types.${model}.${fieldName}.${value}` : '',
+    model ? `${model}.${fieldName}.enum.${value}` : '',
+    value,
+  ].filter(Boolean);
+
+  for (const key of keys) {
+    const translated = formatMessage({ id: key, defaultMessage: value });
+    if (translated !== key) return translated;
+  }
+
+  return fallback ?? value;
+}
+
 const TranslatedEnumerationInput = React.forwardRef<HTMLDivElement, EnumerationInputProps>(
-  ({ attribute, disabled, hint, label, name, options, placeholder, required }, ref) => {
+  ({ attribute, disabled, hint, label, name, options, placeholder, required, size }, ref) => {
     const { formatMessage } = useIntl();
     const { value, error, onChange } = useField<string | undefined>(name);
     const location = useLocation();
     const model = getModelFromPathname(location.pathname);
-    const shouldTranslate = shouldTranslateEnumDisplay(model);
 
     const normalizedOptions = React.useMemo(() => {
       if (Array.isArray(options) && options.length > 0) {
@@ -67,11 +85,15 @@ const TranslatedEnumerationInput = React.forwardRef<HTMLDivElement, EnumerationI
         .filter((option) => !option.hidden)
         .map((option) => ({
           ...option,
-          label: shouldTranslate
-            ? resolveEnumDisplayLabel(model, name, option.value)
-            : (option.label ?? option.value),
+          label: getTranslatedEnumLabel(
+            formatMessage,
+            model,
+            name,
+            option.value,
+            option.label ?? option.value
+          ),
         }));
-    }, [model, name, normalizedOptions, shouldTranslate]);
+    }, [formatMessage, model, name, normalizedOptions]);
 
     return (
       <Field.Root ref={ref} error={error} name={name} required={required}>
@@ -79,6 +101,7 @@ const TranslatedEnumerationInput = React.forwardRef<HTMLDivElement, EnumerationI
         <SingleSelect
           value={value}
           onChange={(nextValue) => onChange(name, nextValue)}
+          size={size ?? 'M'}
           placeholder={
             placeholder ??
             formatMessage({

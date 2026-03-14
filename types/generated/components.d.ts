@@ -54,6 +54,20 @@ export interface BlocksRichText extends Struct.ComponentSchema {
   };
 }
 
+export interface ChantingGuidelineSection extends Struct.ComponentSchema {
+  collectionName: 'components_chanting_guideline_sections';
+  info: {
+    description: 'M\u1ED9t m\u1EE5c l\u01B0u \u00FD/h\u01B0\u1EDBng d\u1EABn trong trang ni\u1EC7m kinh';
+    displayName: 'Guideline Section';
+    icon: 'book-open';
+  };
+  attributes: {
+    body: Schema.Attribute.RichText & Schema.Attribute.Required;
+    order: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ChantingPlanItem extends Struct.ComponentSchema {
   collectionName: 'components_chanting_plan_items';
   info: {
@@ -63,7 +77,7 @@ export interface ChantingPlanItem extends Struct.ComponentSchema {
   };
   attributes: {
     isOptional: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    item: Schema.Attribute.Relation<'oneToOne', 'api::chant-item.chant-item'>;
+    item: Schema.Attribute.Relation<'manyToOne', 'api::chant-item.chant-item'>;
     order: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<0>;
@@ -331,6 +345,7 @@ declare module '@strapi/strapi' {
       'blocks.post-list-auto': BlocksPostListAuto;
       'blocks.post-list-manual': BlocksPostListManual;
       'blocks.rich-text': BlocksRichText;
+      'chanting.guideline-section': ChantingGuidelineSection;
       'chanting.plan-item': ChantingPlanItem;
       'homepage.action-card-item': HomepageActionCardItem;
       'homepage.award-item': HomepageAwardItem;

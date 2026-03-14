@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_chanting_guideline_sections",
+  "info": {
+    "displayName": "Guideline Section",
+    "icon": "book-open",
+    "description": "Một mục lưu ý/hướng dẫn trong trang niệm kinh"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "body": {
+      "type": "richtext",
+      "required": true
+    },
+    "order": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

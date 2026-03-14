@@ -8,6 +8,14 @@ async function seedRich() {
     distDir: path.join(appDir, 'dist'),
   }).load();
 
+  // Some document middlewares (e.g. soft-delete) expect requestContext.state.auth.
+  // Seed scripts run outside HTTP requests, so we provide a safe fallback context.
+  const requestContext = strapi.requestContext;
+  if (requestContext && typeof requestContext.get === 'function') {
+    const originalGet = requestContext.get.bind(requestContext);
+    requestContext.get = () => originalGet() ?? { state: { auth: null } };
+  }
+
   const summary = { created: 0, updated: 0, failed: 0 };
 
   async function upsert(uid, uniqueCriteria, data) {
@@ -262,13 +270,101 @@ async function seedRich() {
       title: 'Bộ Kinh Ngắn Cho Người Mới', guide_type: 'kinh-bai-tap', description: 'Danh mục kinh ngắn và thứ tự hành trì nên bắt đầu.', content: '<ul><li>Chú Đại Bi</li><li>Niệm Phật A Di Đà</li><li>Bài hồi hướng ngắn</li></ul>', details: { lessons: ['Chú Đại Bi 7 biến', 'A Di Đà 300 câu', 'Hồi hướng'] }, duration: '20 phút', order: 4, step_number: 2, icon: 'book-open'
     });
 
+    const chantingSetting = await upsert('api::chanting-setting.chanting-setting', { pageTitle: 'Công khóa niệm kinh hôm nay' }, {
+      pageTitle: 'Công khóa niệm kinh hôm nay',
+      pageDescription: 'Mở bài cần niệm, chọn đúng bài chú riêng của mình và giữ tiến độ hành trì gọn nhẹ trong ngày.',
+      guidelinesTitle: 'Những điều cần lưu ý khi niệm kinh',
+      guidelinesSummary: 'Các lưu ý ngắn, dễ xem lại trước khi bắt đầu hoặc khi cần ổn định thân tâm.',
+      guidelineSections: [
+        { title: 'Chuẩn bị thân tâm', body: '<p>Giữ thân sạch sẽ, tâm lắng lại vài phút trước khi niệm. Nếu đang ở nơi công cộng, có thể niệm thầm nhưng vẫn giữ chánh niệm và sự cung kính.</p>', order: 1 },
+        { title: 'Cách dùng công khóa hôm nay', body: '<p>Các bài cốt lõi do đạo tràng sắp sẵn luôn hiển thị. Những bài chú nhỏ có thể bật tắt theo hoàn cảnh cá nhân trong mục <strong>Công khóa của tôi</strong>.</p>', order: 2 },
+        { title: 'Tùy chỉnh lời nguyện', body: '<p>Với các chú cầu an, hóa giải hay sở nguyện, có thể nhập tên mình, tên đối phương và điều cầu nguyện ngắn gọn để dễ nhớ khi trì niệm.</p>', order: 3 },
+        { title: 'Theo dõi tiến độ', body: '<p>Hệ thống sẽ lưu số biến đã niệm trong ngày. Khi đăng nhập, dữ liệu đồng bộ theo tài khoản; khi chưa đăng nhập, tiến độ vẫn được giữ trên trình duyệt hiện tại.</p>', order: 4 },
+      ],
+    });
+
     const chants = {
-      hoihuong: await upsert('api::chant-item.chant-item', { slug: 'hoi-huong-ngan' }, {
-        title: 'Bài Hồi Hướng Ngắn', slug: 'hoi-huong-ngan', kind: 'step', content: '<p>Nguyện đem công đức này trang nghiêm Phật tịnh độ...</p>', timeRules: { when: 'after-session' }, recommendedPresets: [1]
+      khaiKinh: await upsert('api::chant-item.chant-item', { slug: 'phat-nguyen-truoc-khi-niem' }, {
+        title: 'Phát Nguyện Trước Khi Niệm',
+        slug: 'phat-nguyen-truoc-khi-niem',
+        kind: 'step',
+        content: '<p>Nguyện đem tâm thanh tịnh, tâm cung kính và tâm tri ân để bước vào thời công phu hôm nay.</p>',
+        openingPrayer: '<p>Con xin nương nơi Tam Bảo, nguyện cho buổi niệm hôm nay được chánh niệm, an ổn và đúng pháp.</p>',
+        recommendedPresets: [1],
       }),
-      adida: await one('api::chant-item.chant-item', { slug: 'niem-phat-a-di-da' }),
-      daibi: await one('api::chant-item.chant-item', { slug: 'chu-dai-bi' }),
+      daibi: await upsert('api::chant-item.chant-item', { slug: 'chu-dai-bi' }, {
+        title: 'Chú Đại Bi',
+        slug: 'chu-dai-bi',
+        kind: 'mantra',
+        content: '<p>Nam mô hắc ra đát na đa ra dạ da... (Admin có thể thay bằng toàn văn hoặc gắn PDF/ảnh bản kinh).</p>',
+        openingPrayer: '<p>Nguyện nương oai lực Quán Thế Âm Bồ Tát, hộ trì cho con tăng trưởng từ bi, tiêu trừ chướng ngại và giữ tâm an định.</p>',
+        recommendedPresets: [7, 21, 49],
+      }),
+      samhoi: await upsert('api::chant-item.chant-item', { slug: 'le-phat-sam-hoi' }, {
+        title: 'Lễ Phật Sám Hối Văn',
+        slug: 'le-phat-sam-hoi',
+        kind: 'sutra',
+        content: '<p>Đệ tử chúng con từ vô thủy đến nay... Nay đối trước Tam Bảo chí thành sám hối.</p>',
+        openingPrayer: '<p>Con xin chí thành sám hối các lỗi lầm thân, khẩu, ý đã tạo, nguyện từ nay sửa đổi và tinh tấn tu học.</p>',
+        recommendedPresets: [1],
+      }),
+      adida: await upsert('api::chant-item.chant-item', { slug: 'niem-phat-a-di-da' }, {
+        title: 'Niệm Phật A Di Đà',
+        slug: 'niem-phat-a-di-da',
+        kind: 'mantra',
+        content: '<p>Nam mô A Di Đà Phật.</p>',
+        openingPrayer: '<p>Nguyện nương danh hiệu Đức Phật A Di Đà, nhiếp tâm thanh tịnh, vun bồi tín nguyện và hồi hướng về cõi Tịnh độ.</p>',
+        recommendedPresets: [108, 300, 1080],
+      }),
+      giaiket: await upsert('api::chant-item.chant-item', { slug: 'giai-ket-chu' }, {
+        title: 'Giải Kết Chú',
+        slug: 'giai-ket-chu',
+        kind: 'mantra',
+        content: '<p>Admin có thể gắn toàn văn hoặc ảnh bản kinh cho bài này. Mặc định FE sẽ hiển thị phần lời nguyện và cho người dùng tự chọn số biến phù hợp.</p>',
+        openingPrayer: '<p>Thỉnh cầu Nam Mô Đại Từ Đại Bi Cứu Khổ Cứu Nạn Quảng Đại Linh Cảm Quán Thế Âm Bồ Tát Ma Ha Tát phù hộ cho con cùng người hữu duyên hóa giải ác duyên, tăng trưởng thiện duyên.</p>',
+        recommendedPresets: [21, 27, 49],
+      }),
+      tieutai: await upsert('api::chant-item.chant-item', { slug: 'tieu-tai-cat-tuong-than-chu' }, {
+        title: 'Tiêu Tai Cát Tường Thần Chú',
+        slug: 'tieu-tai-cat-tuong-than-chu',
+        kind: 'mantra',
+        content: '<p>Admin có thể thay nội dung đầy đủ hoặc gắn PDF xem nhanh.</p>',
+        openingPrayer: '<p>Thỉnh cầu Nam Mô Đại Từ Đại Bi Cứu Khổ Cứu Nạn Quảng Đại Linh Cảm Quán Thế Âm Bồ Tát Ma Ha Tát phù hộ cho con tiêu tai cát tường, bình an thuận lợi.</p>',
+        recommendedPresets: [21, 27, 49],
+      }),
+      chuande: await upsert('api::chant-item.chant-item', { slug: 'chuan-de-than-chu' }, {
+        title: 'Chuẩn Đề Thần Chú',
+        slug: 'chuan-de-than-chu',
+        kind: 'mantra',
+        content: '<p>Admin có thể thay nội dung đầy đủ hoặc gắn bản kinh ảnh/PDF.</p>',
+        openingPrayer: '<p>Thỉnh cầu Nam Mô Đại Từ Đại Bi Cứu Khổ Cứu Nạn Quảng Đại Linh Cảm Quán Thế Âm Bồ Tát Ma Ha Tát phù hộ cho con tâm tưởng sự thành, mọi việc thuận chánh pháp.</p>',
+        recommendedPresets: [21, 27, 49],
+      }),
+      hoihuong: await upsert('api::chant-item.chant-item', { slug: 'hoi-huong-ngan' }, {
+        title: 'Bài Hồi Hướng Ngắn',
+        slug: 'hoi-huong-ngan',
+        kind: 'step',
+        content: '<p>Nguyện đem công đức này hướng về khắp tất cả, đệ tử và chúng sinh đều trọn thành Phật đạo.</p>',
+        openingPrayer: '<p>Con xin hồi hướng công đức niệm tụng hôm nay đến pháp giới chúng sinh, cầu cho mọi người đều được an lành và tăng trưởng thiện căn.</p>',
+        recommendedPresets: [1],
+      }),
     };
+
+    await upsert('api::chant-plan.chant-plan', { slug: 'daily-basic' }, {
+      title: 'Công Khóa Cơ Bản Hằng Ngày',
+      slug: 'daily-basic',
+      planType: 'daily',
+      planItems: [
+        { item: chants.khaiKinh, order: 1, targetDefault: 1, targetMin: 1, targetMax: 1, isOptional: false },
+        { item: chants.daibi, order: 2, targetDefault: 7, targetMin: 7, targetMax: 49, isOptional: false },
+        { item: chants.samhoi, order: 3, targetDefault: 1, targetMin: 1, targetMax: 1, isOptional: false },
+        { item: chants.adida, order: 4, targetDefault: 108, targetMin: 21, targetMax: 1080, isOptional: false },
+        { item: chants.giaiket, order: 5, targetDefault: 21, targetMin: 21, targetMax: 49, isOptional: true },
+        { item: chants.tieutai, order: 6, targetDefault: 21, targetMin: 21, targetMax: 49, isOptional: true },
+        { item: chants.chuande, order: 7, targetDefault: 21, targetMin: 21, targetMax: 49, isOptional: true },
+        { item: chants.hoihuong, order: 8, targetDefault: 1, targetMin: 1, targetMax: 1, isOptional: false },
+      ],
+    });
 
     const specialPlan = await upsert('api::chant-plan.chant-plan', { slug: 'via-phat-a-di-da' }, {
       title: 'Thời Khóa Ngày Vía Phật A Di Đà', slug: 'via-phat-a-di-da', planType: 'special', planItems: [
@@ -291,8 +387,55 @@ async function seedRich() {
     });
 
     await upsert('api::practice-log.practice-log', { user: users.huelien?.id, date: '2026-04-05' }, {
-      user: users.huelien?.id, plan: specialPlan?.id, date: '2026-04-05', startedAt: '2026-04-05T02:00:00.000Z', completedAt: '2026-04-05T03:40:00.000Z', isCompleted: true, itemsProgress: { 'chu-dai-bi': { count: 21, done: true }, 'niem-phat-a-di-da': { count: 3200, done: true }, 'hoi-huong-ngan': { count: 1, done: true } }
-      });
+      user: users.huelien?.id,
+      plan: specialPlan?.id,
+      date: '2026-04-05',
+      startedAt: '2026-04-05T02:00:00.000Z',
+      completedAt: '2026-04-05T03:40:00.000Z',
+      isCompleted: true,
+      itemsProgress: {
+        'chu-dai-bi': { count: 21, done: true },
+        'niem-phat-a-di-da': { count: 3200, done: true },
+        'hoi-huong-ngan': { count: 1, done: true }
+      },
+      sessionConfig: {
+        enabledOptionalSlugs: ['giai-ket-chu'],
+        targetsBySlug: { 'giai-ket-chu': 27 },
+        intentionsBySlug: {
+          'giai-ket-chu': {
+            selfName: 'Huệ Liên',
+            counterpartName: 'Người thân',
+            wish: 'Hóa giải bất hòa trong gia đình'
+          }
+        }
+      }
+    });
+
+    const dailyPlan = await one('api::chant-plan.chant-plan', { slug: 'daily-basic' });
+    await upsert('api::chant-preference.chant-preference', { user: users.huelien?.id, plan: dailyPlan?.id }, {
+      user: users.huelien?.id,
+      plan: dailyPlan?.id,
+      templateConfig: {
+        enabledOptionalSlugs: ['giai-ket-chu', 'tieu-tai-cat-tuong-than-chu'],
+        targetsBySlug: {
+          'chu-dai-bi': 21,
+          'niem-phat-a-di-da': 300,
+          'giai-ket-chu': 27,
+          'tieu-tai-cat-tuong-than-chu': 21
+        },
+        intentionsBySlug: {
+          'giai-ket-chu': {
+            selfName: 'Huệ Liên',
+            counterpartName: 'Người thân',
+            wish: 'Hóa giải ác duyên, tăng trưởng thiện duyên'
+          },
+          'tieu-tai-cat-tuong-than-chu': {
+            selfName: 'Huệ Liên',
+            wish: 'Bình an, thuận lợi, thân tâm nhẹ nhàng'
+          }
+        }
+      }
+    });
 
     await upsert('api::push-subscription.push-subscription', { endpoint: 'https://fcm.pmtl.vn/v5/002' }, { endpoint: 'https://fcm.pmtl.vn/v5/002', p256dh: 'FAKE_KEY_2', auth: 'FAKE_AUTH_2', reminderHour: 5 });
     await upsert('api::push-subscription.push-subscription', { endpoint: 'https://fcm.pmtl.vn/v5/003' }, { endpoint: 'https://fcm.pmtl.vn/v5/003', p256dh: 'FAKE_KEY_3', auth: 'FAKE_AUTH_3', reminderHour: 21 });

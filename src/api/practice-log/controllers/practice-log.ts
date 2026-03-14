@@ -78,7 +78,7 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
       const userId = ctx.state.user?.id;
       if (!userId) return ctx.unauthorized('Yêu cầu đăng nhập');
 
-      const { date, planSlug, itemsProgress } = ctx.request.body as any;
+      const { date, planSlug, itemsProgress, sessionConfig } = ctx.request.body as any;
       if (!date) return ctx.badRequest('Thiếu tham số date');
 
       // Tìm plan theo slug để lấy documentId cho relation
@@ -115,6 +115,9 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
           documentId: existing.documentId,
           data: {
             itemsProgress,
+            ...(Object.prototype.hasOwnProperty.call(ctx.request.body, 'sessionConfig')
+              ? { sessionConfig: sessionConfig ?? {} }
+              : {}),
             completedAt,
             isCompleted,
           },
@@ -126,6 +129,7 @@ export default factories.createCoreController(UID, ({ strapi }: any) => ({
             ...(plan ? { plan: { connect: [{ documentId: plan.documentId }] } } : {}),
             date,
             itemsProgress,
+            sessionConfig: sessionConfig ?? {},
             startedAt: new Date().toISOString(),
             completedAt,
             isCompleted,

@@ -1,12 +1,13 @@
 import type { Core } from '@strapi/strapi';
 import fs from 'fs-extra';
 import path from 'path';
+import qs from 'qs';
 import {
   BLOG_POST_MEILISEARCH_INDEX,
   BLOG_POST_MEILISEARCH_SETTINGS,
 } from './search/blog-post-search';
 import { persistAuditTrail, shouldTrackAudit } from './services/audit-trail';
-import { registerPushDispatchWorker } from './services/push-queue';
+import { enqueuePendingPushJobs, registerPushDispatchWorker } from './services/push-queue';
 import { cleanupExpiredGuards } from './services/request-guard';
 
 function clonePlain<T>(value: T): T | null {
@@ -47,6 +48,53 @@ function resolveLifecycleAction(
   }
 
   return 'update';
+}
+
+function loadComponentSchemas() {
+  const componentsDir = path.join(process.cwd(), 'src', 'components');
+  const schemas = new Map<string, Record<string, any>>();
+
+  if (!fs.existsSync(componentsDir)) {
+    return schemas;
+  }
+
+  const categories = fs.readdirSync(componentsDir);
+  for (const category of categories) {
+    const categoryDir = path.join(componentsDir, category);
+    if (!fs.statSync(categoryDir).isDirectory()) continue;
+
+    for (const entry of fs.readdirSync(categoryDir)) {
+      if (!entry.endsWith('.json')) continue;
+      const filePath = path.join(categoryDir, entry);
+      const schema = fs.readJsonSync(filePath) as { collectionName?: string; attributes?: Record<string, any> };
+      const componentKey = `${category}.${entry.replace(/\.json$/, '')}`;
+      schemas.set(componentKey, schema.attributes ?? {});
+    }
+  }
+
+  return schemas;
+}
+
+function buildFieldPaths(
+  attributes: Record<string, any>,
+  componentSchemas: Map<string, Record<string, any>>,
+  prefix = ''
+): string[] {
+  const fields = new Set<string>();
+
+  for (const [fieldName, attribute] of Object.entries(attributes)) {
+    const fullName = prefix ? `${prefix}.${fieldName}` : fieldName;
+    fields.add(fullName);
+
+    if (attribute?.type === 'component' && typeof attribute.component === 'string') {
+      const componentAttributes = componentSchemas.get(attribute.component) ?? {};
+      for (const nestedField of buildFieldPaths(componentAttributes, componentSchemas, fullName)) {
+        fields.add(nestedField);
+      }
+    }
+  }
+
+  return Array.from(fields);
 }
 
 async function fetchLifecycleEntry(
@@ -245,6 +293,167 @@ async function logQueueOperationalWarnings(strapi: Core.Strapi) {
   }
 }
 
+async function repairSuperAdminContentManagerPermissions(strapi: Core.Strapi) {
+  try {
+    const superAdminRole = await strapi.db.query('admin::role').findOne({
+      where: { code: 'strapi-super-admin' },
+    });
+
+    if (!superAdminRole?.id) {
+      strapi.log.warn('[Admin Fix] Could not find strapi-super-admin role.');
+      return;
+    }
+
+    const componentSchemas = loadComponentSchemas();
+    const contentTypeFields = new Map<string, string[]>();
+    for (const contentType of Object.values(strapi.contentTypes ?? {}) as any[]) {
+      if (!contentType?.uid) continue;
+      const attrs = buildFieldPaths(contentType.attributes ?? {}, componentSchemas);
+      if (attrs.length > 0) {
+        contentTypeFields.set(contentType.uid, attrs);
+      }
+    }
+
+    const permissionRows = await strapi.db.connection('admin_permissions as p')
+      .join('admin_permissions_role_lnk as l', 'l.permission_id', 'p.id')
+      .select('p.id', 'p.action', 'p.subject', 'p.properties', 'p.conditions')
+      .where('l.role_id', superAdminRole.id)
+      .where('p.action', 'like', 'plugin::content-manager.explorer.%');
+
+    const rowsToRepair = permissionRows.filter((row: {
+      id: number;
+      action: string;
+      subject: string;
+      properties?: Record<string, unknown> | null;
+      conditions?: unknown[] | null;
+    }) => {
+      const actionName = row.action.split('.').pop();
+      const expectedFields =
+        actionName === 'create' || actionName === 'read' || actionName === 'update'
+          ? contentTypeFields.get(row.subject) ?? null
+          : null;
+      const currentFields = Array.isArray(row.properties?.fields) ? row.properties?.fields : null;
+      const hasExpectedFields =
+        expectedFields === null ||
+        (currentFields !== null &&
+          currentFields.length === expectedFields.length &&
+          expectedFields.every((field) => currentFields.includes(field)));
+      const hasExpectedConditions = Array.isArray(row.conditions) && row.conditions.length === 0;
+      return !hasExpectedFields || !hasExpectedConditions;
+    });
+
+    if (rowsToRepair.length === 0) {
+      return;
+    }
+
+    for (const row of rowsToRepair) {
+      const actionName = row.action.split('.').pop();
+      const expectedFields =
+        actionName === 'create' || actionName === 'read' || actionName === 'update'
+          ? contentTypeFields.get(row.subject) ?? []
+          : null;
+      const nextProperties = expectedFields ? { fields: expectedFields } : {};
+
+      await strapi.db.connection('admin_permissions')
+        .where({ id: row.id })
+        .update({
+          properties: JSON.stringify(nextProperties),
+          conditions: JSON.stringify([]),
+        });
+    }
+
+    strapi.log.info(`[Admin Fix] Rebuilt ${rowsToRepair.length} content-manager permissions for Super Admin from current schemas.`);
+  } catch (err) {
+    strapi.log.error('[Admin Fix] Failed to repair Super Admin content-manager permissions:', err);
+  }
+}
+
+async function normalizeNullLocales(strapi: Core.Strapi) {
+  const i18nPlugin = strapi.plugin('i18n');
+  if (!i18nPlugin) return;
+
+  try {
+    const localeService = i18nPlugin.service('locales');
+    const defaultLocale = (await localeService?.getDefaultLocale?.()) || 'en';
+
+    const contentTypes = Object.values(strapi.contentTypes ?? {}).filter((contentType: any) => {
+      if (!contentType?.uid || !contentType?.collectionName || !contentType?.kind) return false;
+      return (
+        String(contentType.uid).startsWith('api::') ||
+        String(contentType.uid) === 'plugin::users-permissions.user'
+      );
+    }) as Array<{ uid: string; collectionName: string }>;
+
+    let patchedRows = 0;
+    for (const contentType of contentTypes) {
+      const tableName = contentType.collectionName;
+      const hasLocaleColumn = await strapi.db.connection.schema.hasColumn(tableName, 'locale');
+      if (!hasLocaleColumn) continue;
+
+      const countResult = await strapi.db.connection(tableName).whereNull('locale').count<{ count: string }>('* as count');
+      const nullCount = Number(countResult?.[0]?.count ?? 0);
+      if (nullCount <= 0) continue;
+
+      await strapi.db.connection(tableName).whereNull('locale').update({ locale: defaultLocale });
+      patchedRows += nullCount;
+      strapi.log.info(`[i18n Fix] ${contentType.uid}: normalized ${nullCount} row(s) from locale=null to locale=${defaultLocale}.`);
+    }
+
+    if (patchedRows > 0) {
+      strapi.log.info(`[i18n Fix] Completed locale normalization for ${patchedRows} row(s).`);
+    }
+  } catch (err) {
+    strapi.log.error('[i18n Fix] Failed to normalize locale=null rows:', err);
+  }
+}
+
+function stripUnsupportedAdminLocaleParams(strapi: Core.Strapi) {
+  strapi.server.use(async (ctx, next) => {
+    const pathName = ctx.path ?? '';
+    const match = pathName.match(/^\/content-manager\/(?:collection-types|single-types)\/([^/]+)/);
+
+    if (!match) {
+      return next();
+    }
+
+    const uid = decodeURIComponent(match[1] ?? '');
+    const contentType = strapi.contentTypes?.[uid];
+    const isLocalized = Boolean((contentType as any)?.pluginOptions?.i18n?.localized);
+
+    if (isLocalized) {
+      return next();
+    }
+
+    const query = { ...(ctx.query as Record<string, unknown>) };
+    let changed = false;
+
+    if ('locale' in query) {
+      delete query.locale;
+      changed = true;
+    }
+
+    const plugins = asRecord(query.plugins);
+    const i18n = asRecord(plugins?.i18n);
+
+    if (i18n && 'locale' in i18n) {
+      delete i18n.locale;
+      changed = true;
+    }
+
+    if (plugins && i18n) {
+      plugins.i18n = i18n;
+      query.plugins = plugins;
+    }
+
+    if (changed) {
+      ctx.query = query as any;
+      ctx.querystring = qs.stringify(query, { encode: false });
+    }
+
+    return next();
+  });
+}
+
 export default {
   async register({ strapi }: { strapi: Core.Strapi }) {
     // Check if google-auth-config.json exists in root
@@ -279,6 +488,8 @@ export default {
   },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    stripUnsupportedAdminLocaleParams(strapi);
+
     // 1) Ensure advanced settings aren't null (fixes undefined 'settings' UI bug)
     try {
       const advancedStore = strapi.store({ type: 'plugin', name: 'users-permissions', key: 'advanced' });
@@ -338,6 +549,9 @@ export default {
     } catch (err) {
       strapi.log.error('[Fix] Failed to auto-repair user roles:', err);
     }
+
+    await repairSuperAdminContentManagerPermissions(strapi);
+    await normalizeNullLocales(strapi);
 
     // 1.7) Cấp quyền public cho community APIs
     try {
@@ -494,6 +708,7 @@ export default {
     await configureStrapiCalendarDefaults(strapi);
     await logQueueOperationalWarnings(strapi);
     registerPushDispatchWorker(strapi);
+    await enqueuePendingPushJobs(strapi, 100);
   },
 };
 

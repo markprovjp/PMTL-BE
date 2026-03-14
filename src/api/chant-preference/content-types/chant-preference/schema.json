@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "chant_preferences",
+  "info": {
+    "singularName": "chant-preference",
+    "pluralName": "chant-preferences",
+    "displayName": "Niệm Kinh · Cấu Hình Cá Nhân",
+    "description": "Mẫu công khóa cá nhân theo người dùng và plan"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "plan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::chant-plan.chant-plan",
+      "required": true
+    },
+    "templateConfig": {
+      "type": "json",
+      "description": "enabledOptionalSlugs, targetsBySlug, intentionsBySlug"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
+    }
+  }
+}
