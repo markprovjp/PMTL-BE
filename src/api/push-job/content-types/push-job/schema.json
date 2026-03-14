@@ -16,13 +16,24 @@
   "attributes": {
     "kind": {
       "type": "enumeration",
-      "enum": ["daily_chant", "broadcast", "content_update", "event_reminder", "community"],
+      "enum": [
+        "daily_chant",
+        "broadcast",
+        "content_update",
+        "event_reminder",
+        "community"
+      ],
       "default": "daily_chant",
       "required": true
     },
     "status": {
       "type": "enumeration",
-      "enum": ["pending", "processing", "completed", "failed"],
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
       "default": "pending",
       "required": true
     },
@@ -90,6 +101,10 @@
     },
     "finishedAt": {
       "type": "datetime"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

@@ -45,6 +45,10 @@
       "type": "boolean",
       "default": false,
       "description": "Đã hoàn thành toàn bộ plan trong ngày này chưa"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

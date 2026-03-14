@@ -444,6 +444,9 @@ export interface ApiAuditLogAuditLog extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     action: Schema.Attribute.Enumeration<
       ['create', 'update', 'delete', 'publish', 'unpublish']
     > &
@@ -507,6 +510,8 @@ export interface ApiAuditLogAuditLog extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
       }>;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -525,6 +530,9 @@ export interface ApiBeginnerGuideBeginnerGuide
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     attached_files: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true
@@ -539,7 +547,11 @@ export interface ApiBeginnerGuideBeginnerGuide
     guide_type: Schema.Attribute.Enumeration<['so-hoc', 'kinh-bai-tap']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'so-hoc'>;
-    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
+    icon: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
     images: Schema.Attribute.Media<'images', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -558,6 +570,8 @@ export interface ApiBeginnerGuideBeginnerGuide
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     video_url: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -579,6 +593,9 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     authorAvatar: Schema.Attribute.Media<'images'>;
     authorName: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -664,6 +681,8 @@ export interface ApiBlogCommentBlogComment extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 100;
       }>;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -681,6 +700,9 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     allowComments: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     audio_url: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
@@ -735,8 +757,10 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       'manyToMany',
       'api::lunar-event.lunar-event'
     >;
-    oembed: Schema.Attribute.JSON &
-      Schema.Attribute.CustomField<'plugin::oembed.oembed'>;
+    oembed: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     related_posts: Schema.Attribute.Relation<
       'manyToMany',
@@ -790,6 +814,8 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     video_url: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -802,6 +828,61 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
         number
       > &
       Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiBlogReaderStateBlogReaderState
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'blog_reader_states';
+  info: {
+    description: 'L\u01B0u l\u1ECBch s\u1EED \u0111\u1ECDc v\u00E0 y\u00EAu th\u00EDch b\u00E0i vi\u1EBFt theo user';
+    displayName: 'Blog \u00B7 Tr\u1EA1ng Th\u00E1i Ng\u01B0\u1EDDi \u0110\u1ECDc';
+    pluralName: 'blog-reader-states';
+    singularName: 'blog-reader-state';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    favoritedAt: Schema.Attribute.DateTime;
+    firstReadAt: Schema.Attribute.DateTime;
+    isFavorite: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isPinned: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    lastReadAt: Schema.Attribute.DateTime;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::blog-reader-state.blog-reader-state'
+    > &
+      Schema.Attribute.Private;
+    pinnedAt: Schema.Attribute.DateTime;
+    post: Schema.Attribute.Relation<'manyToOne', 'api::blog-post.blog-post'> &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    readCount: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    > &
+      Schema.Attribute.Required;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -819,6 +900,9 @@ export interface ApiBlogTagBlogTag extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     blog_posts: Schema.Attribute.Relation<
       'manyToMany',
       'api::blog-post.blog-post'
@@ -847,6 +931,8 @@ export interface ApiBlogTagBlogTag extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -863,6 +949,9 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     blog_posts: Schema.Attribute.Relation<
       'manyToMany',
       'api::blog-post.blog-post'
@@ -892,6 +981,8 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -907,6 +998,9 @@ export interface ApiChantItemChantItem extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     audio: Schema.Attribute.Media<'audios'>;
     content: Schema.Attribute.RichText;
     createdAt: Schema.Attribute.DateTime;
@@ -930,6 +1024,8 @@ export interface ApiChantItemChantItem extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -945,6 +1041,9 @@ export interface ApiChantPlanChantPlan extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -964,6 +1063,8 @@ export interface ApiChantPlanChantPlan extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -981,6 +1082,9 @@ export interface ApiCommunityCommentCommunityComment
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     author_avatar: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -1058,6 +1162,8 @@ export interface ApiCommunityCommentCommunityComment
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1075,6 +1181,9 @@ export interface ApiCommunityPostCommunityPost
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     author_avatar: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -1178,6 +1287,8 @@ export interface ApiCommunityPostCommunityPost
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     video_url: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
@@ -1208,6 +1319,9 @@ export interface ApiContentHistoryContentHistory
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     action: Schema.Attribute.Enumeration<
       ['create', 'update', 'delete', 'publish', 'unpublish']
     > &
@@ -1253,6 +1367,8 @@ export interface ApiContentHistoryContentHistory
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     versionNumber: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
@@ -1279,6 +1395,9 @@ export interface ApiDownloadItemDownloadItem
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     category: Schema.Attribute.Enumeration<
       [
         'Kinh \u0110i\u1EC3n',
@@ -1338,6 +1457,8 @@ export interface ApiDownloadItemDownloadItem
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 1000;
       }>;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1353,6 +1474,9 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     content: Schema.Attribute.RichText;
     coverImage: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
@@ -1374,8 +1498,10 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     location: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'Vi\u1EC7t Nam'>;
-    oembed: Schema.Attribute.JSON &
-      Schema.Attribute.CustomField<'plugin::oembed.oembed'>;
+    oembed: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
     speaker: Schema.Attribute.String &
@@ -1390,6 +1516,8 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     youtubeId: Schema.Attribute.String;
   };
 }
@@ -1406,6 +1534,9 @@ export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     album: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 120;
@@ -1473,6 +1604,8 @@ export interface ApiGalleryItemGalleryItem extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1491,6 +1624,9 @@ export interface ApiGuestbookEntryGuestbookEntry
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     adminReply: Schema.Attribute.Text &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 2000;
@@ -1541,7 +1677,53 @@ export interface ApiGuestbookEntryGuestbookEntry
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     year: Schema.Attribute.Integer;
+  };
+}
+
+export interface ApiHeThongTestHeThongTest extends Struct.CollectionTypeSchema {
+  collectionName: 'he_thong_tests';
+  info: {
+    displayName: 'H\u1EC7 Th\u1ED1ng - Test ';
+    pluralName: 'he-thong-tests';
+    singularName: 'he-thong-test';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
+    Ckeditor5: Schema.Attribute.RichText &
+      Schema.Attribute.Required &
+      Schema.Attribute.CustomField<
+        'plugin::ckeditor5.CKEditor',
+        {
+          preset: 'pmtl-html';
+        }
+      >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::he-thong-test.he-thong-test'
+    > &
+      Schema.Attribute.Private;
+    LucideIcon: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
+    UUID: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1558,6 +1740,9 @@ export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     blocks: Schema.Attribute.DynamicZone<
       [
         'blocks.post-list-auto',
@@ -1585,7 +1770,11 @@ export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
       'api::hub-page.hub-page'
     > &
       Schema.Attribute.Private;
-    menuIcon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
+    menuIcon: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     sections: Schema.Attribute.Component<'hub.hub-section', true>;
     showInMenu: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
@@ -1599,6 +1788,8 @@ export interface ApiHubPageHubPage extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     visualTheme: Schema.Attribute.Enumeration<
       ['teaching', 'practice', 'story', 'reference']
     > &
@@ -1619,6 +1810,9 @@ export interface ApiLunarEventChantOverrideLunarEventChantOverride
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1647,6 +1841,8 @@ export interface ApiLunarEventChantOverrideLunarEventChantOverride
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1662,6 +1858,9 @@ export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1703,6 +1902,8 @@ export interface ApiLunarEventLunarEvent extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1718,6 +1919,9 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     completedAt: Schema.Attribute.DateTime;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1742,6 +1946,8 @@ export interface ApiPracticeLogPracticeLog extends Struct.CollectionTypeSchema {
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Required;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1759,6 +1965,9 @@ export interface ApiPushJobPushJob extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     body: Schema.Attribute.Text & Schema.Attribute.Required;
     chunkSize: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
@@ -1863,6 +2072,8 @@ export interface ApiPushJobPushJob extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 500;
       }>;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1881,6 +2092,9 @@ export interface ApiPushSubscriptionPushSubscription
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     auth: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1962,6 +2176,8 @@ export interface ApiPushSubscriptionPushSubscription
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -1980,6 +2196,9 @@ export interface ApiRequestGuardRequestGuard
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2015,6 +2234,8 @@ export interface ApiRequestGuardRequestGuard
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -2030,6 +2251,9 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     actionCards: Schema.Attribute.Component<'homepage.action-card-item', true>;
     address: Schema.Attribute.Text;
     awards: Schema.Attribute.Component<'homepage.award-item', true>;
@@ -2072,6 +2296,8 @@ export interface ApiSettingSetting extends Struct.SingleTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -2088,6 +2314,9 @@ export interface ApiSidebarConfigSidebarConfig extends Struct.SingleTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2112,6 +2341,8 @@ export interface ApiSidebarConfigSidebarConfig extends Struct.SingleTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -2128,6 +2359,9 @@ export interface ApiSutraBookmarkSutraBookmark
     draftAndPublish: false;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     anchorKey: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 80;
@@ -2173,6 +2407,8 @@ export interface ApiSutraBookmarkSutraBookmark
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Required;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     volume: Schema.Attribute.Relation<
       'manyToOne',
       'api::sutra-volume.sutra-volume'
@@ -2193,6 +2429,9 @@ export interface ApiSutraChapterSutraChapter
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     chapterNumber: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
@@ -2244,6 +2483,8 @@ export interface ApiSutraChapterSutraChapter
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     volume: Schema.Attribute.Relation<
       'manyToOne',
       'api::sutra-volume.sutra-volume'
@@ -2265,6 +2506,9 @@ export interface ApiSutraGlossarySutraGlossary
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     chapter: Schema.Attribute.Relation<
       'manyToOne',
       'api::sutra-chapter.sutra-chapter'
@@ -2300,6 +2544,8 @@ export interface ApiSutraGlossarySutraGlossary
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     volume: Schema.Attribute.Relation<
       'manyToOne',
       'api::sutra-volume.sutra-volume'
@@ -2320,6 +2566,9 @@ export interface ApiSutraReadingProgressSutraReadingProgress
     draftAndPublish: false;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     anchorKey: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 80;
@@ -2367,6 +2616,8 @@ export interface ApiSutraReadingProgressSutraReadingProgress
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Required;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     volume: Schema.Attribute.Relation<
       'manyToOne',
       'api::sutra-volume.sutra-volume'
@@ -2386,6 +2637,9 @@ export interface ApiSutraVolumeSutraVolume extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     bookEnd: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -2430,6 +2684,8 @@ export interface ApiSutraVolumeSutraVolume extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     volumeNumber: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
@@ -2453,6 +2709,9 @@ export interface ApiSutraSutra extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     coverImage: Schema.Attribute.Media<'images'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -2497,6 +2756,8 @@ export interface ApiSutraSutra extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
     volumes: Schema.Attribute.Relation<
       'oneToMany',
       'api::sutra-volume.sutra-volume'
@@ -2518,6 +2779,9 @@ export interface ApiUiIconUiIcon extends Struct.CollectionTypeSchema {
     timestamps: true;
   };
   attributes: {
+    _softDeletedAt: Schema.Attribute.DateTime & Schema.Attribute.Private;
+    _softDeletedById: Schema.Attribute.Integer & Schema.Attribute.Private;
+    _softDeletedByType: Schema.Attribute.String & Schema.Attribute.Private;
     category: Schema.Attribute.Enumeration<
       ['general', 'social', 'navigation', 'content', 'practice']
     > &
@@ -2558,6 +2822,8 @@ export interface ApiUiIconUiIcon extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -2648,6 +2914,44 @@ export interface PluginContentReleasesReleaseAction
     >;
     type: Schema.Attribute.Enumeration<['publish', 'unpublish']> &
       Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface PluginExportImportKkmExportImportConfig
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'export_import_kkm_configs';
+  info: {
+    displayName: 'Export Import Config';
+    pluralName: 'export-import-configs';
+    singularName: 'export-import-config';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::export-import-kkm.export-import-config'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    selectedExportCollections: Schema.Attribute.JSON;
+    selectedImportCollections: Schema.Attribute.JSON;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2795,6 +3099,64 @@ export interface PluginReviewWorkflowsWorkflowStage
       'manyToOne',
       'plugin::review-workflows.workflow'
     >;
+  };
+}
+
+export interface PluginTreeMenusMenu extends Struct.CollectionTypeSchema {
+  collectionName: 'menus';
+  info: {
+    description: '';
+    displayName: 'Menu';
+    name: 'Menu';
+    pluralName: 'menus';
+    singularName: 'menu';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: true;
+    };
+    'content-type-builder': {
+      visible: true;
+    };
+    i18n: {
+      localized: true;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    items: Schema.Attribute.JSON &
+      Schema.Attribute.Required &
+      Schema.Attribute.CustomField<
+        'plugin::tree-menus.tree',
+        {
+          schemas: '{\n  "attributes": [\n    {\n      "id": "title",\n      "label": "Title",\n      "placeholder": "Enter item title",\n      "type": "text",\n      "validationType": "string",\n      "value": "New items",\n      "required": true,\n      "validations": [\n        {\n          "type": "required",\n          "params": [\n            "this field is required"\n          ]\n        },\n        {\n          "type": "max",\n          "params": [\n            100,\n            "Title cannot be more than 100 characters"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            "New items"\n          ]\n        }\n      ]\n    },\n    {\n      "id": "url",\n      "label": "Url",\n      "placeholder": "Enter url",\n      "type": "text",\n      "validationType": "string",\n      "value": "/",\n      "required": true,\n      "validations": [\n        {\n          "type": "required",\n          "params": [\n            "this field is required"\n          ]\n        },\n        {\n          "type": "max",\n          "params": [\n            200,\n            "Url cannot be more than 200 characters"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            "/"\n          ]\n        }\n      ]\n    },\n    {\n      "id": "target",\n      "label": "Target",\n      "placeholder": "Enter target",\n      "type": "select",\n      "validationType": "mixed",\n      "value": "_self",\n      "required": true,\n      "validations": [\n        {\n          "type": "oneOf",\n          "params": [\n            [\n              "_blank",\n              "_parent",\n              "_self",\n              "_top"\n            ],\n            "this field needs to be one of the following: _blank, _parent, _self, _top"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            "_self"\n          ]\n        }\n      ],\n      "options": [\n        {\n          "key": "_blank",\n          "value": "_blank",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._blank",\n              "defaultMessage": "New window (_blank)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        },\n        {\n          "key": "_parent",\n          "value": "_parent",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._parent",\n              "defaultMessage": "Parent window (_parent)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        },\n        {\n          "key": "_self",\n          "value": "_self",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._self",\n              "defaultMessage": "Same window (_self)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        },\n        {\n          "key": "_top",\n          "value": "_top",\n          "metadatas": {\n            "intlLabel": {\n              "id": "tree-menus.target.options._top",\n              "defaultMessage": "Top window (_top)"\n            },\n            "disabled": false,\n            "hidden": false\n          }\n        }\n      ]\n    },\n    {\n      "id": "isProtected",\n      "label": "isProtected",\n      "placeholder": "Choose isProtected",\n      "type": "bool",\n      "validationType": "boolean",\n      "value": false,\n      "required": true,\n      "validations": [\n        {\n          "type": "required",\n          "params": [\n            "Need to choose isProtected"\n          ]\n        },\n        {\n          "type": "default",\n          "params": [\n            false\n          ]\n        }\n      ]\n    }\n  ]\n}';
+        }
+      >;
+    locale: Schema.Attribute.String;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::tree-menus.menu'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: false;
+        };
+      }> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -3062,6 +3424,8 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 3;
       }>;
+    uuid: Schema.Attribute.UID &
+      Schema.Attribute.CustomField<'plugin::strapi-advanced-uuid.uuid'>;
   };
 }
 
@@ -3080,6 +3444,7 @@ declare module '@strapi/strapi' {
       'api::beginner-guide.beginner-guide': ApiBeginnerGuideBeginnerGuide;
       'api::blog-comment.blog-comment': ApiBlogCommentBlogComment;
       'api::blog-post.blog-post': ApiBlogPostBlogPost;
+      'api::blog-reader-state.blog-reader-state': ApiBlogReaderStateBlogReaderState;
       'api::blog-tag.blog-tag': ApiBlogTagBlogTag;
       'api::category.category': ApiCategoryCategory;
       'api::chant-item.chant-item': ApiChantItemChantItem;
@@ -3091,6 +3456,7 @@ declare module '@strapi/strapi' {
       'api::event.event': ApiEventEvent;
       'api::gallery-item.gallery-item': ApiGalleryItemGalleryItem;
       'api::guestbook-entry.guestbook-entry': ApiGuestbookEntryGuestbookEntry;
+      'api::he-thong-test.he-thong-test': ApiHeThongTestHeThongTest;
       'api::hub-page.hub-page': ApiHubPageHubPage;
       'api::lunar-event-chant-override.lunar-event-chant-override': ApiLunarEventChantOverrideLunarEventChantOverride;
       'api::lunar-event.lunar-event': ApiLunarEventLunarEvent;
@@ -3109,9 +3475,11 @@ declare module '@strapi/strapi' {
       'api::ui-icon.ui-icon': ApiUiIconUiIcon;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
+      'plugin::export-import-kkm.export-import-config': PluginExportImportKkmExportImportConfig;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::review-workflows.workflow': PluginReviewWorkflowsWorkflow;
       'plugin::review-workflows.workflow-stage': PluginReviewWorkflowsWorkflowStage;
+      'plugin::tree-menus.menu': PluginTreeMenusMenu;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;

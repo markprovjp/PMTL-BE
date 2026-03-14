@@ -27,11 +27,15 @@ export interface AuditLog {
   userAgent?: string;
   changedFields?: Record<string, any>;
   metadata?: Record<string, any>;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: AuditLog[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface BeginnerGuide {
@@ -47,16 +51,20 @@ export interface BeginnerGuide {
   order?: number;
   step_number?: number;
   guide_type: unknown;
-  icon?: UiIcon | null;
+  icon?: string;
   pdf_url?: string;
   video_url?: string;
   images?: StrapiMediaRef | null;
   attached_files?: StrapiMediaRef | null;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: BeginnerGuide[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface BlogComment {
@@ -81,11 +89,15 @@ export interface BlogComment {
   lastReportReason?: string;
   isHidden?: boolean;
   spamScore?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: BlogComment[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface BlogPost {
@@ -101,7 +113,7 @@ export interface BlogPost {
   gallery?: StrapiMediaRef | null;
   video_url?: string;
   audio_url?: string;
-  oembed?: Record<string, any>;
+  oembed?: string;
   categories?: Category[];
   tags?: BlogTag[];
   featured?: boolean;
@@ -120,11 +132,40 @@ export interface BlogPost {
   commentCount?: number;
   eventDate?: string;
   location?: string;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: BlogPost[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
+}
+
+export interface BlogReaderState {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  user: any;
+  post: BlogPost | null;
+  isFavorite?: boolean;
+  firstReadAt?: string;
+  lastReadAt?: string;
+  favoritedAt?: string;
+  isPinned?: boolean;
+  pinnedAt?: string;
+  readCount?: number;
+  uuid?: unknown;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: BlogReaderState[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface BlogTag {
@@ -136,11 +177,15 @@ export interface BlogTag {
   slug: unknown;
   description?: string;
   blog_posts?: BlogPost[];
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: BlogTag[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface Category {
@@ -157,11 +202,15 @@ export interface Category {
   parent?: Category | null;
   children?: Category[];
   blog_posts?: BlogPost[];
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: Category[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface ChantItem {
@@ -177,11 +226,15 @@ export interface ChantItem {
   timeRules?: Record<string, any>;
   recommendedPresets?: Record<string, any>;
   audio?: StrapiMediaRef | null;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: ChantItem[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface ChantPlan {
@@ -193,11 +246,15 @@ export interface ChantPlan {
   slug: unknown;
   planType: unknown;
   planItems?: any[];
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: ChantPlan[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface CommunityComment {
@@ -218,11 +275,15 @@ export interface CommunityComment {
   lastReportReason?: string;
   isHidden?: boolean;
   spamScore?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: CommunityComment[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface CommunityPost {
@@ -252,11 +313,15 @@ export interface CommunityPost {
   lastReportReason?: string;
   isHidden?: boolean;
   spamScore?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: CommunityPost[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface ContentHistory {
@@ -277,11 +342,15 @@ export interface ContentHistory {
   changedFields?: Record<string, any>;
   snapshot: Record<string, any>;
   metadata?: Record<string, any>;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: ContentHistory[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface DownloadItem {
@@ -302,11 +371,15 @@ export interface DownloadItem {
   sortOrder?: number;
   thumbnail?: StrapiMediaRef | null;
   fileSizeMB?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: DownloadItem[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface Event {
@@ -327,15 +400,19 @@ export interface Event {
   language?: string;
   link?: string;
   youtubeId?: string;
-  oembed?: Record<string, any>;
+  oembed?: string;
   coverImage?: StrapiMediaRef | null;
   gallery?: StrapiMediaRef | null;
   files?: StrapiMediaRef | null;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: Event[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface GalleryItem {
@@ -357,11 +434,15 @@ export interface GalleryItem {
   featured?: boolean;
   sortOrder?: number;
   keywords?: string;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: GalleryItem[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface GuestbookEntry {
@@ -382,11 +463,34 @@ export interface GuestbookEntry {
   entryType?: unknown;
   questionCategory?: string;
   isAnswered?: boolean;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: GuestbookEntry[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
+}
+
+export interface HeThongTest {
+  id?: number;
+  documentId: string;
+  createdAt: string;
+  updatedAt: string;
+  Ckeditor5: string;
+  LucideIcon?: string;
+  UUID?: unknown;
+  uuid?: unknown;
+  publishedAt?: string;
+  createdBy?: any;
+  updatedBy?: any;
+  locale?: string;
+  localizations?: HeThongTest[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface HubPage {
@@ -403,14 +507,18 @@ export interface HubPage {
   downloads?: DownloadItem[];
   sortOrder?: number;
   showInMenu?: boolean;
-  menuIcon?: UiIcon | null;
+  menuIcon?: string;
   visualTheme?: unknown;
   blocks?: unknown;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: HubPage[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface LunarEvent {
@@ -425,11 +533,15 @@ export interface LunarEvent {
   solarDate?: string;
   eventType?: unknown;
   relatedBlogs?: BlogPost[];
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: LunarEvent[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface LunarEventChantOverride {
@@ -444,11 +556,15 @@ export interface LunarEventChantOverride {
   max?: number;
   priority?: number;
   note?: string;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: LunarEventChantOverride[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface PracticeLog {
@@ -463,11 +579,15 @@ export interface PracticeLog {
   startedAt?: string;
   completedAt?: string;
   isCompleted?: boolean;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: PracticeLog[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface PushJob {
@@ -492,11 +612,15 @@ export interface PushJob {
   lastError?: string;
   startedAt?: string;
   finishedAt?: string;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: PushJob[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface PushSubscription {
@@ -518,11 +642,15 @@ export interface PushSubscription {
   notificationTypes?: Record<string, any>;
   quietHoursStart?: number;
   quietHoursEnd?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: PushSubscription[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface RequestGuard {
@@ -536,11 +664,15 @@ export interface RequestGuard {
   expiresAt: string;
   lastSeenAt: string;
   notes?: Record<string, any>;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: RequestGuard[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface Setting {
@@ -564,11 +696,15 @@ export interface Setting {
   awards?: any[];
   gallerySlides?: any[];
   stickyBanner?: any;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: Setting[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface SidebarConfig {
@@ -584,11 +720,15 @@ export interface SidebarConfig {
   downloadLinks?: any[];
   socialLinks?: any[];
   qrImages?: StrapiMediaRef | null;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: SidebarConfig[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface Sutra {
@@ -609,11 +749,15 @@ export interface Sutra {
   glossaries?: SutraGlossary[];
   isFeatured?: boolean;
   sortOrder?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: Sutra[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface SutraBookmark {
@@ -629,11 +773,15 @@ export interface SutraBookmark {
   charOffset?: number;
   excerpt?: string;
   note?: string;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: SutraBookmark[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface SutraChapter {
@@ -652,11 +800,15 @@ export interface SutraChapter {
   sutra: Sutra | null;
   volume: SutraVolume | null;
   glossaries?: SutraGlossary[];
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: SutraChapter[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface SutraGlossary {
@@ -671,11 +823,15 @@ export interface SutraGlossary {
   sutra: Sutra | null;
   volume?: SutraVolume | null;
   chapter?: SutraChapter | null;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: SutraGlossary[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface SutraReadingProgress {
@@ -691,11 +847,15 @@ export interface SutraReadingProgress {
   charOffset?: number;
   scrollPercent?: number;
   lastReadAt?: string;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: SutraReadingProgress[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface SutraVolume {
@@ -712,11 +872,15 @@ export interface SutraVolume {
   sutra: Sutra | null;
   chapters?: SutraChapter[];
   sortOrder?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: SutraVolume[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }
 
 export interface UiIcon {
@@ -731,9 +895,13 @@ export interface UiIcon {
   notes?: string;
   isActive?: boolean;
   sortOrder?: number;
+  uuid?: unknown;
   publishedAt?: string;
   createdBy?: any;
   updatedBy?: any;
   locale?: string;
   localizations?: UiIcon[];
+  _softDeletedAt?: string;
+  _softDeletedById?: number;
+  _softDeletedByType?: string;
 }

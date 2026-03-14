@@ -51,7 +51,10 @@
     "note": {
       "type": "text",
       "maxLength": 2000
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }
-

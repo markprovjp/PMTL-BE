@@ -31,7 +31,16 @@
     },
     "fileType": {
       "type": "enumeration",
-      "enum": ["pdf", "mp3", "mp4", "zip", "doc", "epub", "html", "unknown"],
+      "enum": [
+        "pdf",
+        "mp3",
+        "mp4",
+        "zip",
+        "doc",
+        "epub",
+        "html",
+        "unknown"
+      ],
       "default": "unknown",
       "required": true
     },
@@ -82,11 +91,17 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "fileSizeMB": {
       "type": "decimal",
       "description": "Kích thước file (MB) — điền tay để hiển thị"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

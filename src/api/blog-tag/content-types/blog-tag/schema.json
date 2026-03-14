@@ -36,6 +36,10 @@
       "relation": "manyToMany",
       "target": "api::blog-post.blog-post",
       "inversedBy": "tags"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

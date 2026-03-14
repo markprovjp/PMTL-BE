@@ -71,7 +71,9 @@
       "type": "media",
       "multiple": false,
       "required": true,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "featured": {
       "type": "boolean",
@@ -87,6 +89,10 @@
       "type": "string",
       "maxLength": 400,
       "description": "Từ khóa phân tách bằng dấu phẩy để hỗ trợ tìm kiếm nhanh ở frontend"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

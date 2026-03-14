@@ -6,6 +6,7 @@ type RelatedItem = {
 type BlogPostSearchEntry = {
   id?: number
   documentId: string
+  uuid?: string | null
   title?: string | null
   slug?: string | null
   content?: string | null
@@ -90,6 +91,7 @@ export const BLOG_POST_MEILISEARCH_ENTRIES_QUERY = {
   limit: 500,
   fields: [
     'documentId',
+    'uuid',
     'title',
     'slug',
     'content',
@@ -138,6 +140,7 @@ export const BLOG_POST_MEILISEARCH_SETTINGS = {
   displayedAttributes: [
     'id',
     'documentId',
+    'uuid',
     'title',
     'slug',
     'excerpt',

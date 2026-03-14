@@ -79,6 +79,10 @@
       "default": 6,
       "min": 0,
       "max": 23
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

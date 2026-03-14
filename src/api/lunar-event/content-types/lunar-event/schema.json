@@ -52,6 +52,10 @@
       "target": "api::blog-post.blog-post",
       "inversedBy": "lunarEvents",
       "description": "Liên kết các bài blog khai thị liên quan đến sự kiện này"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

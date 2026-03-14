@@ -33,7 +33,9 @@
     "coverImage": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "translatorHan": {
       "type": "string",
@@ -71,7 +73,10 @@
     "sortOrder": {
       "type": "integer",
       "default": 0
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }
-

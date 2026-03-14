@@ -66,6 +66,10 @@
       "relation": "oneToMany",
       "target": "api::sutra-glossary.sutra-glossary",
       "mappedBy": "chapter"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

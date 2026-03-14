@@ -54,15 +54,31 @@
       "target": "plugin::users-permissions.role",
       "inversedBy": "users"
     },
-    "fullName": { "type": "string" },
+    "fullName": {
+      "type": "string"
+    },
     "avatar_url": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
-    "phone": { "type": "string" },
-    "address": { "type": "string" },
-    "bio": { "type": "text" },
-    "dharmaName": { "type": "string" }
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "text"
+    },
+    "dharmaName": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
+    }
   }
 }

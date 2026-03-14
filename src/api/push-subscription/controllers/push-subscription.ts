@@ -170,6 +170,41 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
     }
   },
 
+  async update(ctx) {
+    const log = createLogger(strapi, 'push-subscription');
+    const documentId = String(ctx.params?.documentId ?? '');
+    const payload = (ctx.request.body as Record<string, unknown> | undefined)?.data;
+
+    if (!documentId) {
+      return ctx.badRequest('Thiếu documentId');
+    }
+
+    if (!payload || typeof payload !== 'object') {
+      return ctx.badRequest('Thiếu dữ liệu cập nhật');
+    }
+
+    try {
+      const existing = await (strapi.db as any).query(UID).findOne({
+        where: { documentId },
+      });
+
+      if (!existing?.documentId) {
+        return ctx.notFound('Không tìm thấy subscription');
+      }
+
+      const updated = await (strapi.documents as any)(UID).update({
+        documentId: existing.documentId,
+        data: payload,
+      });
+
+      ctx.body = { data: updated, meta: {} };
+    } catch (err) {
+      log.error('update failed', err);
+      ctx.status = 500;
+      ctx.body = { error: 'Không thể cập nhật subscription lúc này.' };
+    }
+  },
+
   /**
    * DELETE /api/push-subscriptions/by-endpoint
    * Body: { endpoint }

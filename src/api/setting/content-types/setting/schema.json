@@ -91,6 +91,10 @@
       "type": "component",
       "repeatable": false,
       "component": "homepage.sticky-banner"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

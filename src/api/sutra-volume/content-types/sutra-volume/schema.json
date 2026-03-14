@@ -55,7 +55,10 @@
     "sortOrder": {
       "type": "integer",
       "default": 0
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }
-

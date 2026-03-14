@@ -50,6 +50,10 @@
     "note": {
       "type": "string",
       "description": "Ghi chú nội bộ cho admin"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

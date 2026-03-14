@@ -56,6 +56,10 @@
       "relation": "manyToMany",
       "target": "api::blog-post.blog-post",
       "mappedBy": "categories"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

@@ -6,7 +6,7 @@ export default {
       handler: 'sutra-bookmark.listMyBookmarks',
       config: {
         policies: [],
-        middlewares: [],
+        middlewares: ['plugin::strapi-plugin-rate-limit.rate-limit'],
       },
     },
     {
@@ -15,7 +15,7 @@ export default {
       handler: 'sutra-bookmark.createMyBookmark',
       config: {
         policies: [],
-        middlewares: [],
+        middlewares: ['plugin::strapi-plugin-rate-limit.rate-limit'],
       },
     },
     {
@@ -24,9 +24,8 @@ export default {
       handler: 'sutra-bookmark.deleteMyBookmark',
       config: {
         policies: [],
-        middlewares: [],
+        middlewares: ['plugin::strapi-plugin-rate-limit.rate-limit'],
       },
     },
   ],
 };
-

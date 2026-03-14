@@ -37,7 +37,7 @@ export async function consumeGuard(
   });
 
   if (!existing) {
-    await (strapi.documents as any)(REQUEST_GUARD_UID).create({
+    await query.create({
       data: {
         guardKey,
         scope: options.scope,
@@ -55,8 +55,8 @@ export async function consumeGuard(
   const isExpired = existingExpiresAt <= nowMs;
 
   if (isExpired) {
-    await (strapi.documents as any)(REQUEST_GUARD_UID).update({
-      documentId: existing.documentId,
+    await query.update({
+      where: { id: existing.id },
       data: {
         scope: options.scope,
         hits: 1,
@@ -73,8 +73,8 @@ export async function consumeGuard(
   const retryAfterMs = Math.max(0, existingExpiresAt - nowMs);
 
   if (nextHits > maxHits) {
-    await (strapi.documents as any)(REQUEST_GUARD_UID).update({
-      documentId: existing.documentId,
+    await query.update({
+      where: { id: existing.id },
       data: {
         hits: nextHits,
         lastSeenAt: now.toISOString(),
@@ -89,8 +89,8 @@ export async function consumeGuard(
     };
   }
 
-  await (strapi.documents as any)(REQUEST_GUARD_UID).update({
-    documentId: existing.documentId,
+  await query.update({
+    where: { id: existing.id },
     data: {
       hits: nextHits,
       lastSeenAt: now.toISOString(),
@@ -107,21 +107,29 @@ export async function consumeGuard(
 
 export async function cleanupExpiredGuards(strapi: Core.Strapi, limit = 200) {
   const now = new Date().toISOString();
-  const expired = await (strapi.documents as any)(REQUEST_GUARD_UID).findMany({
-    filters: {
+  const query = strapi.db.query(REQUEST_GUARD_UID as any);
+  const expired = await query.findMany({
+    where: {
       expiresAt: { $lt: now },
     },
-    fields: ['documentId'],
-    sort: ['expiresAt:asc'],
+    select: ['id'],
+    orderBy: { expiresAt: 'asc' },
     limit,
   });
 
-  for (const item of expired) {
-    if (!item?.documentId) continue;
-    await (strapi.documents as any)(REQUEST_GUARD_UID).delete({
-      documentId: item.documentId,
-    });
+  if (!expired.length) {
+    return 0;
   }
+
+  await query.deleteMany({
+    where: {
+      id: {
+        $in: expired
+          .map((item: Record<string, unknown> | null | undefined) => item?.id)
+          .filter((id): id is number => typeof id === 'number'),
+      },
+    },
+  });
 
   return expired.length;
 }

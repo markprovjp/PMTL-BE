@@ -52,7 +52,10 @@
     },
     "lastReadAt": {
       "type": "datetime"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }
-

@@ -49,7 +49,10 @@
       "relation": "manyToOne",
       "target": "api::sutra-chapter.sutra-chapter",
       "inversedBy": "glossaries"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }
-

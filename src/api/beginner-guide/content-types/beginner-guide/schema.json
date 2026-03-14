@@ -48,9 +48,9 @@
       "required": true
     },
     "icon": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::ui-icon.ui-icon"
+      "type": "string",
+      "customField": "plugin::lucide-icon-picker.lucide-icon",
+      "maxLength": 120
     },
     "pdf_url": {
       "type": "string",
@@ -77,6 +77,10 @@
         "audios"
       ],
       "description": "Tệp đính kèm (PDF, Word, Ảnh...)"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

@@ -40,6 +40,10 @@
     },
     "notes": {
       "type": "json"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

@@ -1,6 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { createHash } from 'node:crypto';
-import { atomicIncrementField } from '../../../utils/strapi-helpers';
+import { atomicIncrementField, buildDocumentIdentifierFilters } from '../../../utils/strapi-helpers';
 import { createLogger } from '../../../utils/logger';
 import { validateBlogCommentSubmit } from '../../../schemas/blog-comment';
 import {
@@ -68,31 +68,33 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       '';
     const cleanName = stripHtmlForModeration(String(authorName || fallbackName)).slice(0, 100);
     const authUserId: number | null = ctx.state?.user?.id ?? null;
+    const commentQuery = strapi.db.query(COMMENT_UID as any);
+    const postQuery = strapi.db.query(POST_UID as any);
 
     try {
-      const posts = await (strapi.documents as any)(POST_UID).findMany({
-        filters: { slug: { $eq: postSlug } },
-        status: 'published',
-        fields: ['documentId', 'id'],
+      const post = await postQuery.findOne({
+        where: {
+          slug: postSlug,
+          publishedAt: { $notNull: true },
+        },
+        select: ['id', 'documentId'],
       });
-      if (!posts?.length) return ctx.notFound('Không tìm thấy bài viết.');
-      const post = posts[0];
+      if (!post) return ctx.notFound('Không tìm thấy bài viết.');
 
       let parentId: number | undefined;
       if (parentDocumentId && typeof parentDocumentId === 'string') {
-        const parents = await (strapi.documents(COMMENT_UID as any) as any).findMany({
-          filters: {
+        const parent = await commentQuery.findOne({
+          where: {
             documentId: String(parentDocumentId),
             isHidden: { $ne: true },
             moderationStatus: { $notIn: ['hidden', 'removed'] },
             post: { documentId: { $eq: post.documentId } },
+            publishedAt: { $notNull: true },
           },
-          status: 'published',
-          fields: ['documentId', 'id'],
-          limit: 1,
+          select: ['id', 'documentId'],
         });
-        if (!parents?.length) return ctx.notFound('Không tìm thấy bình luận cha đang được hiển thị.');
-        parentId = parents[0].id;
+        if (!parent) return ctx.notFound('Không tìm thấy bình luận cha đang được hiển thị.');
+        parentId = parent.id;
       }
 
       const spamScore = computeSpamScore(cleanContent);
@@ -132,7 +134,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
         publishedAt: new Date().toISOString(),
       };
 
-      const entity = await (strapi.documents as any)(COMMENT_UID).create({ data });
+      const entity = await commentQuery.create({ data });
 
       ctx.status = 201;
       ctx.body = {
@@ -149,15 +151,19 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
   },
 
   async like(ctx) {
-    const { documentId } = ctx.params as { documentId: string };
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '');
     const log = createLogger(strapi, 'blog-comment');
 
     try {
       const results = await (strapi.documents(COMMENT_UID as any) as any).findMany({
         filters: {
-          documentId,
-          isHidden: { $ne: true },
-          moderationStatus: { $notIn: ['hidden', 'removed'] },
+          $and: [
+            buildDocumentIdentifierFilters(identifier),
+            {
+              isHidden: { $ne: true },
+              moderationStatus: { $notIn: ['hidden', 'removed'] },
+            },
+          ],
         },
         status: 'published',
         fields: ['documentId', 'likes'],
@@ -166,6 +172,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bình luận.');
 
+      const documentId = existing.documentId as string;
       const newLikes = await atomicIncrementField(strapi, COMMENT_UID, documentId, 'likes');
       ctx.body = { ok: true, likes: newLikes };
     } catch (err) {
@@ -176,34 +183,36 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
   },
 
   async report(ctx) {
-    const { documentId } = ctx.params as { documentId: string };
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '');
     const reason = ctx.request.body?.reason;
     const log = createLogger(strapi, 'blog-comment');
+    const commentQuery = strapi.db.query(COMMENT_UID as any);
 
     if (!isReportReason(reason)) return ctx.badRequest('Lý do báo cáo không hợp lệ.');
-    const reporterKey = `${documentId}:${getRequesterKey(ctx)}`;
-    const reportGuard = await consumeGuard(strapi, {
-      scope: 'blog-comment-report',
-      key: reporterKey,
-      windowMs: REPORT_TTL_MS,
-      maxHits: 1,
-      notes: { documentId, reason },
-    });
-    if (!reportGuard.allowed) return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
 
     try {
-      const results = await (strapi.documents(COMMENT_UID as any) as any).findMany({
-        filters: { documentId },
-        status: 'published',
-        fields: ['id', 'documentId', 'reportCount', 'moderationStatus', 'isHidden', 'spamScore'],
-        limit: 1,
+      const existing = await commentQuery.findOne({
+        where: {
+          ...buildDocumentIdentifierFilters(identifier),
+          publishedAt: { $notNull: true },
+        },
+        select: ['id', 'documentId', 'reportCount', 'moderationStatus', 'isHidden', 'spamScore'],
       });
-      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bình luận.');
 
+      const reporterKey = `${existing.documentId}:${getRequesterKey(ctx)}`;
+      const reportGuard = await consumeGuard(strapi, {
+        scope: 'blog-comment-report',
+        key: reporterKey,
+        windowMs: REPORT_TTL_MS,
+        maxHits: 1,
+        notes: { documentId: existing.documentId, reason },
+      });
+      if (!reportGuard.allowed) return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
+
       const nextState = getReportedState(existing, reason);
-      await (strapi.documents as any)(COMMENT_UID).update({
-        documentId: existing.documentId,
+      await commentQuery.update({
+        where: { id: existing.id },
         data: nextState,
       });
 

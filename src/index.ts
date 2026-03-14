@@ -282,7 +282,8 @@ export default {
     // 1) Ensure advanced settings aren't null (fixes undefined 'settings' UI bug)
     try {
       const advancedStore = strapi.store({ type: 'plugin', name: 'users-permissions', key: 'advanced' });
-      const advancedSettings = await advancedStore.get();
+      const advancedSettings = (await advancedStore.get()) as Record<string, unknown> | null;
+      const desiredDefaultRole = 'authenticated';
       if (!advancedSettings) {
         await advancedStore.set({
           value: {
@@ -291,32 +292,47 @@ export default {
             email_confirmation: false,
             email_reset_password: null,
             email_confirmation_redirection: null,
-            default_role: 'authenticated',
+            default_role: desiredDefaultRole,
           }
         });
         strapi.log.info('[Fix] Re-initialized missing user-permissions advanced settings.');
+      } else if (advancedSettings.default_role !== desiredDefaultRole) {
+        await advancedStore.set({
+          value: {
+            ...advancedSettings,
+            default_role: desiredDefaultRole,
+          },
+        });
+        strapi.log.info('[Fix] Reset users-permissions default role to authenticated.');
       }
     } catch (err) {
       strapi.log.error('[Fix] Could not init advanced settings', err);
     }
 
-    // 1.5) Auto-repair users that are missing a role (due to earlier schema issues)
+    // 1.5) Auto-repair users that are missing a role or incorrectly set to Public.
     try {
-      const usersWithoutRole = await strapi.db.query('plugin::users-permissions.user').findMany({
-        where: { role: null },
+      const defaultRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+        where: { type: 'authenticated' },
       });
-      if (usersWithoutRole && usersWithoutRole.length > 0) {
-        const defaultRole = await strapi.db.query('plugin::users-permissions.role').findOne({
-          where: { type: 'authenticated' },
+
+      if (defaultRole) {
+        const users = await strapi.db.query('plugin::users-permissions.user').findMany({
+          populate: ['role'],
         });
-        if (defaultRole) {
-          for (const u of usersWithoutRole) {
+
+        const usersNeedingRoleRepair = (users ?? []).filter((user: any) => {
+          const roleType = user.role?.type;
+          return !roleType || roleType === 'public';
+        });
+
+        if (usersNeedingRoleRepair.length > 0) {
+          for (const user of usersNeedingRoleRepair) {
             await strapi.db.query('plugin::users-permissions.user').update({
-              where: { id: u.id },
+              where: { id: user.id },
               data: { role: defaultRole.id },
             });
           }
-          strapi.log.info(`[Fix] Assigned default role to ${usersWithoutRole.length} users.`);
+          strapi.log.info(`[Fix] Assigned authenticated role to ${usersNeedingRoleRepair.length} users.`);
         }
       }
     } catch (err) {

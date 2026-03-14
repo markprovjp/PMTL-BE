@@ -30,7 +30,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "sections": {
       "type": "component",
@@ -60,14 +62,19 @@
       "description": "Hiển thị trang này trong thanh điều hướng"
     },
     "menuIcon": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::ui-icon.ui-icon",
-      "description": "Biểu tượng menu dùng chung từ danh mục UI Icon"
+      "type": "string",
+      "customField": "plugin::lucide-icon-picker.lucide-icon",
+      "maxLength": 120,
+      "description": "Biểu tượng menu lưu trực tiếp dưới dạng token Lucide"
     },
     "visualTheme": {
       "type": "enumeration",
-      "enum": ["teaching", "practice", "story", "reference"],
+      "enum": [
+        "teaching",
+        "practice",
+        "story",
+        "reference"
+      ],
       "default": "teaching",
       "description": "Chủ đề giao diện (chi phối màu sắc, header, và grid structure)"
     },
@@ -79,6 +86,10 @@
         "blocks.download-grid",
         "blocks.rich-text"
       ]
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

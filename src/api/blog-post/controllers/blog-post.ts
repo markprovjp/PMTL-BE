@@ -4,7 +4,7 @@
 
 import { factories } from '@strapi/strapi'
 import { createHash } from 'node:crypto'
-import { atomicIncrementField, findPublished } from '../../../utils/strapi-helpers'
+import { atomicIncrementField, resolveDocumentIdByIdentifier } from '../../../utils/strapi-helpers'
 import { createLogger } from '../../../utils/logger'
 import { RATE_LIMITS } from '../../../utils/rate-limit'
 import { consumeGuard } from '../../../services/request-guard'
@@ -19,16 +19,18 @@ function hashIpView(ip: string): string {
 
 export default factories.createCoreController(BLOG_UID, ({ strapi }) => ({
   /**
-   * POST /api/blog-posts/:documentId/view
+   * POST /api/blog-posts/:identifier/view
    * Atomically increments the view counter using a single raw SQL UPDATE.
    */
   async incrementView(ctx) {
-    const { documentId } = ctx.params
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '')
     const log = createLogger(strapi, 'blog-post')
 
     try {
-      const exists = await findPublished(strapi, BLOG_UID, documentId)
-      if (!exists) return ctx.notFound('Post not found')
+      const documentId = await resolveDocumentIdByIdentifier(strapi, BLOG_UID, identifier, {
+        status: 'published',
+      })
+      if (!documentId) return ctx.notFound('Post not found')
 
       // IP dedup: mỗi IP chỉ tính 1 lượt xem / bài / giờ
       const rawIp: string =
@@ -50,13 +52,6 @@ export default factories.createCoreController(BLOG_UID, ({ strapi }) => ({
       }
 
       const newViews = await atomicIncrementField(strapi, BLOG_UID, documentId, 'views')
-
-      void strapi
-        .service('api::blog-post.search-index')
-        .reindexBlogPost(documentId)
-        .catch((error) => {
-          log.warn('incrementView reindex failed', error)
-        })
 
       ctx.status = 200
       ctx.body = { ok: true, newViews }

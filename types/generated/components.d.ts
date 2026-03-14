@@ -80,7 +80,11 @@ export interface HomepageActionCardItem extends Struct.ComponentSchema {
   };
   attributes: {
     description: Schema.Attribute.Text;
-    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
+    icon: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
     link: Schema.Attribute.String;
     title: Schema.Attribute.String;
   };
@@ -151,7 +155,11 @@ export interface HomepagePhapBaoItem extends Struct.ComponentSchema {
     chinese: Schema.Attribute.String;
     color: Schema.Attribute.String;
     description: Schema.Attribute.Text;
-    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
+    icon: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
     item_id: Schema.Attribute.String;
     link: Schema.Attribute.String;
     title: Schema.Attribute.String;
@@ -165,7 +173,11 @@ export interface HomepageSearchCategory extends Struct.ComponentSchema {
   };
   attributes: {
     category_id: Schema.Attribute.Integer;
-    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
+    icon: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
     link: Schema.Attribute.String;
     title: Schema.Attribute.String;
   };
@@ -294,7 +306,11 @@ export interface SharedSocialLink extends Struct.ComponentSchema {
     singularName: 'social-link';
   };
   attributes: {
-    icon: Schema.Attribute.Relation<'manyToOne', 'api::ui-icon.ui-icon'>;
+    icon: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::lucide-icon-picker.lucide-icon'> &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
     label: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{

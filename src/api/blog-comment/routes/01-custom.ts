@@ -2,7 +2,7 @@
  * 01-custom.ts — Blog-comment custom routes (Strapi v5)
  *
  * QUAN TRỌNG: File phải đặt tên bắt đầu bằng số để nạp TRƯỚC core router,
- * tránh nhầm lẫn đường dẫn với /:documentId.
+ * tránh nhầm lẫn đường dẫn với /:identifier.
  */
 export default {
   routes: [
@@ -14,13 +14,13 @@ export default {
     },
     {
       method: 'POST',
-      path: '/blog-comments/like/:documentId',
+      path: '/blog-comments/like/:identifier',
       handler: 'blog-comment.like',
       config: { auth: false, policies: [], middlewares: [] },
     },
     {
       method: 'POST',
-      path: '/blog-comments/report/:documentId',
+      path: '/blog-comments/report/:identifier',
       handler: 'blog-comment.report',
       config: { auth: false, policies: [], middlewares: [] },
     },

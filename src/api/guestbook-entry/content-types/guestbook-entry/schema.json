@@ -27,7 +27,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "message": {
       "type": "text",
@@ -41,7 +43,10 @@
     },
     "approvalStatus": {
       "type": "enumeration",
-      "enum": ["pending", "approved"],
+      "enum": [
+        "pending",
+        "approved"
+      ],
       "default": "pending",
       "required": true
     },
@@ -68,7 +73,10 @@
     },
     "entryType": {
       "type": "enumeration",
-      "enum": ["message", "question"],
+      "enum": [
+        "message",
+        "question"
+      ],
       "default": "message"
     },
     "questionCategory": {
@@ -78,6 +86,10 @@
     "isAnswered": {
       "type": "boolean",
       "default": false
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

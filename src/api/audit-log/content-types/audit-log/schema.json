@@ -16,7 +16,13 @@
   "attributes": {
     "action": {
       "type": "enumeration",
-      "enum": ["create", "update", "delete", "publish", "unpublish"],
+      "enum": [
+        "create",
+        "update",
+        "delete",
+        "publish",
+        "unpublish"
+      ],
       "required": true
     },
     "targetUid": {
@@ -37,7 +43,12 @@
     },
     "actorType": {
       "type": "enumeration",
-      "enum": ["admin", "user", "guest", "system"],
+      "enum": [
+        "admin",
+        "user",
+        "guest",
+        "system"
+      ],
       "required": true
     },
     "actorId": {
@@ -75,6 +86,10 @@
     },
     "metadata": {
       "type": "json"
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

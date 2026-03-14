@@ -76,8 +76,8 @@
       "type": "string"
     },
     "oembed": {
-      "type": "customField",
-      "customField": "plugin::oembed.oembed"
+      "type": "string",
+      "maxLength": 500
     },
     "coverImage": {
       "type": "media",
@@ -103,6 +103,10 @@
       "allowedTypes": [
         "files"
       ]
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

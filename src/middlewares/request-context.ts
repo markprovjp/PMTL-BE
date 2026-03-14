@@ -64,7 +64,14 @@ export default (_config: unknown, { strapi }: { strapi: Core.Strapi }) => {
         try {
           await next();
         } catch (error) {
-          strapi.log.error('[request-context] request failed', error);
+          const status =
+            typeof error === 'object' && error !== null && 'status' in error
+              ? Number((error as { status?: unknown }).status)
+              : Number(ctx?.status ?? 500);
+
+          if (!Number.isFinite(status) || status >= 500) {
+            strapi.log.error('[request-context] request failed', error);
+          }
           throw error;
         }
       }

@@ -54,6 +54,10 @@
       "allowedTypes": [
         "audios"
       ]
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

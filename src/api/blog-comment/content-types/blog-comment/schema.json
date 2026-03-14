@@ -28,7 +28,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "userId": {
       "type": "string",
@@ -81,7 +83,12 @@
     },
     "moderationStatus": {
       "type": "enumeration",
-      "enum": ["visible", "flagged", "hidden", "removed"],
+      "enum": [
+        "visible",
+        "flagged",
+        "hidden",
+        "removed"
+      ],
       "default": "visible"
     },
     "reportCount": {
@@ -101,6 +108,10 @@
       "type": "integer",
       "default": 0,
       "min": 0
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
     }
   }
 }

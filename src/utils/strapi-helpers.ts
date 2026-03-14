@@ -40,3 +40,46 @@ export async function findPublished(
   });
   return results?.[0] || null;
 }
+
+export function buildDocumentIdentifierFilters(identifier: string) {
+  return {
+    $or: [
+      { documentId: { $eq: identifier } },
+      { uuid: { $eq: identifier } },
+    ],
+  };
+}
+
+export async function resolveDocumentIdByIdentifier(
+  strapi: Core.Strapi,
+  uid: string,
+  identifier: string,
+  options?: {
+    status?: 'published' | 'draft';
+    filters?: Record<string, unknown>;
+  }
+): Promise<string | null> {
+  const query = strapi.db.query(uid as any);
+  const statusFilter =
+    options?.status === 'published'
+      ? { publishedAt: { $notNull: true } }
+      : options?.status === 'draft'
+        ? { publishedAt: { $null: true } }
+        : null;
+
+  const where = {
+    ...(options?.filters ?? {}),
+    ...(statusFilter ?? {}),
+    $or: [
+      { documentId: identifier },
+      { uuid: identifier },
+    ],
+  };
+
+  const result = await query.findOne({
+    where,
+    select: ['documentId'],
+  });
+
+  return (result?.documentId as string | undefined) ?? null;
+}

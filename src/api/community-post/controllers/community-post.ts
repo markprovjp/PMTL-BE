@@ -1,6 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { createHash } from 'node:crypto';
-import { atomicIncrementField } from '../../../utils/strapi-helpers';
+import { atomicIncrementField, buildDocumentIdentifierFilters } from '../../../utils/strapi-helpers';
 import { createLogger } from '../../../utils/logger';
 import {
   computeSpamScore,
@@ -72,6 +72,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
     }
 
     const authUserId = ctx.state?.user?.id;
+    const postQuery = strapi.db.query(POST_UID as any);
     let processedTags = tags;
     if (typeof tags === 'string') {
       processedTags = tags.split(',').map((t: string) => t.trim()).filter(Boolean);
@@ -100,7 +101,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
         mediaId = resolvedMedia.id;
       }
 
-      const entity = await (strapi.documents as any)(POST_UID).create({
+      const entity = await postQuery.create({
         data: {
           title: cleanTitle,
           slug: `${baseSlug}-${Date.now().toString(36)}`,
@@ -140,88 +141,97 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
   },
 
   async like(ctx) {
-    const { documentId } = ctx.params as any;
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '');
     const log = createLogger(strapi, 'community-post');
+    const postQuery = strapi.db.query(POST_UID as any);
 
     try {
-      const results = await strapi.documents(POST_UID).findMany({
-        filters: {
-          documentId,
-          isHidden: { $ne: true },
-          moderationStatus: { $notIn: ['hidden', 'removed'] },
+      const existing = await postQuery.findOne({
+        where: {
+          $and: [
+            buildDocumentIdentifierFilters(identifier),
+            {
+              isHidden: { $ne: true },
+              moderationStatus: { $notIn: ['hidden', 'removed'] },
+              publishedAt: { $notNull: true },
+            },
+          ],
         },
-        status: 'published',
-        fields: ['documentId'],
-        limit: 1,
+        select: ['documentId'],
       });
-      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bài viết');
 
+      const documentId = existing.documentId as string;
       const newLikes = await atomicIncrementField(strapi, POST_UID, documentId, 'likes');
       ctx.body = { likes: newLikes };
     } catch (err: any) {
-      log.error('like failed', { error: err.message, documentId });
+      log.error('like failed', { error: err.message, identifier });
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server' };
     }
   },
 
   async incrementView(ctx) {
-    const { documentId } = ctx.params as any;
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '');
     const log = createLogger(strapi, 'community-post');
+    const postQuery = strapi.db.query(POST_UID as any);
 
     try {
-      const results = await strapi.documents(POST_UID).findMany({
-        filters: {
-          documentId,
-          isHidden: { $ne: true },
-          moderationStatus: { $notIn: ['hidden', 'removed'] },
+      const existing = await postQuery.findOne({
+        where: {
+          $and: [
+            buildDocumentIdentifierFilters(identifier),
+            {
+              isHidden: { $ne: true },
+              moderationStatus: { $notIn: ['hidden', 'removed'] },
+              publishedAt: { $notNull: true },
+            },
+          ],
         },
-        status: 'published',
-        fields: ['documentId'],
-        limit: 1,
+        select: ['documentId'],
       });
-      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bài viết');
 
+      const documentId = existing.documentId as string;
       const newViews = await atomicIncrementField(strapi, POST_UID, documentId, 'views');
       ctx.status = 200;
       ctx.body = { ok: true, views: newViews };
     } catch (err: any) {
-      log.error('incrementView failed', { error: err.message, documentId });
+      log.error('incrementView failed', { error: err.message, identifier });
       ctx.status = 500;
       ctx.body = { ok: false, error: 'Lỗi server' };
     }
   },
 
   async report(ctx) {
-    const { documentId } = ctx.params as { documentId: string };
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '');
     const reason = ctx.request.body?.reason;
     const log = createLogger(strapi, 'community-post');
+    const postQuery = strapi.db.query(POST_UID as any);
 
     if (!isReportReason(reason)) return ctx.badRequest('Lý do báo cáo không hợp lệ.');
 
-    const reporterKey = `${documentId}:${getRequesterKey(ctx)}`;
-    const reportGuard = await consumeGuard(strapi, {
-      scope: 'community-post-report',
-      key: reporterKey,
-      windowMs: REPORT_TTL_MS,
-      maxHits: 1,
-      notes: { documentId, reason },
-    });
-    if (!reportGuard.allowed) {
-      return ctx.badRequest('Bạn đã báo cáo bài viết này rồi.');
-    }
-
     try {
-      const results = await strapi.documents(POST_UID).findMany({
-        filters: { documentId },
-        status: 'published',
-        fields: ['id', 'documentId', 'reportCount', 'moderationStatus', 'isHidden', 'spamScore'],
-        limit: 1,
+      const existing = await postQuery.findOne({
+        where: {
+          ...buildDocumentIdentifierFilters(identifier),
+          publishedAt: { $notNull: true },
+        },
+        select: ['id', 'documentId', 'reportCount', 'moderationStatus', 'isHidden', 'spamScore'],
       });
-      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bài viết.');
+
+      const reporterKey = `${existing.documentId}:${getRequesterKey(ctx)}`;
+      const reportGuard = await consumeGuard(strapi, {
+        scope: 'community-post-report',
+        key: reporterKey,
+        windowMs: REPORT_TTL_MS,
+        maxHits: 1,
+        notes: { documentId: existing.documentId, reason },
+      });
+      if (!reportGuard.allowed) {
+        return ctx.badRequest('Bạn đã báo cáo bài viết này rồi.');
+      }
 
       const nextState = getReportedState({
         reportCount: existing.reportCount ?? 0,
@@ -229,8 +239,8 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
         isHidden: existing.isHidden ?? false,
         spamScore: existing.spamScore ?? 0,
       }, reason);
-      const updated = await (strapi.documents as any)(POST_UID).update({
-        documentId: existing.documentId,
+      const updated = await postQuery.update({
+        where: { id: existing.id },
         data: nextState,
       });
 
@@ -241,7 +251,7 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
           : 'Cảm ơn bạn. Báo cáo đã được ghi nhận.',
       };
     } catch (err: any) {
-      log.error('report failed', { error: err.message, documentId, reason });
+      log.error('report failed', { error: err.message, identifier, reason });
       ctx.status = 500;
       ctx.body = { error: 'Không thể báo cáo bài viết lúc này.' };
     }
@@ -294,13 +304,17 @@ export default factories.createCoreController(POST_UID, ({ strapi }) => ({
   },
 
   async findOne(ctx) {
-    const { id } = ctx.params as any;
+    const identifier = String(ctx.params?.id ?? ctx.params?.identifier ?? ctx.params?.documentId ?? '');
 
     const postResults = await strapi.documents(POST_UID).findMany({
       filters: {
-        documentId: id,
-        isHidden: { $ne: true },
-        moderationStatus: { $notIn: ['hidden', 'removed'] },
+        $and: [
+          buildDocumentIdentifierFilters(identifier),
+          {
+            isHidden: { $ne: true },
+            moderationStatus: { $notIn: ['hidden', 'removed'] },
+          },
+        ],
       },
       status: 'published',
       populate: {

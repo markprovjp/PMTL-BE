@@ -61,7 +61,7 @@ export default factories.createCoreController(GB_UID, ({ strapi }) => ({
     }
 
     try {
-      const entity = await (strapi.documents as any)(GB_UID).create({
+      const entity = await strapi.db.query(GB_UID as any).create({
         data: {
           authorName: stripHtml(String(authorName)).slice(0, 100),
           country: country ? stripHtml(String(country)).slice(0, 100) : undefined,

@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_reader_states",
+  "info": {
+    "singularName": "blog-reader-state",
+    "pluralName": "blog-reader-states",
+    "displayName": "Blog · Trạng Thái Người Đọc",
+    "description": "Lưu lịch sử đọc và yêu thích bài viết theo user"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "required": true
+    },
+    "post": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::blog-post.blog-post",
+      "required": true
+    },
+    "isFavorite": {
+      "type": "boolean",
+      "default": false
+    },
+    "firstReadAt": {
+      "type": "datetime"
+    },
+    "lastReadAt": {
+      "type": "datetime"
+    },
+    "favoritedAt": {
+      "type": "datetime"
+    },
+    "isPinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "pinnedAt": {
+      "type": "datetime"
+    },
+    "readCount": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "uuid": {
+      "type": "customField",
+      "customField": "plugin::strapi-advanced-uuid.uuid"
+    }
+  }
+}

@@ -11,10 +11,10 @@
     "description": { "type": "text" },
     "link": { "type": "string" },
     "icon": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::ui-icon.ui-icon",
-      "description": "Biểu tượng dùng chung từ danh mục UI Icon"
+      "type": "string",
+      "customField": "plugin::lucide-icon-picker.lucide-icon",
+      "maxLength": 120,
+      "description": "Tên biểu tượng Lucide lưu trực tiếp, không cần relation"
     }
   }
 }

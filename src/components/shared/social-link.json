@@ -18,9 +18,9 @@
       "maxLength": 500
     },
     "icon": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::ui-icon.ui-icon"
+      "type": "string",
+      "customField": "plugin::lucide-icon-picker.lucide-icon",
+      "maxLength": 120
     }
   }
 }

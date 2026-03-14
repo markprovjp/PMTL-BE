@@ -17,7 +17,7 @@ export default {
     },
     {
       method: 'POST',
-      path: '/community-posts/like/:documentId',
+      path: '/community-posts/like/:identifier',
       handler: 'community-post.like',
       config: {
         auth: false,
@@ -27,7 +27,7 @@ export default {
     },
     {
       method: 'POST',
-      path: '/community-posts/:documentId/view',
+      path: '/community-posts/:identifier/view',
       handler: 'community-post.incrementView',
       config: {
         auth: false,
@@ -37,7 +37,7 @@ export default {
     },
     {
       method: 'POST',
-      path: '/community-posts/report/:documentId',
+      path: '/community-posts/report/:identifier',
       handler: 'community-post.report',
       config: {
         auth: false,

@@ -1,6 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { createHash } from 'node:crypto';
-import { atomicIncrementField } from '../../../utils/strapi-helpers';
+import { atomicIncrementField, buildDocumentIdentifierFilters } from '../../../utils/strapi-helpers';
 import { createLogger } from '../../../utils/logger';
 import {
   computeSpamScore,
@@ -62,39 +62,39 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
     const cleanContent = stripHtmlForModeration(content).slice(0, 2000);
     const cleanName = stripHtmlForModeration(String(author_name)).slice(0, 100);
     const authUserId: number | null = ctx.state?.user?.id ?? null;
+    const commentQuery = strapi.db.query(COMMENT_UID as any);
+    const postQuery = strapi.db.query(POST_UID as any);
 
     try {
-      const postResults = await strapi.documents(POST_UID as any).findMany({
-        filters: {
+      const post = await postQuery.findOne({
+        where: {
           documentId: postDocumentId,
           isHidden: { $ne: true },
           moderationStatus: { $notIn: ['hidden', 'removed'] },
+          publishedAt: { $notNull: true },
         },
-        status: 'published',
-        fields: ['id', 'documentId'],
-        limit: 1,
+        select: ['id', 'documentId'],
       });
-
-      const post = postResults[0];
       if (!post) {
         return ctx.notFound('Không tìm thấy bài viết hoặc bài viết đang bị ẩn.');
       }
 
       let parentId: number | null = null;
       if (parentDocumentId && typeof parentDocumentId === 'string') {
-        const parentResults = await strapi.documents(COMMENT_UID as any).findMany({
-          filters: {
+        const parentComment = await commentQuery.findOne({
+          where: {
             documentId: parentDocumentId,
             isHidden: { $ne: true },
             moderationStatus: { $notIn: ['hidden', 'removed'] },
+            publishedAt: { $notNull: true },
           },
-          status: 'published',
-          fields: ['id', 'documentId'],
-          populate: { post: { fields: ['documentId'] } },
-          limit: 1,
+          select: ['id', 'documentId'],
+          populate: {
+            post: {
+              select: ['documentId'],
+            },
+          },
         });
-
-        const parentComment = parentResults[0];
         if (!parentComment) return ctx.notFound('Không tìm thấy bình luận cha đang được hiển thị.');
         if (parentComment.post?.documentId !== postDocumentId) {
           return ctx.badRequest('Bình luận cha không thuộc về bài viết này.');
@@ -105,7 +105,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       const spamScore = computeSpamScore(cleanContent);
       const moderation = getInitialModerationState(spamScore);
 
-      const entity = await (strapi.documents as any)(COMMENT_UID).create({
+      const entity = await commentQuery.create({
         data: {
           content: cleanContent,
           author_name: cleanName,
@@ -138,15 +138,19 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
   },
 
   async likeComment(ctx) {
-    const { documentId } = ctx.params as any;
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '');
     const log = createLogger(strapi, 'community-comment');
 
     try {
       const results = await strapi.documents(COMMENT_UID as any).findMany({
         filters: {
-          documentId,
-          isHidden: { $ne: true },
-          moderationStatus: { $notIn: ['hidden', 'removed'] },
+          $and: [
+            buildDocumentIdentifierFilters(identifier),
+            {
+              isHidden: { $ne: true },
+              moderationStatus: { $notIn: ['hidden', 'removed'] },
+            },
+          ],
         },
         status: 'published',
         fields: ['documentId'],
@@ -155,49 +159,51 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
       const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bình luận');
 
+      const documentId = existing.documentId as string;
       const newLikes = await atomicIncrementField(strapi, COMMENT_UID, documentId, 'likes');
       ctx.body = { likes: newLikes };
     } catch (err: any) {
-      log.error('likeComment failed', { error: err.message, documentId });
+      log.error('likeComment failed', { error: err.message, identifier });
       ctx.status = 500;
       ctx.body = { error: 'Lỗi server' };
     }
   },
 
   async reportComment(ctx) {
-    const { documentId } = ctx.params as { documentId: string };
+    const identifier = String(ctx.params?.identifier ?? ctx.params?.documentId ?? '');
     const reason = ctx.request.body?.reason;
     const log = createLogger(strapi, 'community-comment');
+    const commentQuery = strapi.db.query(COMMENT_UID as any);
 
     if (!isReportReason(reason)) {
       return ctx.badRequest('Lý do báo cáo không hợp lệ.');
     }
 
-    const reporterKey = `${documentId}:${getRequesterKey(ctx)}`;
-    const reportGuard = await consumeGuard(strapi, {
-      scope: 'community-comment-report',
-      key: reporterKey,
-      windowMs: REPORT_TTL_MS,
-      maxHits: 1,
-      notes: { documentId, reason },
-    });
-    if (!reportGuard.allowed) {
-      return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
-    }
-
     try {
-      const results = await strapi.documents(COMMENT_UID as any).findMany({
-        filters: { documentId },
-        status: 'published',
-        fields: ['id', 'documentId', 'reportCount', 'moderationStatus', 'isHidden', 'spamScore'],
-        limit: 1,
+      const existing = await commentQuery.findOne({
+        where: {
+          ...buildDocumentIdentifierFilters(identifier),
+          publishedAt: { $notNull: true },
+        },
+        select: ['id', 'documentId', 'reportCount', 'moderationStatus', 'isHidden', 'spamScore'],
       });
-      const existing = results[0];
       if (!existing) return ctx.notFound('Không tìm thấy bình luận.');
 
+      const reporterKey = `${existing.documentId}:${getRequesterKey(ctx)}`;
+      const reportGuard = await consumeGuard(strapi, {
+        scope: 'community-comment-report',
+        key: reporterKey,
+        windowMs: REPORT_TTL_MS,
+        maxHits: 1,
+        notes: { documentId: existing.documentId, reason },
+      });
+      if (!reportGuard.allowed) {
+        return ctx.badRequest('Bạn đã báo cáo bình luận này rồi.');
+      }
+
       const nextState = getReportedState(existing, reason);
-      const updated = await (strapi.documents as any)(COMMENT_UID).update({
-        documentId: existing.documentId,
+      const updated = await commentQuery.update({
+        where: { id: existing.id },
         data: nextState,
       });
 
@@ -208,7 +214,7 @@ export default factories.createCoreController(COMMENT_UID, ({ strapi }) => ({
           : 'Cảm ơn bạn. Báo cáo đã được ghi nhận.',
       };
     } catch (err: any) {
-      log.error('reportComment failed', { error: err.message, documentId, reason });
+      log.error('reportComment failed', { error: err.message, identifier, reason });
       ctx.status = 500;
       ctx.body = { error: 'Không thể báo cáo bình luận lúc này.' };
     }
